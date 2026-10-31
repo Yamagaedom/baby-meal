@@ -30,6 +30,7 @@ function createPrismaClient(): PrismaClient {
     new Pool({
       connectionString,
       max: poolMax,
+      ssl: isLocalPrismaDev ? undefined : { rejectUnauthorized: false },
     });
 
   globalForPrisma.prismaPool = pool;
