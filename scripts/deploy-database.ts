@@ -67,6 +67,20 @@ async function main() {
     try {
       await protection.query("BEGIN");
       for (const table of [
+        "users",
+        "sessions",
+        "ai_usages",
+        "babies",
+        "allergies",
+        "ingredients",
+        "recipes",
+        "recipe_ingredients",
+        "recipe_sources",
+        "meal_logs",
+        "pantry_items",
+        "favorites",
+        "reports",
+        "_prisma_migrations",
         "meal_plans",
         "meal_plan_entries",
         "cooking_tasks",
@@ -81,7 +95,9 @@ async function main() {
         );
       }
       await protection.query("COMMIT");
-      console.log("Weekly private tables: RLS enabled; direct Data API access revoked.");
+      console.log(
+        "Server-managed application tables: RLS enabled; direct Data API access revoked.",
+      );
     } catch (error) {
       await protection.query("ROLLBACK");
       throw error;
