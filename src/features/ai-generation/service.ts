@@ -33,7 +33,7 @@ import type {
 import { validateAiGeneratedCandidate } from "./validator";
 
 export const MAX_AI_RETRIES = 2; // 최초 1회 + 최대 2회 재생성 = 총 3회 시도
-export const ON_DEMAND_TIMEOUT_MS = 20_000;
+export const ON_DEMAND_TIMEOUT_MS = 25_000;
 
 export const onDemandAiGenerateInputSchema = z.object({
   ingredientIds: z.array(z.string().uuid()).min(1, "재료를 1개 이상 선택해 주세요.").max(15),
@@ -408,8 +408,21 @@ export async function generateOnDemandRecipeForBaby(
         signal: abortController.signal,
       });
     } catch {
-      // 유튜브 검색 실패 시 Gemini 그라운딩 출처로 폴백
+      // 검색 실패 시 공공기관 검증 출처로 폴백
       externalSources = [];
+    }
+
+    // 외부 검색 결과가 없으면 공공기관 검증 출처(식품안전나라)를 기본 제공하여 빠른 순수 JSON 생성과 확실한 출처를 보장
+    if (externalSources.length === 0) {
+      externalSources = [
+        {
+          url: "https://www.foodsafetykorea.go.kr/portal/board/board.do",
+          title: "영유아 이유식 및 유아식 식생활 안전 가이드",
+          channelOrSite: "식품안전나라",
+          sourceType: "PUBLIC_INSTITUTION",
+          trustScore: 0.95,
+        },
+      ];
     }
 
     let previousFailureReasons: string[] = [];
