@@ -1,0 +1,34 @@
+{
+  "date": "2026-10-31",
+  "source": "Chrome DOM inspection of the development app; development test account",
+  "screens": [
+    {
+      "path": "/recipes",
+      "cssViewportWidth": 2133,
+      "cards": 147,
+      "emojiCount": 0,
+      "badgeCountsPerCard": [1],
+      "positiveBorderRadiiPx": [4, 6, 8],
+      "horizontalOverflow": false
+    },
+    {
+      "path": "/ingredients",
+      "ingredients": ["감자", "당근", "두부"],
+      "cssViewportWidth": 2133,
+      "cards": 40,
+      "emojiCount": 0,
+      "badgeCountsPerCard": [2],
+      "positiveBorderRadiiPx": [4, 6, 8],
+      "horizontalOverflow": false
+    }
+  ],
+  "verification": {
+    "unitAndIntegration": { "passed": 55, "failed": 0 },
+    "e2e": { "passed": 11, "failed": 0, "flaky": 0, "skipped": 0 },
+    "axeCriticalOrSeriousViolations": 0,
+    "automatedViewportWidths": [320, 360, 390, 768, 1280],
+    "productionBuild": "passed",
+    "typecheck": "passed",
+    "lint": "passed"
+  }
+}

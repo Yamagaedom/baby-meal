@@ -1,0 +1,359 @@
+// PRD v0.3 6장 데이터 모델 구현 (PostgreSQL / Prisma 7)
+// 원칙:
+// 1. 개인정보 미수집(ACC-08): User에 이메일·전화번호·실명 컬럼 없음, Baby에 생년월일 컬럼 없음.
+// 2. 회원 탈퇴 즉시 전체 삭제(ACC-07): User 하위 모든 사용자 데이터는 onDelete: Cascade 적용.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum SaltLevel {
+  NONE
+  LOW
+  NORMAL
+}
+
+enum RecipeCategory {
+  MEAL
+  SNACK
+}
+
+enum MealCategory {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SNACK
+}
+
+enum Rating {
+  GOOD
+  OK
+  REFUSED
+}
+
+enum AmountEaten {
+  ALL
+  HALF
+  LITTLE
+}
+
+enum RecipeStatus {
+  ACTIVE
+  HIDDEN
+  PENDING_REGEN
+}
+
+enum ReportReason {
+  WRONG_PORTION
+  UNSAFE_INGREDIENT
+  BAD_TASTE
+  OTHER
+}
+
+enum AllergyStatus {
+  CONFIRMED
+  SUSPECTED
+}
+
+enum SourceType {
+  YOUTUBE
+  WEB
+  PUBLIC_INSTITUTION
+}
+
+enum Allergen {
+  EGG
+  MILK
+  BUCKWHEAT
+  PEANUT
+  SOYBEAN
+  WHEAT
+  MACKEREL
+  CRAB
+  SHRIMP
+  PORK
+  PEACH
+  TOMATO
+  SULFITE
+  WALNUT
+  CHICKEN
+  BEEF
+  SQUID
+  SHELLFISH
+  PINE_NUT
+}
+
+enum IngredientGroup {
+  GRAIN
+  VEGETABLE
+  FRUIT
+  MEAT
+  SEAFOOD
+  EGG
+  DAIRY
+  LEGUME_TOFU
+  NUT_SEED
+  SEASONING
+  PROCESSED
+}
+
+/// 사용자 계정 (ACC-01~08: ID/PW + 복구 코드 해시만 보관, 개인정보 미수집)
+model User {
+  id               String    @id @default(uuid()) @db.Uuid
+  loginId          String    @unique @map("login_id")
+  passwordHash     String    @map("password_hash")
+  recoveryCodeHash String    @map("recovery_code_hash")
+  failedLoginCount Int       @default(0) @map("failed_login_count")
+  lockedUntil      DateTime? @map("locked_until")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  sessions    Session[]
+  aiUsages    AiUsage[]
+  babies      Baby[]
+  pantryItems PantryItem[]
+  favorites   Favorite[]
+  reports     Report[]
+
+  @@map("users")
+}
+
+/// 서버 세션 (ACC-06)
+model Session {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  tokenHash String   @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+/// 일일 즉석 AI 생성 횟수 (AI-10: 계정당 1일 3회, KST 날짜 기준)
+model AiUsage {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  usageDate DateTime @map("usage_date") @db.Date
+  count     Int      @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, usageDate])
+  @@index([usageDate])
+  @@map("ai_usages")
+}
+
+/// 아기 프로필 (PRF-01~06: 생년월일 미수집, 입력 시점 월령 + 입력일 저장)
+model Baby {
+  id              String    @id @default(uuid()) @db.Uuid
+  userId          String    @map("user_id") @db.Uuid
+  nickname        String?
+  ageMonthAtInput Int       @map("age_month_at_input")
+  ageInputDate    DateTime  @map("age_input_date") @db.Date
+  saltLevel       SaltLevel @default(NONE) @map("salt_level")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  allergies Allergy[]
+  mealLogs  MealLog[]
+
+  @@index([userId])
+  @@map("babies")
+}
+
+/// 아기 알레르기·의심·기피 식재료 (PRF-05, LOG-04, REC-02)
+model Allergy {
+  id           String        @id @default(uuid()) @db.Uuid
+  babyId       String        @map("baby_id") @db.Uuid
+  ingredientId String?       @map("ingredient_id") @db.Uuid
+  allergenType Allergen?     @map("allergen_type")
+  status       AllergyStatus @default(CONFIRMED)
+  createdAt    DateTime      @default(now()) @map("created_at")
+
+  baby       Baby        @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  ingredient Ingredient? @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+
+  @@unique([babyId, ingredientId])
+  @@unique([babyId, allergenType])
+  @@index([babyId])
+  @@map("allergies")
+}
+
+/// 식재료 사전 (PRD 8장: 공공 데이터 기반 약 200종+, 자동 안전 검증의 기준 데이터)
+model Ingredient {
+  id               String          @id @default(uuid()) @db.Uuid
+  slug             String          @unique
+  name             String          @unique
+  synonyms         String[]
+  group            IngredientGroup
+  allergenType     String?         @map("allergen_type")
+  allergens        Allergen[]
+  isPantryBasic    Boolean         @default(false) @map("is_pantry_basic")
+  isSaltySeasoning Boolean         @default(false) @map("is_salty_seasoning")
+  minAgeMonth      Int             @default(12) @map("min_age_month")
+  sodiumMgPer100g  Float           @map("sodium_mg_per_100g")
+  gramsPerPiece    Float?          @map("grams_per_piece")
+  densityGPerMl    Float           @default(1.0) @map("density_g_per_ml")
+  cautionNote      String?         @map("caution_note")
+
+  allergies            Allergy[]
+  recipeIngredients    RecipeIngredient[] @relation("PrimaryIngredient")
+  substituteReferences RecipeIngredient[] @relation("SubstituteIngredient")
+  pantryItems          PantryItem[]
+
+  @@index([name])
+  @@index([group])
+  @@index([synonyms], type: Gin)
+  @@map("ingredients")
+}
+
+/// 레시피 (PRD 3.3~3.7, 3.9, 6장)
+model Recipe {
+  id                 String         @id @default(uuid()) @db.Uuid
+  slug               String?        @unique
+  cacheKey           String?        @unique @map("cache_key")
+  name               String
+  summary            String?
+  category           RecipeCategory
+  mealCategories     MealCategory[] @map("meal_categories")
+  ageStages          Int[]          @map("age_stages")
+  saltLevel          SaltLevel      @map("salt_level")
+  cookMinutes        Int            @map("cook_minutes")
+  difficulty         Int            @default(1)
+  tools              String[]
+  baseServings       Int            @default(2) @map("base_servings")
+  sodiumMgPerServing Int            @map("sodium_mg_per_serving")
+  allergens          Allergen[]
+  steps              Json
+  babyTips           Json           @map("baby_tips")
+  storageInfo        Json           @map("storage_info")
+  status             RecipeStatus   @default(ACTIVE)
+  qualityScore       Float          @default(0) @map("quality_score")
+  generatedAt        DateTime       @default(now()) @map("generated_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+
+  ingredients RecipeIngredient[]
+  sources     RecipeSource[]
+  mealLogs    MealLog[]
+  favorites   Favorite[]
+  reports     Report[]
+
+  @@index([status, saltLevel, category])
+  @@index([ageStages], type: Gin)
+  @@index([allergens], type: Gin)
+  @@index([qualityScore(sort: Desc)])
+  @@map("recipes")
+}
+
+/// 레시피별 재료 매핑 (RCP-02, ING-02, SRV-02)
+model RecipeIngredient {
+  id           String  @id @default(uuid()) @db.Uuid
+  recipeId     String  @map("recipe_id") @db.Uuid
+  ingredientId String  @map("ingredient_id") @db.Uuid
+  amount       Float?
+  unit         String
+  prepNote     String? @map("prep_note")
+  isOptional   Boolean @default(false) @map("is_optional")
+  substituteId String? @map("substitute_id") @db.Uuid
+
+  recipe     Recipe      @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  ingredient Ingredient  @relation("PrimaryIngredient", fields: [ingredientId], references: [id], onDelete: Restrict)
+  substitute Ingredient? @relation("SubstituteIngredient", fields: [substituteId], references: [id], onDelete: SetNull)
+
+  @@unique([recipeId, ingredientId])
+  @@index([ingredientId])
+  @@map("recipe_ingredients")
+}
+
+/// 레시피 참고 출처 (AI-01, AI-02, AI-06)
+model RecipeSource {
+  id            String     @id @default(uuid()) @db.Uuid
+  recipeId      String     @map("recipe_id") @db.Uuid
+  url           String
+  title         String
+  channelOrSite String     @map("channel_or_site")
+  sourceType    SourceType @map("source_type")
+  trustScore    Float      @default(0.5) @map("trust_score")
+
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@index([recipeId])
+  @@map("recipe_sources")
+}
+
+/// 먹은 기록 (LOG-01~06: 사진은 MVP 제외)
+model MealLog {
+  id          String        @id @default(uuid()) @db.Uuid
+  babyId      String        @map("baby_id") @db.Uuid
+  recipeId    String        @map("recipe_id") @db.Uuid
+  eatenAt     DateTime      @default(now()) @map("eaten_at")
+  mealTime    MealCategory? @map("meal_time")
+  rating      Rating
+  amountEaten AmountEaten?  @map("amount_eaten")
+  memo        String?
+  reactions   String[]
+
+  baby   Baby   @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Restrict)
+
+  @@index([babyId, eatenAt(sort: Desc)])
+  @@index([babyId, recipeId])
+  @@map("meal_logs")
+}
+
+/// 내 냉장고 재료 (ING-07)
+model PantryItem {
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  ingredientId String    @map("ingredient_id") @db.Uuid
+  addedAt      DateTime  @default(now()) @map("added_at") @db.Date
+  expiresAt    DateTime? @map("expires_at") @db.Date
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, ingredientId])
+  @@index([userId])
+  @@map("pantry_items")
+}
+
+/// 즐겨찾기 레시피 (REC-04)
+model Favorite {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  recipeId  String   @map("recipe_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, recipeId])
+  @@index([userId])
+  @@map("favorites")
+}
+
+/// 레시피 신고 (AI-12)
+model Report {
+  id        String       @id @default(uuid()) @db.Uuid
+  recipeId  String       @map("recipe_id") @db.Uuid
+  userId    String       @map("user_id") @db.Uuid
+  reason    ReportReason
+  memo      String?
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([recipeId, userId])
+  @@index([recipeId])
+  @@map("reports")
+}

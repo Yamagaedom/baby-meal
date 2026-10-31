@@ -1,0 +1,47 @@
+{
+  "generatedAt": "2026-10-31T07:32:32.823Z",
+  "providerMode": "LOCAL_CURATED_SYNTHESIZER",
+  "executionSummary": {
+    "targetBlueprintCount": 150,
+    "skippedAlreadySaved": 150,
+    "newlyAttempted": 0,
+    "newlyPassed": 0,
+    "newlyFailed": 0,
+    "passRatePercent": 100,
+    "failureReasonCounts": {}
+  },
+  "batchPoolStats": {
+    "total": 150,
+    "mealCount": 100,
+    "snackCount": 50,
+    "saltDistribution": {
+      "NONE": 102,
+      "LOW": 23,
+      "NORMAL": 25,
+      "noneRatioPercent": 68
+    },
+    "stageCounts": {
+      "stage1": 50,
+      "stage2": 88,
+      "stage3": 87,
+      "stage4": 74
+    }
+  },
+  "totalActiveDbStats": {
+    "total": 180,
+    "mealCount": 120,
+    "snackCount": 60,
+    "saltDistribution": {
+      "NONE": 118,
+      "LOW": 37,
+      "NORMAL": 25,
+      "noneRatioPercent": 65.6
+    },
+    "stageCounts": {
+      "stage1": 66,
+      "stage2": 115,
+      "stage3": 111,
+      "stage4": 93
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "오늘 뭐 먹지, 아가? — 맞춤 유아식·간식 아이디어",
+  "short_name": "오늘뭐먹지아가",
+  "description": "12~48개월 아기의 월령·간 단계·알레르기에 맞춘 안심 유아식과 간식 레시피 추천 웹앱",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FFFFFF",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
