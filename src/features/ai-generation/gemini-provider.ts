@@ -72,10 +72,20 @@ const GEMINI_JSON_SCHEMA_INSTRUCTION = `
 }
 `;
 
+export const DEFAULT_GEMINI_MODEL = "gemini-3.8-flash";
+
+export function resolveGeminiModelName(envModel?: string): string {
+  const trimmed = envModel?.trim();
+  if (!trimmed || trimmed === "gemini-2.5-flash" || trimmed === "gemini-1.5-flash") {
+    return DEFAULT_GEMINI_MODEL;
+  }
+  return trimmed;
+}
+
 export class GeminiRestLlmProvider implements AiRecipeLlmProvider {
   constructor(
     private readonly apiKey: string | undefined = process.env.GEMINI_API_KEY,
-    private readonly modelName: string = process.env.GEMINI_MODEL || "gemini-2.5-flash",
+    private readonly modelName: string = resolveGeminiModelName(process.env.GEMINI_MODEL),
   ) {}
 
   getModelName(): string {

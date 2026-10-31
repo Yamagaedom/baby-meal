@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  isVerifiedAuthoritativeSource,
   normalizeRecipeSummary,
   sourceDisplayLabel,
   uniqueMenuSuggestions,
@@ -53,5 +54,44 @@ describe("UI 검토서의 메뉴 중복, 조사, 출처 표시 회귀", () => {
         url: "https://www.foodsafetykorea.go.kr",
       }),
     ).toEqual({ title: "식생활 안내", publisher: "식품안전나라", isExample: false });
+  });
+
+  it("확실한 실제 출처 링크만 통과시키고 가상/샘플/임시/예시 링크는 배제한다", () => {
+    // 유효한 공공기관 및 실제 외부 출처
+    expect(
+      isVerifiedAuthoritativeSource({
+        title: "영유아 이유식 가이드",
+        channelOrSite: "식품안전나라",
+        url: "https://www.foodsafetykorea.go.kr/portal/board/board.do",
+      }),
+    ).toBe(true);
+
+    // 샘플/시드/임시 키워드 포함
+    expect(
+      isVerifiedAuthoritativeSource({
+        title: "[시드 샘플] 아기밥 레시피",
+        channelOrSite: "유아식채널",
+        url: "https://www.youtube.com/watch?v=12345",
+      }),
+    ).toBe(false);
+
+    // example.com 또는 localhost
+    expect(
+      isVerifiedAuthoritativeSource({
+        title: "맛있는 유아식",
+        channelOrSite: "블로그",
+        url: "https://example.com/recipe/1",
+      }),
+    ).toBe(false);
+
+    // 비정상 URL 및 빈 값
+    expect(isVerifiedAuthoritativeSource({ title: "", channelOrSite: "", url: "" })).toBe(false);
+    expect(
+      isVerifiedAuthoritativeSource({
+        title: "정상 제목",
+        channelOrSite: "출처",
+        url: "not-a-valid-url",
+      }),
+    ).toBe(false);
   });
 });

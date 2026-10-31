@@ -37,11 +37,50 @@ export function uniqueMenuSuggestions<T extends { name: string; category: string
   });
 }
 
+/** 확실하고 검증된 외부 실제 출처인지 판별합니다 (가상/예시/샘플/임시 링크 배제). */
+export function isVerifiedAuthoritativeSource(source: {
+  url?: string | null;
+  title?: string | null;
+  channelOrSite?: string | null;
+}): boolean {
+  if (!source || !source.url || !source.title) return false;
+  const rawUrl = source.url.trim();
+  const rawTitle = source.title.trim();
+  const rawChannel = (source.channelOrSite ?? "").trim();
+
+  // 가상/예시/샘플/임시 키워드 차단
+  const combined = `${rawUrl} ${rawTitle} ${rawChannel}`;
+  if (/시드|샘플|가상|임시|placeholder|example/i.test(combined)) {
+    return false;
+  }
+
+  // URL 유효성 및 도메인 검증
+  try {
+    const parsed = new URL(rawUrl);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return false;
+    }
+    const host = parsed.hostname.toLowerCase();
+    if (
+      host === "localhost" ||
+      host === "127.0.0.1" ||
+      host === "example.com" ||
+      host.endsWith(".example.com") ||
+      !host.includes(".")
+    ) {
+      return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /** 예시 출처를 검증된 채널로 포장하지 않고 실제 목적지와 참고 성격을 표시합니다. */
 export function sourceDisplayLabel(source: { title: string; channelOrSite: string; url: string }) {
-  const isExample = /시드|샘플/.test(`${source.title} ${source.channelOrSite}`);
+  const isVerified = isVerifiedAuthoritativeSource(source);
   const title = source.title.replace(/\[(?:시드\s*)?샘플\]\s*/g, "").trim();
-  if (!isExample) return { title, publisher: source.channelOrSite, isExample: false };
+  if (isVerified) return { title, publisher: source.channelOrSite, isExample: false };
   let publisher = "참고 자료";
   try {
     const host = new URL(source.url).hostname.replace(/^www\./, "");

@@ -84,9 +84,13 @@ describe("AI 레시피 생성 파이프라인 및 안전 검증 게이트 (AI-01
     expect(generalHighViews).toBeGreaterThan(generalLowViews);
   });
 
-  it("AI-04: GeminiRestLlmProvider는 GEMINI_MODEL 환경변수 또는 기본값 'gemini-2.5-flash'를 사용하고 JSON을 정상 추출한다", () => {
+  it("AI-04: GeminiRestLlmProvider는 GEMINI_MODEL 환경변수 또는 기본값 'gemini-3.8-flash'를 사용하고 JSON을 정상 추출한다", () => {
     const defaultProvider = new GeminiRestLlmProvider("dummy-key");
-    expect(defaultProvider.getModelName()).toBe(process.env.GEMINI_MODEL || "gemini-2.5-flash");
+    const expectedModel =
+      process.env.GEMINI_MODEL && process.env.GEMINI_MODEL !== "gemini-2.5-flash"
+        ? process.env.GEMINI_MODEL
+        : "gemini-3.8-flash";
+    expect(defaultProvider.getModelName()).toBe(expectedModel);
 
     const customProvider = new GeminiRestLlmProvider("dummy-key", "gemini-2.0-flash");
     expect(customProvider.getModelName()).toBe("gemini-2.0-flash");

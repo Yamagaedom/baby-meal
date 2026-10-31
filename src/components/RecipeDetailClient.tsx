@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { CookingModeModal } from "@/components/CookingModeModal";
 import { Badge, Button, Input, Select, Stepper } from "@/components/ui";
 import { Icon } from "@/components/ui/Icon";
-import { normalizeRecipeSummary, sourceDisplayLabel } from "@/lib/presentation";
+import { isVerifiedAuthoritativeSource, normalizeRecipeSummary, sourceDisplayLabel } from "@/lib/presentation";
 import type { RecipeDetailView } from "@/features/recipe";
 import {
   AMOUNT_EATEN_LABELS,
@@ -545,33 +545,36 @@ export function RecipeDetailClient({
           </p>
         </div>
 
-        {recipe.sources.length > 0 && (
-          <div className="border-t border-[var(--color-border)] pt-3.5 text-xs text-[var(--color-text-secondary)]">
-            <p className="font-semibold text-[var(--color-text)]">참고 출처</p>
-            <ul className="mt-2 space-y-1.5">
-              {recipe.sources.map((src) => {
-                const source = sourceDisplayLabel(src);
-                return (
-                  <li key={src.id}>
+        {(() => {
+          const verifiedSources = recipe.sources
+            .filter(isVerifiedAuthoritativeSource)
+            .map((src) => ({
+              ...src,
+              ...sourceDisplayLabel(src),
+            }));
+
+          if (verifiedSources.length === 0) return null;
+
+          return (
+            <div className="border-t border-[var(--color-border)] pt-3.5 text-xs text-[var(--color-text-secondary)]">
+              <p className="font-semibold text-[var(--color-text)]">참고 출처</p>
+              <ul className="mt-2 space-y-1.5">
+                {verifiedSources.map((source) => (
+                  <li key={source.id}>
                     <a
-                      href={src.url}
+                      href={source.url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex min-h-9 items-center font-semibold text-[var(--color-primary-text)] underline underline-offset-4 hover:text-[var(--color-text)]"
                     >
                       {source.publisher} · {source.title}
                     </a>
-                    {source.isExample && (
-                      <p className="text-[var(--color-text-muted)]">
-                        참고용 예시 링크입니다. 원문 내용을 직접 확인해 주세요.
-                      </p>
-                    )}
                   </li>
-                );
-              })}
-            </ul>
-          </div>
-        )}
+                ))}
+              </ul>
+            </div>
+          );
+        })()}
       </section>
 
       {cookingModeOpen && (
