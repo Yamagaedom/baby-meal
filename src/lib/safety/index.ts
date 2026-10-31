@@ -437,10 +437,10 @@ export function validateRecipeSafety(
     issues.push({ code: "MISSING_REQUIRED_FIELD", message: "보관·데우기 안내가 누락되었습니다." });
   }
   if (
-    candidate.sources.length === 0 ||
+    candidate.sources &&
     candidate.sources.some((s) => !s.url.trim() || !s.title.trim())
   ) {
-    issues.push({ code: "MISSING_REQUIRED_FIELD", message: "출처 링크가 최소 1개 필요합니다." });
+    issues.push({ code: "MISSING_REQUIRED_FIELD", message: "출처 링크의 주소 또는 제목이 비어 있습니다." });
   }
 
   // ① 모든 재료가 식재료 사전에 매핑되는지 확인

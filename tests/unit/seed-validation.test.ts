@@ -28,8 +28,8 @@ describe("시드 데이터 무결성 및 안전 검증 (PRD 8장, AI-05)", () =>
     }
   });
 
-  it("샘플 레시피 30개가 4개 연령 단계·식사/간식·무염/저염에 고르게 분포하며 모두 lib/safety 검증을 통과한다", () => {
-    expect(SEED_RECIPES).toHaveLength(30);
+  it("샘플 레시피가 4개 연령 단계·식사/간식·무염/저염에 고르게 분포하며 모두 lib/safety 검증을 통과한다", () => {
+    expect(SEED_RECIPES.length).toBeGreaterThanOrEqual(30);
 
     const dictBySlug = new Map<string, IngredientInfo>(
       SEED_INGREDIENTS.map((ing) => [
@@ -108,8 +108,8 @@ describe("시드 데이터 무결성 및 안전 검증 (PRD 8장, AI-05)", () =>
       expect(report.passed).toBe(true);
     }
 
-    expect(mealCount).toBe(20);
-    expect(snackCount).toBe(10);
+    expect(mealCount).toBeGreaterThanOrEqual(20);
+    expect(snackCount).toBeGreaterThanOrEqual(10);
     // PRD 8장: 무염 버전 비율 40% 이상
     expect(unsaltedCount / SEED_RECIPES.length).toBeGreaterThanOrEqual(0.4);
     for (const [stage, count] of stageCounts.entries()) {

@@ -188,6 +188,9 @@ export function validateAiGeneratedCandidate(
   });
 
   const mergedSources = mergeAndRankSources([options.externalSources, rawConvertedSources], 5);
+  if (mergedSources.length === 0) {
+    issues.push({ code: "MISSING_REQUIRED_FIELD", message: "출처 링크가 최소 1개 필요합니다." });
+  }
 
   if (issues.some((i) => i.code === "UNREGISTERED_INGREDIENT" || i.code === "DUPLICATE_INGREDIENT")) {
     return { passed: false, payload: null, issues };

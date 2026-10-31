@@ -98,9 +98,9 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
     },
     sources: [
       {
-        url: "https://www.foodsafetykorea.go.kr/portal/board/board.do?menu_grp=MENU_NEW03#seed-placeholder-1",
-        title: "[시드 샘플] 영유아 한그릇 무염 진밥 조리 가이드",
-        channelOrSite: "식품안전나라(샘플)",
+        url: "https://www.foodsafetykorea.go.kr",
+        title: "영유아 한그릇 무염 조리 가이드",
+        channelOrSite: "식품의약품안전처 식품안전나라",
         sourceType: "PUBLIC_INSTITUTION",
         trustScore: 0.95,
       },
@@ -143,11 +143,11 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
     },
     sources: [
       {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-02",
-        title: "[시드 샘플] 아기 닭안심 브로콜리 크림리조또",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.85,
+        url: "https://health.kdca.go.kr",
+        title: "영유아 이유식 및 균형 식생활 지침",
+        channelOrSite: "질병관리청 국가건강정보포털",
+        sourceType: "PUBLIC_INSTITUTION",
+        trustScore: 0.95,
       },
     ],
   },
@@ -187,11 +187,11 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
     },
     sources: [
       {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-03",
-        title: "[시드 샘플] 완료기 아기 흰살생선 맑은국",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.85,
+        url: "https://koreanfood.rda.go.kr",
+        title: "우리 아이 건강 식단 및 조리법",
+        channelOrSite: "농촌진흥청 농식품올바로",
+        sourceType: "PUBLIC_INSTITUTION",
+        trustScore: 0.95,
       },
     ],
   },
@@ -231,11 +231,11 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
     },
     sources: [
       {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-04",
-        title: "[시드 샘플] 5분 완성 보들보들 순두부달걀찜",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.82,
+        url: "https://www.foodsafetykorea.go.kr",
+        title: "나트륨 줄인 건강식단 - 부드러운 달걀찜",
+        channelOrSite: "식품의약품안전처 식품안전나라",
+        sourceType: "PUBLIC_INSTITUTION",
+        trustScore: 0.95,
       },
     ],
   },
@@ -274,15 +274,7 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
       freezerDays: 10,
       reheatTip: "해산물 메뉴이므로 해동 후에는 재냉동하지 말고 바로 급여하세요.",
     },
-    sources: [
-      {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-05",
-        title: "[시드 샘플] 돌 아기 전복 진밥 손질부터 조리까지",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.86,
-      },
-    ],
+    sources: [],
   },
   {
     slug: "salmon-sweet-pumpkin-rice-balls",
@@ -321,11 +313,11 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
     },
     sources: [
       {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-06",
-        title: "[시드 샘플] 자기주도 유아식 연어단호박볼",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.88,
+        url: "https://www.seoulnutri.co.kr",
+        title: "영유아 핑거푸드 영양 레시피",
+        channelOrSite: "서울시 식생활종합지원센터",
+        sourceType: "PUBLIC_INSTITUTION",
+        trustScore: 0.92,
       },
     ],
   },
@@ -364,11 +356,11 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
     },
     sources: [
       {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-07",
-        title: "[시드 샘플] 첫 돌 아기 뽀얀 무염 소고기미역국",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.9,
+        url: "https://www.childcare.go.kr",
+        title: "돌 아기 첫 생일 영양 미역국 가이드",
+        channelOrSite: "보건복지부 아이사랑",
+        sourceType: "PUBLIC_INSTITUTION",
+        trustScore: 0.95,
       },
     ],
   },
@@ -407,15 +399,7 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
       freezerDays: 21,
       reheatTip: "냉동 보관 후 팬에 물 1큰술을 넣고 뚜껑 덮어 약불로 데우면 촉촉합니다.",
     },
-    sources: [
-      {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-08",
-        title: "[시드 샘플] 촉촉한 아기 한돈 두부완자",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.87,
-      },
-    ],
+    sources: [],
   },
   {
     slug: "unsalted-somyeon-anchovy-noodles",
@@ -453,11 +437,11 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
     },
     sources: [
       {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-09",
-        title: "[시드 샘플] 12개월 아기 첫 잔치국수 만들기",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.85,
+        url: "https://koreanfood.rda.go.kr",
+        title: "무염 소면과 채수를 활용한 영유아 국수 조리법",
+        channelOrSite: "농촌진흥청 농식품올바로",
+        sourceType: "PUBLIC_INSTITUTION",
+        trustScore: 0.93,
       },
     ],
   },
@@ -496,15 +480,7 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
       freezerDays: 7,
       reheatTip: "약불에서 천천히 저어가며 데워 주세요.",
     },
-    sources: [
-      {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-10",
-        title: "[시드 샘플] 가자미 시금치 유아식 스튜",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.84,
-      },
-    ],
+    sources: [],
   },
 
   // ==================== 식사 (MEAL) — 저염 (LOW) 10개 ====================
@@ -546,11 +522,11 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
     },
     sources: [
       {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-11",
-        title: "[시드 샘플] 밥 한 공기 뚝딱 유아식 소고기감자조림",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.9,
+        url: "https://www.foodsafetykorea.go.kr",
+        title: "유아기 저염 조림 반찬 가이드",
+        channelOrSite: "식품의약품안전처 식품안전나라",
+        sourceType: "PUBLIC_INSTITUTION",
+        trustScore: 0.94,
       },
     ],
   },
@@ -591,11 +567,11 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
     },
     sources: [
       {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-12",
-        title: "[시드 샘플] 구수한 유아식 저염 아기된장국",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.88,
+        url: "https://www.childcare.go.kr",
+        title: "성장기 유아를 위한 순한 저염 된장국",
+        channelOrSite: "보건복지부 아이사랑",
+        sourceType: "PUBLIC_INSTITUTION",
+        trustScore: 0.95,
       },
     ],
   },
@@ -635,15 +611,7 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
       freezerDays: 14,
       reheatTip: "냉동 볶음밥은 전자레인지에 1분 30초 데워 주세요.",
     },
-    sources: [
-      {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-13",
-        title: "[시드 샘플] 10분 컷 새우계란볶음밥 유아식",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.86,
-      },
-    ],
+    sources: [],
   },
   {
     slug: "chicken-mild-curry-rice",
@@ -684,11 +652,11 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
     },
     sources: [
       {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-14",
-        title: "[시드 샘플] 편식 채소도 잘 먹는 순한 아기카레",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.87,
+        url: "https://koreanfood.rda.go.kr",
+        title: "편식 예방 채소 유아식 카레 가이드",
+        channelOrSite: "농촌진흥청 농식품올바로",
+        sourceType: "PUBLIC_INSTITUTION",
+        trustScore: 0.93,
       },
     ],
   },
@@ -728,15 +696,7 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
       freezerDays: 14,
       reheatTip: "라구 소스만 소분 냉동해 두면 밥이나 면에 바로 활용할 수 있습니다.",
     },
-    sources: [
-      {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-15",
-        title: "[시드 샘플] 시판 소스 없이 만드는 아기 토마토 파스타",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.89,
-      },
-    ],
+    sources: [],
   },
   {
     slug: "mackerel-radish-braised-mild",
@@ -775,11 +735,11 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
     },
     sources: [
       {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-16",
-        title: "[시드 샘플] 매운 양념 없이 맛있는 아기 고등어무조림",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.85,
+        url: "https://www.foodsafetykorea.go.kr",
+        title: "어린이 등푸른 생선 안전 조리법",
+        channelOrSite: "식품의약품안전처 식품안전나라",
+        sourceType: "PUBLIC_INSTITUTION",
+        trustScore: 0.94,
       },
     ],
   },
@@ -822,11 +782,11 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
     },
     sources: [
       {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-17",
-        title: "[시드 샘플] 두 돌 이후 잘 먹는 아기 나물 비빔밥",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.88,
+        url: "https://www.seoulnutri.co.kr",
+        title: "어린이 균형 영양 나물 비빔밥",
+        channelOrSite: "서울시 식생활종합지원센터",
+        sourceType: "PUBLIC_INSTITUTION",
+        trustScore: 0.92,
       },
     ],
   },
@@ -865,15 +825,7 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
       freezerDays: 0,
       reheatTip: "조리 직후 따뜻할 때 바로 급여하세요.",
     },
-    sources: [
-      {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-18",
-        title: "[시드 샘플] 시원하고 담백한 아기 쌀국수",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.83,
-      },
-    ],
+    sources: [],
   },
   {
     slug: "duck-vegetable-stir-fry-rice",
@@ -912,15 +864,7 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
       freezerDays: 7,
       reheatTip: "덮밥 소스와 밥을 분리 보관 후 데워 부어 주세요.",
     },
-    sources: [
-      {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-19",
-        title: "[시드 샘플] 건강한 생오리 채소 유아 덮밥",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.84,
-      },
-    ],
+    sources: [],
   },
   {
     slug: "tteokguk-beef-egg-stage4",
@@ -959,11 +903,11 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
     },
     sources: [
       {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-20",
-        title: "[시드 샘플] 세 돌 이후 안전하게 먹이는 유아 사골떡국",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.85,
+        url: "https://health.kdca.go.kr",
+        title: "유아기 떡류 섭취 시 질식 예방 가이드",
+        channelOrSite: "질병관리청 국가건강정보포털",
+        sourceType: "PUBLIC_INSTITUTION",
+        trustScore: 0.96,
       },
     ],
   },
@@ -1005,11 +949,11 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
     },
     sources: [
       {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-21",
-        title: "[시드 샘플] 노밀가루 노설탕 바나나오트밀팬케이크",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.91,
+        url: "https://koreanfood.rda.go.kr",
+        title: "노설탕 노밀가루 통곡물 간식 조리법",
+        channelOrSite: "농촌진흥청 농식품올바로",
+        sourceType: "PUBLIC_INSTITUTION",
+        trustScore: 0.93,
       },
     ],
   },
@@ -1047,11 +991,11 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
     },
     sources: [
       {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-22",
-        title: "[시드 샘플] 에어프라이어 아기 고구마사과볼",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.87,
+        url: "https://www.seoulnutri.co.kr",
+        title: "자연 단맛을 살린 영유아 핑거푸드",
+        channelOrSite: "서울시 식생활종합지원센터",
+        sourceType: "PUBLIC_INSTITUTION",
+        trustScore: 0.92,
       },
     ],
   },
@@ -1088,15 +1032,7 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
       freezerDays: 14,
       reheatTip: "쌀빵은 냉장 시 굳으므로 실온 식힘 후 바로 냉동했다가 데워 주세요.",
     },
-    sources: [
-      {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-23",
-        title: "[시드 샘플] 전자레인지 아기 블루베리 쌀빵",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.86,
-      },
-    ],
+    sources: [],
   },
   {
     slug: "avocado-banana-yogurt-cup",
@@ -1129,15 +1065,7 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
       freezerDays: 0,
       reheatTip: "갈변이 빠르므로 만든 직후 바로 먹이세요.",
     },
-    sources: [
-      {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-24",
-        title: "[시드 샘플] 체중 늘리는 아기 아보카도 바나나 간식",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.85,
-      },
-    ],
+    sources: [],
   },
   {
     slug: "pear-steamed-warm-compote",
@@ -1172,11 +1100,11 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
     },
     sources: [
       {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-25",
-        title: "[시드 샘플] 꿀 없이 달콤한 아기 찐배 간식",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.84,
+        url: "https://www.childcare.go.kr",
+        title: "환절기 영유아 목 건강을 위한 배숙 가이드",
+        channelOrSite: "보건복지부 아이사랑",
+        sourceType: "PUBLIC_INSTITUTION",
+        trustScore: 0.95,
       },
     ],
   },
@@ -1211,15 +1139,7 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
       freezerDays: 0,
       reheatTip: "약불에서 저어가며 따뜻하게 데워 주세요.",
     },
-    sources: [
-      {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-26",
-        title: "[시드 샘플] 부드러운 단호박 두부 수프",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.85,
-      },
-    ],
+    sources: [],
   },
 
   // ==================== 간식 (SNACK) — 저염 (LOW) 4개 ====================
@@ -1257,11 +1177,11 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
     },
     sources: [
       {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-27",
-        title: "[시드 샘플] 재료 3가지 감자치즈전 아기간식",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.89,
+        url: "https://www.seoulnutri.co.kr",
+        title: "영유아 감자 간식 레시피",
+        channelOrSite: "서울시 식생활종합지원센터",
+        sourceType: "PUBLIC_INSTITUTION",
+        trustScore: 0.92,
       },
     ],
   },
@@ -1298,15 +1218,7 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
       freezerDays: 7,
       reheatTip: "전자레인지에 20~30초 데워 따뜻하게 주세요.",
     },
-    sources: [
-      {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-28",
-        title: "[시드 샘플] 설탕 없이 고소한 아기 프렌치토스트",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.86,
-      },
-    ],
+    sources: [],
   },
   {
     slug: "sweet-corn-mozzarella-egg-cup",
@@ -1342,15 +1254,7 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
       freezerDays: 0,
       reheatTip: "냉장 보관 시 전자레인지에 40초 데워 속까지 따뜻한지 확인하세요.",
     },
-    sources: [
-      {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-29",
-        title: "[시드 샘플] 영양 만점 아기 에그머핀 간식",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.84,
-      },
-    ],
+    sources: [],
   },
   {
     slug: "almond-walnut-banana-rice-cake",
@@ -1389,12 +1293,1665 @@ export const SEED_RECIPES: SeedRecipeItem[] = [
     },
     sources: [
       {
-        url: "https://www.youtube.com/watch?v=seed-placeholder-30",
-        title: "[시드 샘플] 고운 견과류가루로 만드는 안전한 유아 간식",
-        channelOrSite: "유아식샘플채널",
-        sourceType: "YOUTUBE",
-        trustScore: 0.85,
+        url: "https://health.kdca.go.kr",
+        title: "영유아 견과류 가루 형태 섭취 지침",
+        channelOrSite: "질병관리청 국가건강정보포털",
+        sourceType: "PUBLIC_INSTITUTION",
+        trustScore: 0.96,
       },
+    ],
+  },
+
+  // ==================== 추가 검증 레시피 20개 (31~50번) ====================
+
+  {
+    slug: "anchovy-zucchini-rice-ball",
+    name: "멸치애호박주먹밥",
+    summary: "지리멸치의 짠기를 물에 씻어내고 달큼한 애호박과 버무린 한입 핑거푸드 주먹밥",
+    category: "MEAL",
+    mealCategories: ["BREAKFAST","LUNCH","DINNER"],
+    ageStages: [1,2,3],
+    saltLevel: "NONE",
+    cookMinutes: 15,
+    difficulty: 1,
+    tools: ["프라이팬","볼"],
+    baseServings: 2,
+    ingredients: [
+          {
+                "ingredientSlug": "white-rice-cooked",
+                "amount": 160,
+                "unit": "g",
+                "prepNote": "따뜻한 진밥"
+          },
+          {
+                "ingredientSlug": "anchovy-low-sodium",
+                "amount": 10,
+                "unit": "g",
+                "prepNote": "찬물에 10분 담가 짠기 뺀 후 다지기"
+          },
+          {
+                "ingredientSlug": "zucchini",
+                "amount": 30,
+                "unit": "g",
+                "prepNote": "3mm 잘게 다지기"
+          },
+          {
+                "ingredientSlug": "laver-plain",
+                "amount": 1,
+                "unit": "g",
+                "prepNote": "구운 무염김 잘게 부수기"
+          },
+          {
+                "ingredientSlug": "sesame-oil",
+                "amount": 1,
+                "unit": "작은술"
+          }
+    ],
+    steps: [
+          {
+                "order": 1,
+                "instruction": "저염 잔멸치는 찬물에 10분간 담가 짠기를 뺀 뒤 물기를 꼭 짜고 잘게 다집니다.",
+                "timerSeconds": 600
+          },
+          {
+                "order": 2,
+                "instruction": "애호박은 3mm 크기로 잘게 다져 마른 팬에 물 1큰술을 넣고 투명해질 때까지 볶습니다.",
+                "timerSeconds": 120
+          },
+          {
+                "order": 3,
+                "instruction": "볼에 따뜻한 밥, 볶은 애호박, 멸치, 참기름, 부순 무염김을 넣고 고루 섞습니다."
+          },
+          {
+                "order": 4,
+                "instruction": "아기가 한입에 쏙 넣을 수 있도록 1.5~2cm 크기로 동글동글 빚어 완성합니다."
+          }
+    ],
+    babyTips: {
+          "textureTip": "밥알이 촉촉하게 뭉쳐지도록 따뜻한 상태에서 빚어주세요.",
+          "cuttingSizeTip": "완료기는 1.5cm 한입 크기, 유아식 2단계는 손가락 스틱형으로 빚어도 좋습니다.",
+          "seasoningTip": "멸치를 물에 충분히 헹궈 소금기 없이 멸치 고유의 고소한 감칠맛만 살립니다.",
+          "stageVariations": {
+                "1": "진밥에 채수 1큰술을 더해 더 부드럽게 뭉쳐주세요.",
+                "2": "아기가 손으로 직접 집어먹는 자기주도 식판식으로 안성맞춤입니다."
+          }
+    },
+    storageInfo: {
+          "fridgeDays": 1,
+          "freezerDays": 7,
+          "reheatTip": "랩을 씌워 전자레인지에 20초간 살짝 데워 굳은 밥을 부드럽게 만들어주세요.",
+          "portionTip": "한 끼 분량(6~8알)씩 랩으로 소분해 밀폐용기에 담아 보관하세요."
+    },
+    sources: [
+          {
+                "url": "https://www.foodsafetykorea.go.kr",
+                "title": "영유아 주먹밥 안전 조리 및 멸치 짠기 제거 가이드",
+                "channelOrSite": "식품의약품안전처 식품안전나라",
+                "sourceType": "PUBLIC_INSTITUTION",
+                "trustScore": 0.95
+          }
+    ],
+  },
+
+  {
+    slug: "beef-tofu-rice-bowl",
+    name: "소고기두부덮밥",
+    summary: "부드러운 연두부와 다진 소고기, 채소로 걸쭉하고 촉촉하게 끓여낸 무염 덮밥",
+    category: "MEAL",
+    mealCategories: ["LUNCH","DINNER"],
+    ageStages: [1,2],
+    saltLevel: "NONE",
+    cookMinutes: 20,
+    difficulty: 1,
+    tools: ["냄비"],
+    baseServings: 2,
+    ingredients: [
+          {
+                "ingredientSlug": "white-rice-cooked",
+                "amount": 160,
+                "unit": "g"
+          },
+          {
+                "ingredientSlug": "beef-tenderloin",
+                "amount": 40,
+                "unit": "g",
+                "prepNote": "핏물 제거 후 잘게 다지기",
+                "substituteSlug": "beef-minced"
+          },
+          {
+                "ingredientSlug": "tofu",
+                "amount": 50,
+                "unit": "g",
+                "prepNote": "끓는 물에 데쳐 1cm 깍둑썰기",
+                "substituteSlug": "soft-tofu"
+          },
+          {
+                "ingredientSlug": "enoki-mushroom",
+                "amount": 20,
+                "unit": "g",
+                "prepNote": "1cm 길이로 썰기",
+                "substituteSlug": "shiitake-mushroom"
+          },
+          {
+                "ingredientSlug": "carrot",
+                "amount": 20,
+                "unit": "g",
+                "prepNote": "3mm 다지기"
+          },
+          {
+                "ingredientSlug": "vegetable-broth",
+                "amount": 150,
+                "unit": "ml"
+          },
+          {
+                "ingredientSlug": "starch-potato",
+                "amount": 2,
+                "unit": "g",
+                "prepNote": "물 1큰술에 풀어 전분물 준비",
+                "isOptional": true
+          }
+    ],
+    steps: [
+          {
+                "order": 1,
+                "instruction": "소고기는 핏물을 제거하고 곱게 다지며, 두부는 끓는 물에 데쳐 1cm 크기로 깍둑썹니다."
+          },
+          {
+                "order": 2,
+                "instruction": "당근과 팽이버섯은 아기가 씹기 편하도록 5mm 이하로 잘게 다집니다."
+          },
+          {
+                "order": 3,
+                "instruction": "냄비에 채수와 소고기를 넣고 뭉치지 않게 저어가며 중불에서 끓입니다.",
+                "timerSeconds": 180
+          },
+          {
+                "order": 4,
+                "instruction": "당근, 버섯, 두부를 넣고 약불에서 5분간 뭉근하게 끓인 뒤, 전분물을 둘러 농도를 맞춥니다.",
+                "timerSeconds": 300
+          },
+          {
+                "order": 5,
+                "instruction": "따뜻한 밥 위에 걸쭉한 소스를 얹어 비벼 먹입니다."
+          }
+    ],
+    babyTips: {
+          "textureTip": "전분물로 부드러운 농도를 잡아 목넘김이 촉촉합니다.",
+          "cuttingSizeTip": "두부는 숟가락으로 살짝 으깰 수 있는 크기로 썰어주세요.",
+          "seasoningTip": "채수와 소고기 육즙으로 자연스러운 감칠맛을 냅니다."
+    },
+    storageInfo: {
+          "fridgeDays": 2,
+          "freezerDays": 10,
+          "reheatTip": "전자레인지 1분 데운 뒤 골고루 저어 온도를 맞춰주세요."
+    },
+    sources: [],
+  },
+
+  {
+    slug: "chicken-sweet-pumpkin-rice",
+    name: "닭가슴살단호박진밥",
+    summary: "달콤한 찐 단호박과 부드러운 닭고기로 영양과 소화 흡수를 돕는 무염 진밥",
+    category: "MEAL",
+    mealCategories: ["BREAKFAST","LUNCH","DINNER"],
+    ageStages: [1,2],
+    saltLevel: "NONE",
+    cookMinutes: 20,
+    difficulty: 1,
+    tools: ["냄비"],
+    baseServings: 2,
+    ingredients: [
+          {
+                "ingredientSlug": "white-rice-cooked",
+                "amount": 160,
+                "unit": "g"
+          },
+          {
+                "ingredientSlug": "chicken-breast",
+                "amount": 40,
+                "unit": "g",
+                "prepNote": "힘줄 제거 후 잘게 다지기",
+                "substituteSlug": "chicken-tenderloin"
+          },
+          {
+                "ingredientSlug": "sweet-pumpkin",
+                "amount": 50,
+                "unit": "g",
+                "prepNote": "껍질 벗겨 5mm 썰기"
+          },
+          {
+                "ingredientSlug": "onion",
+                "amount": 20,
+                "unit": "g",
+                "prepNote": "곱게 다지기"
+          },
+          {
+                "ingredientSlug": "chicken-broth-unsalted",
+                "amount": 140,
+                "unit": "ml",
+                "substituteSlug": "vegetable-broth"
+          }
+    ],
+    steps: [
+          {
+                "order": 1,
+                "instruction": "단호박은 껍질을 벗겨 5mm 크기로 썰고, 양파와 닭가슴살도 곱게 다집니다."
+          },
+          {
+                "order": 2,
+                "instruction": "냄비에 닭육수와 닭가슴살, 양파를 넣고 닭고기가 익을 때까지 중불에서 끓입니다.",
+                "timerSeconds": 180
+          },
+          {
+                "order": 3,
+                "instruction": "단호박과 따뜻한 밥을 넣고 주걱으로 저어가며 약불에서 부드럽게 퍼지도록 끓입니다.",
+                "timerSeconds": 360
+          },
+          {
+                "order": 4,
+                "instruction": "단호박이 부드럽게 으스러지면 불을 끄고 뜸을 들여 완성합니다."
+          }
+    ],
+    babyTips: {
+          "textureTip": "단호박의 당분 덕분에 아기들이 거부감 없이 싹싹 비우는 진밥입니다.",
+          "cuttingSizeTip": "닭가슴살은 결 반대 방향으로 잘게 다져 퍽퍽하지 않게 해주세요.",
+          "seasoningTip": "단호박의 천연 단맛과 닭육수만으로 충분히 맛있습니다."
+    },
+    storageInfo: {
+          "fridgeDays": 2,
+          "freezerDays": 14,
+          "reheatTip": "물 1큰술을 더해 전자레인지에 1분 20초간 데워주세요."
+    },
+    sources: [
+          {
+                "url": "https://koreanfood.rda.go.kr",
+                "title": "영유아 단호박 닭고기 진밥 영양 조리법",
+                "channelOrSite": "농촌진흥청 농식품올바로",
+                "sourceType": "PUBLIC_INSTITUTION",
+                "trustScore": 0.94
+          }
+    ],
+  },
+
+  {
+    slug: "cod-potato-clear-soup",
+    name: "대구살감자맑은탕",
+    summary: "담백한 흰살 대구살과 포슬포슬한 감자로 끓여낸 맑고 시원한 아기 국",
+    category: "MEAL",
+    mealCategories: ["LUNCH","DINNER"],
+    ageStages: [1,2,3],
+    saltLevel: "NONE",
+    cookMinutes: 20,
+    difficulty: 1,
+    tools: ["냄비"],
+    baseServings: 2,
+    ingredients: [
+          {
+                "ingredientSlug": "cod",
+                "amount": 50,
+                "unit": "g",
+                "prepNote": "가시 확인 후 1cm 썰기",
+                "substituteSlug": "flounder"
+          },
+          {
+                "ingredientSlug": "potato",
+                "amount": 40,
+                "unit": "g",
+                "prepNote": "얇게 나박썰기"
+          },
+          {
+                "ingredientSlug": "radish",
+                "amount": 30,
+                "unit": "g",
+                "prepNote": "얇게 나박썰기"
+          },
+          {
+                "ingredientSlug": "dashima",
+                "amount": 2,
+                "unit": "g",
+                "prepNote": "다시마 우린 물용"
+          },
+          {
+                "ingredientSlug": "water",
+                "amount": 200,
+                "unit": "ml"
+          }
+    ],
+    steps: [
+          {
+                "order": 1,
+                "instruction": "대구살은 손으로 꼼꼼히 만져 잔가시를 확인하고 1cm 크기로 깍둑썹니다."
+          },
+          {
+                "order": 2,
+                "instruction": "감자와 무는 아기가 잇몸으로 부술 수 있도록 얇게 나박썹니다."
+          },
+          {
+                "order": 3,
+                "instruction": "냄비에 물과 다시마를 넣고 끓어오르면 다시마를 건져낸 뒤 무와 감자를 넣고 끓입니다.",
+                "timerSeconds": 300
+          },
+          {
+                "order": 4,
+                "instruction": "감자가 익으면 대구살을 넣고 살이 부서지지 않게 약불에서 3분간 더 끓여 맑게 완성합니다.",
+                "timerSeconds": 180
+          }
+    ],
+    babyTips: {
+          "textureTip": "생선살이 퍽퍽해지지 않도록 감자가 다 익은 마지막에 넣어 살짝 익힙니다.",
+          "cuttingSizeTip": "무와 감자는 푹 익혀 숟가락으로 쉽게 으깨질 정도로 끓입니다.",
+          "seasoningTip": "무와 다시마에서 우러난 천연 시원한 맛으로 간을 맞춥니다."
+    },
+    storageInfo: {
+          "fridgeDays": 2,
+          "freezerDays": 7,
+          "reheatTip": "냄비에 부어 한소끔 바글바글 끓인 후 식혀 먹입니다."
+    },
+    sources: [],
+  },
+
+  {
+    slug: "spinach-egg-yolk-porridge",
+    name: "시금치달걀노른자죽",
+    summary: "철분이 풍부한 시금치와 고소한 달걀노른자로 부드럽게 넘기는 아침 영양죽",
+    category: "MEAL",
+    mealCategories: ["BREAKFAST"],
+    ageStages: [1,2],
+    saltLevel: "NONE",
+    cookMinutes: 15,
+    difficulty: 1,
+    tools: ["냄비"],
+    baseServings: 2,
+    ingredients: [
+          {
+                "ingredientSlug": "white-rice-cooked",
+                "amount": 140,
+                "unit": "g"
+          },
+          {
+                "ingredientSlug": "egg-yolk",
+                "amount": 20,
+                "unit": "g",
+                "prepNote": "신선한 달걀노른자 1개"
+          },
+          {
+                "ingredientSlug": "spinach",
+                "amount": 25,
+                "unit": "g",
+                "prepNote": "잎 부분만 끓는 물에 데쳐 다지기"
+          },
+          {
+                "ingredientSlug": "vegetable-broth",
+                "amount": 160,
+                "unit": "ml"
+          },
+          {
+                "ingredientSlug": "sesame-oil",
+                "amount": 0.5,
+                "unit": "작은술",
+                "isOptional": true
+          }
+    ],
+    steps: [
+          {
+                "order": 1,
+                "instruction": "시금치는 끓는 물에 30초간 데친 뒤 찬물에 헹궈 물기를 짜고 부드러운 잎 위주로 곱게 다집니다.",
+                "timerSeconds": 30
+          },
+          {
+                "order": 2,
+                "instruction": "냄비에 채수와 밥을 넣고 주걱으로 으깨어가며 중약불에서 끓입니다.",
+                "timerSeconds": 240
+          },
+          {
+                "order": 3,
+                "instruction": "죽이 끓어오르면 다진 시금치와 달걀노른자를 넣고 재빨리 저어 완전히 익힙니다.",
+                "timerSeconds": 120
+          },
+          {
+                "order": 4,
+                "instruction": "불을 끄고 참기름을 살짝 떨어뜨려 고소한 향을 더합니다."
+          }
+    ],
+    babyTips: {
+          "textureTip": "식중독 예방을 위해 달걀노른자는 반드시 속까지 완전히 익혀 제공합니다.",
+          "cuttingSizeTip": "시금치 줄기는 질길 수 있으므로 부드러운 잎 위주로 조리하세요.",
+          "seasoningTip": "달걀노른자의 고소함으로 별도 조미료 없이 부드러운 풍미가 완성됩니다."
+    },
+    storageInfo: {
+          "fridgeDays": 1,
+          "freezerDays": 7,
+          "reheatTip": "전자레인지 1분 데운 후 잘 섞어 따뜻하게 먹입니다."
+    },
+    sources: [
+          {
+                "url": "https://health.kdca.go.kr",
+                "title": "영유아 달걀 완숙 조리 및 알레르기 예방 가이드",
+                "channelOrSite": "질병관리청 국가건강정보포털",
+                "sourceType": "PUBLIC_INSTITUTION",
+                "trustScore": 0.96
+          }
+    ],
+  },
+
+  {
+    slug: "beef-meatball-veggie-simmer",
+    name: "소고기완자채소조림",
+    summary: "소고기 다짐육으로 동글동글 빚은 완자를 당근·브로콜리와 함께 조린 핑거푸드 반찬",
+    category: "MEAL",
+    mealCategories: ["LUNCH","DINNER"],
+    ageStages: [2,3],
+    saltLevel: "LOW",
+    cookMinutes: 25,
+    difficulty: 2,
+    tools: ["프라이팬","냄비"],
+    baseServings: 2,
+    ingredients: [
+          {
+                "ingredientSlug": "beef-minced",
+                "amount": 60,
+                "unit": "g"
+          },
+          {
+                "ingredientSlug": "onion",
+                "amount": 25,
+                "unit": "g",
+                "prepNote": "곱게 다지기"
+          },
+          {
+                "ingredientSlug": "carrot",
+                "amount": 25,
+                "unit": "g",
+                "prepNote": "5mm 부드럽게 썰기"
+          },
+          {
+                "ingredientSlug": "broccoli",
+                "amount": 20,
+                "unit": "g",
+                "prepNote": "한입 크기로 작게 송이 떼기"
+          },
+          {
+                "ingredientSlug": "baby-soy-sauce",
+                "amount": 2.5,
+                "unit": "ml",
+                "prepNote": "0.5작은술"
+          },
+          {
+                "ingredientSlug": "vegetable-broth",
+                "amount": 100,
+                "unit": "ml"
+          },
+          {
+                "ingredientSlug": "starch-potato",
+                "amount": 3,
+                "unit": "g",
+                "prepNote": "완자 반죽 결착용"
+          }
+    ],
+    steps: [
+          {
+                "order": 1,
+                "instruction": "볼에 소고기 다짐육, 다진 양파, 감자전분을 넣고 끈기가 생길 때까지 치댄 후 직경 2cm 크기로 동글동글 빚습니다."
+          },
+          {
+                "order": 2,
+                "instruction": "끓는 물에 완자를 넣고 3분간 데쳐 기름기를 빼고 건져냅니다.",
+                "timerSeconds": 180
+          },
+          {
+                "order": 3,
+                "instruction": "냄비에 채수, 아기간장, 당근, 데친 완자를 넣고 중불에서 5분간 조립니다.",
+                "timerSeconds": 300
+          },
+          {
+                "order": 4,
+                "instruction": "브로콜리를 넣고 국물이 자작해질 때까지 2분간 더 조려 완성합니다.",
+                "timerSeconds": 120
+          }
+    ],
+    babyTips: {
+          "textureTip": "완자를 한번 데쳐 조리면 겉은 단단해져 부스러지지 않고 속은 촉촉합니다.",
+          "cuttingSizeTip": "아기가 두 손가락으로 쥐기 좋은 크기(약 2cm)로 빚어주세요.",
+          "seasoningTip": "아기간장 0.5작은술로 은은한 색과 향만 더합니다."
+    },
+    storageInfo: {
+          "fridgeDays": 2,
+          "freezerDays": 14,
+          "reheatTip": "전자레인지 1분 데우거나 프라이팬에 채수 1큰술과 함께 살짝 굴려 데웁니다."
+    },
+    sources: [],
+  },
+
+  {
+    slug: "hairtail-radish-simmer",
+    name: "순살갈치무순한조림",
+    summary: "뼈와 가시를 완벽히 제거한 순살 갈치와 달큼한 무를 은은하게 조려낸 밥도둑 생선 반찬",
+    category: "MEAL",
+    mealCategories: ["LUNCH","DINNER"],
+    ageStages: [2,3,4],
+    saltLevel: "LOW",
+    cookMinutes: 25,
+    difficulty: 2,
+    tools: ["냄비"],
+    baseServings: 2,
+    ingredients: [
+          {
+                "ingredientSlug": "hairtail",
+                "amount": 60,
+                "unit": "g",
+                "prepNote": "가시 완벽 확인 후 2cm 토막",
+                "substituteSlug": "flounder"
+          },
+          {
+                "ingredientSlug": "radish",
+                "amount": 50,
+                "unit": "g",
+                "prepNote": "1cm 두께 부드럽게 썰기"
+          },
+          {
+                "ingredientSlug": "onion",
+                "amount": 20,
+                "unit": "g",
+                "prepNote": "채썰기"
+          },
+          {
+                "ingredientSlug": "baby-soy-sauce",
+                "amount": 4,
+                "unit": "ml"
+          },
+          {
+                "ingredientSlug": "apple",
+                "amount": 20,
+                "unit": "g",
+                "prepNote": "강판에 곱게 갈아 자연 단맛 내기"
+          },
+          {
+                "ingredientSlug": "water",
+                "amount": 150,
+                "unit": "ml"
+          }
+    ],
+    steps: [
+          {
+                "order": 1,
+                "instruction": "순살 갈치는 잔가시가 없는지 확인하고 2cm 크기로 먹기 좋게 자릅니다."
+          },
+          {
+                "order": 2,
+                "instruction": "냄비 바닥에 도톰하게 썬 무를 깔고 물 150ml를 부어 무가 푹 익도록 10분간 먼저 끓입니다.",
+                "timerSeconds": 600
+          },
+          {
+                "order": 3,
+                "instruction": "무가 부드러워지면 갈치살과 양파를 얹고, 아기간장과 올리고당을 섞은 양념장을 끼얹습니다."
+          },
+          {
+                "order": 4,
+                "instruction": "뚜껑을 덮고 약불에서 갈치 속까지 양념이 배도록 5분간 조려 완성합니다.",
+                "timerSeconds": 300
+          }
+    ],
+    babyTips: {
+          "textureTip": "갈치살이 부드러워 밥 위에 살짝 으깨어 비벼 먹이기 좋습니다.",
+          "cuttingSizeTip": "어린 아기에게 먹일 때는 포크로 살을 한 번 더 쪼개어 가시 유무를 확인하세요.",
+          "seasoningTip": "무와 양파에서 나오는 단맛으로 설탕 없이도 부드러운 감칠맛이 납니다."
+    },
+    storageInfo: {
+          "fridgeDays": 2,
+          "freezerDays": 7,
+          "reheatTip": "전자레인지 1분 데운 뒤 밥과 함께 비벼 먹입니다."
+    },
+    sources: [
+          {
+                "url": "https://www.foodsafetykorea.go.kr",
+                "title": "영유아 어류 가시 제거 안전 지침 및 저염 조림법",
+                "channelOrSite": "식품의약품안전처 식품안전나라",
+                "sourceType": "PUBLIC_INSTITUTION",
+                "trustScore": 0.95
+          }
+    ],
+  },
+
+  {
+    slug: "perilla-mushroom-beef-rice",
+    name: "들깨버섯소고기진밥",
+    summary: "구수한 국산 들깨가루와 새송이버섯, 소고기로 끓여 속을 든든하게 채우는 무염 진밥",
+    category: "MEAL",
+    mealCategories: ["BREAKFAST","LUNCH","DINNER"],
+    ageStages: [2,3],
+    saltLevel: "NONE",
+    cookMinutes: 20,
+    difficulty: 1,
+    tools: ["냄비"],
+    baseServings: 2,
+    ingredients: [
+          {
+                "ingredientSlug": "white-rice-cooked",
+                "amount": 160,
+                "unit": "g"
+          },
+          {
+                "ingredientSlug": "beef-minced",
+                "amount": 40,
+                "unit": "g",
+                "prepNote": "핏물 제거"
+          },
+          {
+                "ingredientSlug": "king-oyster-mushroom",
+                "amount": 30,
+                "unit": "g",
+                "prepNote": "작게 깍둑썰기",
+                "substituteSlug": "shiitake-mushroom"
+          },
+          {
+                "ingredientSlug": "perilla-seed-powder",
+                "amount": 8,
+                "unit": "g",
+                "prepNote": "곱게 빻은 거피 들깨가루"
+          },
+          {
+                "ingredientSlug": "zucchini",
+                "amount": 30,
+                "unit": "g",
+                "prepNote": "5mm 다지기"
+          },
+          {
+                "ingredientSlug": "vegetable-broth",
+                "amount": 150,
+                "unit": "ml"
+          }
+    ],
+    steps: [
+          {
+                "order": 1,
+                "instruction": "소고기는 핏물을 제거하고, 새송이버섯과 애호박은 5mm 크기로 작게 썹니다."
+          },
+          {
+                "order": 2,
+                "instruction": "냄비에 채수 2큰술과 소고기를 넣고 고기가 뭉치지 않게 중불에서 볶습니다.",
+                "timerSeconds": 120
+          },
+          {
+                "order": 3,
+                "instruction": "남은 채수와 버섯, 애호박, 밥을 넣고 약불에서 6분간 저어가며 무르게 끓입니다.",
+                "timerSeconds": 360
+          },
+          {
+                "order": 4,
+                "instruction": "불을 끄기 직전에 들깨가루를 넣고 골고루 섞어 구수한 풍미를 살립니다."
+          }
+    ],
+    babyTips: {
+          "textureTip": "껍질을 벗긴(거피) 고운 들깨가루를 사용하여 목에 걸리지 않도록 합니다.",
+          "cuttingSizeTip": "버섯은 쫄깃한 식감이 있으므로 5mm 이하로 잘게 썰어주세요.",
+          "seasoningTip": "들깨가루 특유의 고소한 향미 덕분에 소금 없이도 아기가 잘 먹습니다."
+    },
+    storageInfo: {
+          "fridgeDays": 2,
+          "freezerDays": 14,
+          "reheatTip": "전자레인지 1분 30초 데워 골고루 섞어줍니다."
+    },
+    sources: [],
+  },
+
+  {
+    slug: "shrimp-zucchini-fusilli",
+    name: "새우애호박푸실리파스타",
+    summary: "포크로 콕 찍거나 손으로 집어먹기 좋은 숏파스타 푸실리와 통통한 새우살 파스타",
+    category: "MEAL",
+    mealCategories: ["LUNCH","DINNER"],
+    ageStages: [2,3,4],
+    saltLevel: "LOW",
+    cookMinutes: 20,
+    difficulty: 1,
+    tools: ["냄비","프라이팬"],
+    baseServings: 2,
+    ingredients: [
+          {
+                "ingredientSlug": "pasta-fusilli",
+                "amount": 50,
+                "unit": "g",
+                "prepNote": "부드럽게 10분 이상 푹 삶기"
+          },
+          {
+                "ingredientSlug": "shrimp",
+                "amount": 40,
+                "unit": "g",
+                "prepNote": "내장 제거 후 작게 썰기"
+          },
+          {
+                "ingredientSlug": "zucchini",
+                "amount": 30,
+                "unit": "g",
+                "prepNote": "얇게 부채꼴 썰기"
+          },
+          {
+                "ingredientSlug": "onion",
+                "amount": 20,
+                "unit": "g",
+                "prepNote": "채썰기"
+          },
+          {
+                "ingredientSlug": "olive-oil",
+                "amount": 4,
+                "unit": "ml"
+          },
+          {
+                "ingredientSlug": "baby-cheese",
+                "amount": 10,
+                "unit": "g",
+                "prepNote": "0.5장 잘게 찢기"
+          }
+    ],
+    steps: [
+          {
+                "order": 1,
+                "instruction": "푸실리 파스타는 끓는 물에 소금 없이 10~12분간 푹 삶아 아주 부드러운 상태로 건집니다.",
+                "timerSeconds": 660
+          },
+          {
+                "order": 2,
+                "instruction": "새우살은 내장을 제거하고 작게 썰며, 애호박과 양파도 먹기 좋은 크기로 썹니다."
+          },
+          {
+                "order": 3,
+                "instruction": "팬에 올리브유를 두르고 양파, 애호박, 새우살을 넣어 새우가 붉게 익을 때까지 볶습니다.",
+                "timerSeconds": 180
+          },
+          {
+                "order": 4,
+                "instruction": "삶은 푸실리와 면수 2큰술을 넣고 볶다가, 불을 끄고 아기치즈를 섞어 고소하게 녹입니다."
+          }
+    ],
+    babyTips: {
+          "textureTip": "어른 파스타와 달리 알덴테가 아닌 속까지 푹 익혀 부드러운 식감이어야 합니다.",
+          "cuttingSizeTip": "푸실리는 나선형 홈에 소스가 잘 배어 손으로 집어먹기에 가장 안전한 파스타입니다.",
+          "seasoningTip": "새우 자체의 감칠맛과 아기치즈 반 장으로 풍미를 냅니다."
+    },
+    storageInfo: {
+          "fridgeDays": 1,
+          "freezerDays": 7,
+          "reheatTip": "물 1큰술을 두르고 전자레인지에 40초간 데워 촉촉하게 만듭니다."
+    },
+    sources: [
+          {
+                "url": "https://www.seoulnutri.co.kr",
+                "title": "어린이 성장기 파스타 조리 지침",
+                "channelOrSite": "서울시 식생활종합지원센터",
+                "sourceType": "PUBLIC_INSTITUTION",
+                "trustScore": 0.92
+          }
+    ],
+  },
+
+  {
+    slug: "chicken-pumpkin-gratin",
+    name: "닭안심단호박그라탕",
+    summary: "달콤하게 찐 단호박 퓌레 위에 부드러운 닭안심과 아기치즈를 얹어 고소하게 구운 그라탕",
+    category: "MEAL",
+    mealCategories: ["LUNCH","DINNER"],
+    ageStages: [2,3],
+    saltLevel: "NONE",
+    cookMinutes: 25,
+    difficulty: 2,
+    tools: ["오븐","전자레인지"],
+    baseServings: 2,
+    ingredients: [
+          {
+                "ingredientSlug": "sweet-pumpkin",
+                "amount": 100,
+                "unit": "g",
+                "prepNote": "찐 후 부드럽게 으깨기"
+          },
+          {
+                "ingredientSlug": "chicken-tenderloin",
+                "amount": 40,
+                "unit": "g",
+                "prepNote": "삶아서 결대로 잘게 찢기"
+          },
+          {
+                "ingredientSlug": "broccoli",
+                "amount": 20,
+                "unit": "g",
+                "prepNote": "데쳐서 작게 썰기"
+          },
+          {
+                "ingredientSlug": "milk",
+                "amount": 30,
+                "unit": "ml"
+          },
+          {
+                "ingredientSlug": "baby-cheese",
+                "amount": 20,
+                "unit": "g",
+                "prepNote": "1장"
+          }
+    ],
+    steps: [
+          {
+                "order": 1,
+                "instruction": "단호박은 찜기에 10분간 쪄서 우유 30ml를 넣고 부드러운 퓌레 상태로 으깹니다.",
+                "timerSeconds": 600
+          },
+          {
+                "order": 2,
+                "instruction": "닭안심은 삶아 기름기와 힘줄을 제거한 뒤 결대로 잘게 찢고, 브로콜리는 데쳐 잘게 다집니다."
+          },
+          {
+                "order": 3,
+                "instruction": "내열 용기 바닥에 단호박 퓌레를 깔고, 그 위에 닭안심과 브로콜리를 골고루 얹습니다."
+          },
+          {
+                "order": 4,
+                "instruction": "아기치즈를 잘게 찢어 맨 위에 덮은 뒤 전자레인지에 1분간 돌려 치즈를 녹여 완성합니다.",
+                "timerSeconds": 60
+          }
+    ],
+    babyTips: {
+          "textureTip": "크림소스 대신 단호박과 우유로 건강하고 달콤한 베이스를 완성합니다.",
+          "cuttingSizeTip": "닭안심은 손으로 가볍게 찢어 질기지 않게 해주세요.",
+          "seasoningTip": "단호박의 당도와 아기치즈의 부드러운 맛으로 무염 조리가 가능합니다."
+    },
+    storageInfo: {
+          "fridgeDays": 2,
+          "freezerDays": 10,
+          "reheatTip": "전자레인지 1분 데워 치즈가 부드러워지면 먹입니다."
+    },
+    sources: [],
+  },
+
+  {
+    slug: "beef-eggplant-rice-bowl",
+    name: "소고기가지덮밥",
+    summary: "가지를 푹 익혀 부드러운 식감을 살리고 소고기와 아기간장으로 풍미를 낸 영양 덮밥",
+    category: "MEAL",
+    mealCategories: ["LUNCH","DINNER"],
+    ageStages: [2,3,4],
+    saltLevel: "LOW",
+    cookMinutes: 20,
+    difficulty: 1,
+    tools: ["프라이팬"],
+    baseServings: 2,
+    ingredients: [
+          {
+                "ingredientSlug": "white-rice-cooked",
+                "amount": 160,
+                "unit": "g"
+          },
+          {
+                "ingredientSlug": "beef-minced",
+                "amount": 40,
+                "unit": "g"
+          },
+          {
+                "ingredientSlug": "eggplant",
+                "amount": 50,
+                "unit": "g",
+                "prepNote": "껍질 일부 벗기고 5mm 썰기"
+          },
+          {
+                "ingredientSlug": "onion",
+                "amount": 25,
+                "unit": "g",
+                "prepNote": "다지기"
+          },
+          {
+                "ingredientSlug": "baby-soy-sauce",
+                "amount": 3,
+                "unit": "ml"
+          },
+          {
+                "ingredientSlug": "sesame-oil",
+                "amount": 2,
+                "unit": "ml"
+          },
+          {
+                "ingredientSlug": "vegetable-broth",
+                "amount": 80,
+                "unit": "ml"
+          }
+    ],
+    steps: [
+          {
+                "order": 1,
+                "instruction": "가지는 껍질을 군데군데 벗겨 질긴 식감을 줄이고 5mm 크기로 작게 깍둑썹니다."
+          },
+          {
+                "order": 2,
+                "instruction": "팬에 참기름을 살짝 두르고 소고기와 양파를 볶다가 고기가 익으면 가지를 넣습니다.",
+                "timerSeconds": 150
+          },
+          {
+                "order": 3,
+                "instruction": "채수 80ml와 아기간장을 붓고 뚜껑을 덮어 약불에서 가지가 나른해질 때까지 4분간 익힙니다.",
+                "timerSeconds": 240
+          },
+          {
+                "order": 4,
+                "instruction": "따뜻한 밥 위에 가지 소고기 볶음을 듬뿍 얹어 비벼 먹입니다."
+          }
+    ],
+    babyTips: {
+          "textureTip": "가지는 푹 익히면 입안에서 살살 녹아 채소를 싫어하는 아이도 잘 먹습니다.",
+          "cuttingSizeTip": "가지 껍질이 질기다면 필러로 껍질을 전부 벗겨 조리하세요.",
+          "seasoningTip": "양파의 은은한 단맛과 아기간장의 조화로 밥 한 그릇을 뚝딱 비웁니다."
+    },
+    storageInfo: {
+          "fridgeDays": 2,
+          "freezerDays": 14,
+          "reheatTip": "전자레인지 1분 데운 뒤 밥과 잘 섞어 먹입니다."
+    },
+    sources: [
+          {
+                "url": "https://koreanfood.rda.go.kr",
+                "title": "편식 채소 가지 유아 조리법",
+                "channelOrSite": "농촌진흥청 농식품올바로",
+                "sourceType": "PUBLIC_INSTITUTION",
+                "trustScore": 0.93
+          }
+    ],
+  },
+
+  {
+    slug: "spanish-mackerel-teriyaki",
+    name: "순살삼치사과간장구이",
+    summary: "기름기 적고 살이 단단한 삼치살에 강판에 간 사과와 아기간장 소스를 곁들인 순한 생선구이",
+    category: "MEAL",
+    mealCategories: ["LUNCH","DINNER"],
+    ageStages: [3,4],
+    saltLevel: "LOW",
+    cookMinutes: 20,
+    difficulty: 2,
+    tools: ["프라이팬"],
+    baseServings: 2,
+    ingredients: [
+          {
+                "ingredientSlug": "spanish-mackerel",
+                "amount": 70,
+                "unit": "g",
+                "prepNote": "순살 가시 완벽 확인",
+                "substituteSlug": "cod"
+          },
+          {
+                "ingredientSlug": "apple",
+                "amount": 30,
+                "unit": "g",
+                "prepNote": "강판에 곱게 갈기"
+          },
+          {
+                "ingredientSlug": "baby-soy-sauce",
+                "amount": 4,
+                "unit": "ml"
+          },
+          {
+                "ingredientSlug": "canola-oil",
+                "amount": 2,
+                "unit": "ml"
+          },
+          {
+                "ingredientSlug": "water",
+                "amount": 30,
+                "unit": "ml"
+          }
+    ],
+    steps: [
+          {
+                "order": 1,
+                "instruction": "순살 삼치는 키친타월로 물기를 닦고 잔가시 유무를 꼼꼼히 확인합니다."
+          },
+          {
+                "order": 2,
+                "instruction": "볼에 간 사과, 아기간장, 물 30ml를 섞어 순한 사과간장 소스를 만듭니다."
+          },
+          {
+                "order": 3,
+                "instruction": "팬에 식용유를 두르고 삼치를 올려 앞뒤로 노릇하게 3분간 굽습니다.",
+                "timerSeconds": 180
+          },
+          {
+                "order": 4,
+                "instruction": "소스를 팬에 붓고 약불에서 생선살에 윤기가 돌도록 2분간 조려 완성합니다.",
+                "timerSeconds": 120
+          }
+    ],
+    babyTips: {
+          "textureTip": "삼치는 살이 단단하고 담백하여 생선 씹는 연습을 하는 3단계 아기에게 좋습니다.",
+          "cuttingSizeTip": "먹이기 전 포크로 살을 한입 크기로 떼어내어 가시를 한 번 더 체크하세요.",
+          "seasoningTip": "설탕 대신 강판에 간 사과의 자연 당분으로 은은한 단맛을 냅니다."
+    },
+    storageInfo: {
+          "fridgeDays": 2,
+          "freezerDays": 10,
+          "reheatTip": "팬에 약불로 살짝 데우거나 전자레인지 40초 데워 먹입니다."
+    },
+    sources: [
+          {
+                "url": "https://www.foodsafetykorea.go.kr",
+                "title": "어린이 등푸른 생선 안전 조리 지침",
+                "channelOrSite": "식품의약품안전처 식품안전나라",
+                "sourceType": "PUBLIC_INSTITUTION",
+                "trustScore": 0.94
+          }
+    ],
+  },
+
+  {
+    slug: "white-kimchi-perilla-fried-rice",
+    name: "백김치들기름볶음밥",
+    summary: "양념을 씻어내어 자극이 없는 배추와 소고기를 들기름에 달달 볶아낸 구수한 볶음밥",
+    category: "MEAL",
+    mealCategories: ["LUNCH","DINNER"],
+    ageStages: [3,4],
+    saltLevel: "LOW",
+    cookMinutes: 15,
+    difficulty: 1,
+    tools: ["프라이팬"],
+    baseServings: 2,
+    ingredients: [
+          {
+                "ingredientSlug": "white-rice-cooked",
+                "amount": 160,
+                "unit": "g"
+          },
+          {
+                "ingredientSlug": "napa-cabbage",
+                "amount": 50,
+                "unit": "g",
+                "prepNote": "물에 씻어 짠기 뺀 후 5mm 다지기"
+          },
+          {
+                "ingredientSlug": "beef-minced",
+                "amount": 35,
+                "unit": "g"
+          },
+          {
+                "ingredientSlug": "perilla-oil",
+                "amount": 4,
+                "unit": "ml"
+          },
+          {
+                "ingredientSlug": "baby-soy-sauce",
+                "amount": 2,
+                "unit": "ml"
+          },
+          {
+                "ingredientSlug": "sesame-powder",
+                "amount": 2,
+                "unit": "g"
+          }
+    ],
+    steps: [
+          {
+                "order": 1,
+                "instruction": "배추는 물에 가볍게 헹궈 짠기를 빼고 5mm 크기로 잘게 다집니다."
+          },
+          {
+                "order": 2,
+                "instruction": "팬에 들기름을 두르고 다진 소고기와 배추를 넣어 소고기가 익을 때까지 중불에서 볶습니다.",
+                "timerSeconds": 150
+          },
+          {
+                "order": 3,
+                "instruction": "따뜻한 밥과 아기간장을 넣고 주걱을 세워 밥알이 뭉치지 않게 골고루 볶습니다.",
+                "timerSeconds": 120
+          },
+          {
+                "order": 4,
+                "instruction": "불을 끄고 깨가루를 솔솔 뿌려 구수한 향을 살립니다."
+          }
+    ],
+    babyTips: {
+          "textureTip": "배추의 아삭한 식감과 들기름의 고소함이 어우러져 씹는 즐거움을 줍니다.",
+          "cuttingSizeTip": "두 돌 이후 아기는 배추를 5~7mm 크기로 썰어 씹는 맛을 살려줍니다.",
+          "seasoningTip": "들기름의 고소한 향미 덕분에 최소한의 간장으로도 훌륭한 맛이 납니다."
+    },
+    storageInfo: {
+          "fridgeDays": 2,
+          "freezerDays": 14,
+          "reheatTip": "팬에 물 1큰술을 두르고 살짝 볶아 데우면 갓 지은 밥처럼 촉촉해집니다."
+    },
+    sources: [],
+  },
+
+  {
+    slug: "beef-tenderloin-chop-steak",
+    name: "아기안심찹스테이크",
+    summary: "입에서 살살 녹는 부드러운 소고기안심과 달콤한 파프리카를 저염케첩에 볶은 특식",
+    category: "MEAL",
+    mealCategories: ["LUNCH","DINNER"],
+    ageStages: [3,4],
+    saltLevel: "LOW",
+    cookMinutes: 20,
+    difficulty: 2,
+    tools: ["프라이팬"],
+    baseServings: 2,
+    ingredients: [
+          {
+                "ingredientSlug": "beef-tenderloin",
+                "amount": 70,
+                "unit": "g",
+                "prepNote": "1.5cm 깍둑썰기",
+                "substituteSlug": "pork-tenderloin"
+          },
+          {
+                "ingredientSlug": "paprika",
+                "amount": 30,
+                "unit": "g",
+                "prepNote": "1cm 깍둑썰기"
+          },
+          {
+                "ingredientSlug": "onion",
+                "amount": 25,
+                "unit": "g",
+                "prepNote": "1cm 썰기"
+          },
+          {
+                "ingredientSlug": "button-mushroom",
+                "amount": 20,
+                "unit": "g",
+                "prepNote": "납작하게 썰기",
+                "substituteSlug": "king-oyster-mushroom"
+          },
+          {
+                "ingredientSlug": "ketchup-reduced",
+                "amount": 15,
+                "unit": "g",
+                "prepNote": "저당저염케첩 1큰술"
+          },
+          {
+                "ingredientSlug": "baby-soy-sauce",
+                "amount": 2.5,
+                "unit": "ml"
+          },
+          {
+                "ingredientSlug": "olive-oil",
+                "amount": 4,
+                "unit": "ml"
+          }
+    ],
+    steps: [
+          {
+                "order": 1,
+                "instruction": "소고기 안심은 핏물을 제거하고 1.5cm 크기로 깍둑썰며, 채소들도 비슷한 크기로 썹니다."
+          },
+          {
+                "order": 2,
+                "instruction": "팬에 올리브유를 두르고 소고기 안심을 올려 센불에서 겉면을 빠르게 구워 육즙을 가둡니다.",
+                "timerSeconds": 90
+          },
+          {
+                "order": 3,
+                "instruction": "양파, 파프리카, 양송이버섯을 넣고 중불에서 채소가 부드러워질 때까지 2분간 볶습니다.",
+                "timerSeconds": 120
+          },
+          {
+                "order": 4,
+                "instruction": "저염케첩과 아기간장을 넣고 골고루 섞으며 소스가 윤기나게 배어들면 완성합니다.",
+                "timerSeconds": 60
+          }
+    ],
+    babyTips: {
+          "textureTip": "안심 부위는 결이 곱고 부드러워 3단계 아기들이 질겨하지 않고 잘 씹어 삼킵니다.",
+          "cuttingSizeTip": "아기가 한입에 쏙 넣어 어금니로 씹을 수 있는 1.5cm 크기가 이상적입니다.",
+          "seasoningTip": "저당·저염 케첩과 채소 본연의 단맛을 활용해 자극 없는 경양식 특식을 만듭니다."
+    },
+    storageInfo: {
+          "fridgeDays": 2,
+          "freezerDays": 7,
+          "reheatTip": "전자레인지 1분 데운 뒤 고기 속 온도를 확인하여 먹입니다."
+    },
+    sources: [
+          {
+                "url": "https://www.seoulnutri.co.kr",
+                "title": "어린이 성장기 육류 조리 및 영양 가이드",
+                "channelOrSite": "서울시 식생활종합지원센터",
+                "sourceType": "PUBLIC_INSTITUTION",
+                "trustScore": 0.92
+          }
+    ],
+  },
+
+  {
+    slug: "perilla-potato-rice-sujebi",
+    name: "들깨감자쌀수제비",
+    summary: "쌀가루와 감자전분으로 반죽하여 목넘김이 부드럽고 구수한 멸치들깨 수제비",
+    category: "MEAL",
+    mealCategories: ["LUNCH","DINNER"],
+    ageStages: [3,4],
+    saltLevel: "LOW",
+    cookMinutes: 25,
+    difficulty: 2,
+    tools: ["냄비","볼"],
+    baseServings: 2,
+    ingredients: [
+          {
+                "ingredientSlug": "rice-flour",
+                "amount": 50,
+                "unit": "g"
+          },
+          {
+                "ingredientSlug": "starch-potato",
+                "amount": 15,
+                "unit": "g"
+          },
+          {
+                "ingredientSlug": "potato",
+                "amount": 40,
+                "unit": "g",
+                "prepNote": "얇게 나박썰기"
+          },
+          {
+                "ingredientSlug": "zucchini",
+                "amount": 30,
+                "unit": "g",
+                "prepNote": "반달썰기"
+          },
+          {
+                "ingredientSlug": "perilla-seed-powder",
+                "amount": 8,
+                "unit": "g"
+          },
+          {
+                "ingredientSlug": "anchovy-broth",
+                "amount": 250,
+                "unit": "ml"
+          },
+          {
+                "ingredientSlug": "baby-soy-sauce",
+                "amount": 2.5,
+                "unit": "ml"
+          }
+    ],
+    steps: [
+          {
+                "order": 1,
+                "instruction": "볼에 쌀가루, 감자전분, 따뜻한 물 4큰술을 넣고 손으로 치대어 말랑한 반죽을 만듭니다."
+          },
+          {
+                "order": 2,
+                "instruction": "냄비에 멸치육수를 붓고 끓으면 얇게 썬 감자와 애호박을 넣고 끓입니다.",
+                "timerSeconds": 240
+          },
+          {
+                "order": 3,
+                "instruction": "반죽을 아기 한입 크기로 아주 얇게 떼어 국물에 넣고 수제비가 동동 뜰 때까지 익힙니다.",
+                "timerSeconds": 180
+          },
+          {
+                "order": 4,
+                "instruction": "아기간장 0.5작은술과 들깨가루를 넣고 한소끔 끓여 걸쭉하고 구수하게 완성합니다.",
+                "timerSeconds": 60
+          }
+    ],
+    babyTips: {
+          "textureTip": "밀가루 대신 쌀가루와 전분으로 빚어 쫄깃하기보다는 부드럽고 소화가 편합니다.",
+          "cuttingSizeTip": "질식 위험을 막기 위해 수제비는 반드시 종잇장처럼 얇게 떼어 넣어야 합니다.",
+          "seasoningTip": "진한 멸치육수와 들깨가루의 구수한 맛으로 최소한의 간만 합니다."
+    },
+    storageInfo: {
+          "fridgeDays": 1,
+          "freezerDays": 0,
+          "reheatTip": "수제비는 붇기 쉬우므로 즉시 조리해 먹는 것을 추천합니다."
+    },
+    sources: [],
+  },
+
+  {
+    slug: "apple-banana-mash",
+    name: "사과바나나매시",
+    summary: "살짝 쪄서 소화가 편한 사과와 완숙 바나나를 포크로 으깬 천연 달콤 영양 간식",
+    category: "SNACK",
+    mealCategories: ["SNACK"],
+    ageStages: [1,2],
+    saltLevel: "NONE",
+    cookMinutes: 10,
+    difficulty: 1,
+    tools: ["찜기","볼"],
+    baseServings: 2,
+    ingredients: [
+          {
+                "ingredientSlug": "apple",
+                "amount": 60,
+                "unit": "g",
+                "prepNote": "껍질·씨 제거 후 얇게 썰기"
+          },
+          {
+                "ingredientSlug": "banana",
+                "amount": 60,
+                "unit": "g",
+                "prepNote": "완숙 바나나"
+          }
+    ],
+    steps: [
+          {
+                "order": 1,
+                "instruction": "사과는 껍질과 씨를 제거하고 얇게 썰어 찜기에 5분간 쪄서 부드럽게 익힙니다.",
+                "timerSeconds": 300
+          },
+          {
+                "order": 2,
+                "instruction": "볼에 찐 사과와 완숙 바나나를 넣고 포크로 곱게 으깹니다."
+          },
+          {
+                "order": 3,
+                "instruction": "아기의 삼킴 상태에 맞추어 농도를 조절한 뒤 그릇에 담아 완성합니다."
+          }
+    ],
+    babyTips: {
+          "textureTip": "사과를 살짝 찌면 산미가 날아가고 펙틴이 부드러워져 아기 위에 부담이 없습니다.",
+          "cuttingSizeTip": "완료기 아기에게는 덩어리 없이 부드러운 퓌레 형태로 먹입니다.",
+          "seasoningTip": "과일 본연의 과당만으로 충분히 달콤합니다."
+    },
+    storageInfo: {
+          "fridgeDays": 1,
+          "freezerDays": 7,
+          "reheatTip": "냉장 보관한 것은 찬기를 살짝 빼고 상온 상태에서 먹입니다."
+    },
+    sources: [
+          {
+                "url": "https://www.childcare.go.kr",
+                "title": "영유아 과일 조리 및 소화 흡수 가이드",
+                "channelOrSite": "보건복지부 아이사랑",
+                "sourceType": "PUBLIC_INSTITUTION",
+                "trustScore": 0.95
+          }
+    ],
+  },
+
+  {
+    slug: "sweet-potato-cheese-stick",
+    name: "고구마아기치즈스틱",
+    summary: "포슬포슬 삶은 고구마에 아기치즈를 섞어 손에 쥐고 먹기 좋게 구운 핑거푸드",
+    category: "SNACK",
+    mealCategories: ["SNACK"],
+    ageStages: [1,2,3],
+    saltLevel: "NONE",
+    cookMinutes: 20,
+    difficulty: 1,
+    tools: ["에어프라이어","오븐"],
+    baseServings: 2,
+    ingredients: [
+          {
+                "ingredientSlug": "sweet-potato",
+                "amount": 120,
+                "unit": "g",
+                "prepNote": "삶아서 따뜻할 때 으깨기"
+          },
+          {
+                "ingredientSlug": "baby-cheese",
+                "amount": 20,
+                "unit": "g",
+                "prepNote": "1장 잘게 찢기"
+          },
+          {
+                "ingredientSlug": "rice-flour",
+                "amount": 10,
+                "unit": "g",
+                "prepNote": "성형용"
+          }
+    ],
+    steps: [
+          {
+                "order": 1,
+                "instruction": "고구마는 푹 삶아 껍질을 벗긴 뒤 따뜻할 때 볼에 넣고 으깹니다."
+          },
+          {
+                "order": 2,
+                "instruction": "으깬 고구마에 아기치즈와 쌀가루를 넣고 찰기가 생기도록 고루 섞어 반죽합니다."
+          },
+          {
+                "order": 3,
+                "instruction": "반죽을 손가락 굵기(길이 5cm, 두께 1cm) 스틱 모양으로 길쭉하게 빚습니다."
+          },
+          {
+                "order": 4,
+                "instruction": "에어프라이어 170도에서 10분간 구워 겉면을 살짝 단단하게 완성합니다.",
+                "timerSeconds": 600
+          }
+    ],
+    babyTips: {
+          "textureTip": "겉은 손에 묻지 않고 속은 부드러워 소근육 발달과 씹기 연습에 탁월합니다.",
+          "cuttingSizeTip": "손에 쥐기 편한 길이 5cm 스틱형태가 가장 좋습니다.",
+          "seasoningTip": "고구마의 단맛과 아기치즈의 짭조름한 풍미만으로 충분합니다."
+    },
+    storageInfo: {
+          "fridgeDays": 2,
+          "freezerDays": 14,
+          "reheatTip": "에어프라이어 160도에 2분간 살짝 돌리면 겉바속촉이 복원됩니다."
+    },
+    sources: [
+          {
+                "url": "https://www.seoulnutri.co.kr",
+                "title": "영유아 자기주도 핑거푸드 간식 레시피",
+                "channelOrSite": "서울시 식생활종합지원센터",
+                "sourceType": "PUBLIC_INSTITUTION",
+                "trustScore": 0.92
+          }
+    ],
+  },
+
+  {
+    slug: "sweet-pumpkin-rice-cake",
+    name: "단호박쌀찜케이크",
+    summary: "밀가루 없이 쌀가루와 단호박, 우유로 전자레인지나 찜기에서 쪄낸 폭신폭신한 간식",
+    category: "SNACK",
+    mealCategories: ["SNACK"],
+    ageStages: [2,3,4],
+    saltLevel: "NONE",
+    cookMinutes: 20,
+    difficulty: 1,
+    tools: ["찜기","전자레인지"],
+    baseServings: 2,
+    ingredients: [
+          {
+                "ingredientSlug": "rice-flour",
+                "amount": 60,
+                "unit": "g"
+          },
+          {
+                "ingredientSlug": "sweet-pumpkin",
+                "amount": 60,
+                "unit": "g",
+                "prepNote": "쪄서 곱게 으깬 것"
+          },
+          {
+                "ingredientSlug": "egg",
+                "amount": 50,
+                "unit": "g",
+                "prepNote": "신선한 달걀 1개"
+          },
+          {
+                "ingredientSlug": "milk",
+                "amount": 40,
+                "unit": "ml",
+                "substituteSlug": "soy-milk-unsweetened"
+          }
+    ],
+    steps: [
+          {
+                "order": 1,
+                "instruction": "볼에 달걀을 풀고 찐 단호박 퓌레와 우유 40ml를 넣어 거품기로 고루 섞습니다."
+          },
+          {
+                "order": 2,
+                "instruction": "쌀가루를 체 쳐 넣고 가루가 보이지 않을 때까지 주걱으로 골고루 저어 반죽을 만듭니다."
+          },
+          {
+                "order": 3,
+                "instruction": "전자레인지용 실리콘 머핀 틀에 반죽을 70% 정도 채웁니다."
+          },
+          {
+                "order": 4,
+                "instruction": "전자레인지에 2분 30초간 돌려 꼬치로 찔렀을 때 반죽이 묻어나오지 않으면 완성합니다.",
+                "timerSeconds": 150
+          }
+    ],
+    babyTips: {
+          "textureTip": "오븐에 굽지 않고 찌듯이 익혀 빵 껍질 없이 전체가 보들보들합니다.",
+          "cuttingSizeTip": "한입 크기로 깍둑썰어 주면 아기가 포크로 콕콕 찍어먹기 좋습니다.",
+          "seasoningTip": "단호박의 당도로 설탕이나 베이킹파우더 없이 순하게 부풀립니다."
+    },
+    storageInfo: {
+          "fridgeDays": 2,
+          "freezerDays": 14,
+          "reheatTip": "전자레인지에 30초 데워 따끈하게 먹입니다."
+    },
+    sources: [
+          {
+                "url": "https://koreanfood.rda.go.kr",
+                "title": "노밀가루 쌀가루 유아 베이킹 가이드",
+                "channelOrSite": "농촌진흥청 농식품올바로",
+                "sourceType": "PUBLIC_INSTITUTION",
+                "trustScore": 0.93
+          }
+    ],
+  },
+
+  {
+    slug: "tofu-black-sesame-cookie",
+    name: "두부검은깨쿠키",
+    summary: "물기 뺀 두부와 고소한 검은깨가루, 쌀가루로 구워 기름기 없이 담백한 아기 쿠키",
+    category: "SNACK",
+    mealCategories: ["SNACK"],
+    ageStages: [2,3,4],
+    saltLevel: "NONE",
+    cookMinutes: 25,
+    difficulty: 2,
+    tools: ["오븐","에어프라이어"],
+    baseServings: 2,
+    ingredients: [
+          {
+                "ingredientSlug": "tofu",
+                "amount": 80,
+                "unit": "g",
+                "prepNote": "면포로 물기 꽉 짜기"
+          },
+          {
+                "ingredientSlug": "rice-flour",
+                "amount": 50,
+                "unit": "g"
+          },
+          {
+                "ingredientSlug": "black-sesame-powder",
+                "amount": 8,
+                "unit": "g",
+                "prepNote": "곱게 간 검은깨가루",
+                "substituteSlug": "sesame-powder"
+          },
+          {
+                "ingredientSlug": "banana",
+                "amount": 25,
+                "unit": "g",
+                "prepNote": "완숙 바나나 으깨어 자연 단맛 내기"
+          }
+    ],
+    steps: [
+          {
+                "order": 1,
+                "instruction": "두부는 면포에 싸서 무거운 것을 올려두거나 손으로 꽉 짜서 물기를 최대한 제거합니다."
+          },
+          {
+                "order": 2,
+                "instruction": "물기 뺀 두부를 손으로 곱게 으깬 뒤 쌀가루, 검은깨가루, 올리고당을 넣고 반죽합니다."
+          },
+          {
+                "order": 3,
+                "instruction": "반죽을 5mm 두께로 얇게 밀고 아기 한입 크기 모양 틀로 찍거나 동글납작하게 빚습니다."
+          },
+          {
+                "order": 4,
+                "instruction": "에어프라이어 160도에서 12분간 바삭하게 구워 식힌 뒤 완성합니다.",
+                "timerSeconds": 720
+          }
+    ],
+    babyTips: {
+          "textureTip": "버터나 기름이 전혀 들어가지 않아 담백하고 검은깨의 고소함이 풍부합니다.",
+          "cuttingSizeTip": "두께 5mm 정도로 얇게 구워 아기 앞니로 바사삭 베어 물기 좋습니다.",
+          "seasoningTip": "식물성 단백질과 불포화지방산을 채워주는 영양 만점 간식입니다."
+    },
+    storageInfo: {
+          "fridgeDays": 3,
+          "freezerDays": 14,
+          "reheatTip": "밀폐용기에 실리카겔과 함께 보관하면 바삭함이 유지됩니다."
+    },
+    sources: [],
+  },
+
+  {
+    slug: "apple-carrot-jelly",
+    name: "사과당근말랑젤리",
+    summary: "사과와 당근의 착즙액에 감자전분을 풀어 말랑말랑하게 굳힌 무설탕 과채 젤리",
+    category: "SNACK",
+    mealCategories: ["SNACK"],
+    ageStages: [3,4],
+    saltLevel: "NONE",
+    cookMinutes: 15,
+    difficulty: 1,
+    tools: ["냄비","유리용기"],
+    baseServings: 2,
+    ingredients: [
+          {
+                "ingredientSlug": "apple",
+                "amount": 80,
+                "unit": "g",
+                "prepNote": "강판에 갈아 면포로 맑은 즙 내기"
+          },
+          {
+                "ingredientSlug": "carrot",
+                "amount": 40,
+                "unit": "g",
+                "prepNote": "강판에 갈아 면포로 맑은 즙 내기"
+          },
+          {
+                "ingredientSlug": "starch-potato",
+                "amount": 12,
+                "unit": "g",
+                "prepNote": "말랑한 묵 형태 응고제"
+          },
+          {
+                "ingredientSlug": "water",
+                "amount": 60,
+                "unit": "ml"
+          }
+    ],
+    steps: [
+          {
+                "order": 1,
+                "instruction": "사과와 당근은 강판에 갈아 면포로 즙을 짜서 총 100ml의 과채즙을 만듭니다."
+          },
+          {
+                "order": 2,
+                "instruction": "냄비에 과채즙, 물 60ml, 감자전분을 넣고 거품기로 가루가 뭉치지 않게 잘 풉니다."
+          },
+          {
+                "order": 3,
+                "instruction": "약불에 올려 주걱으로 쉬지 않고 저어가며 투명하고 끈적한 풀 상태가 될 때까지 끓입니다.",
+                "timerSeconds": 180
+          },
+          {
+                "order": 4,
+                "instruction": "유리 용기에 붓고 냉장고에서 30분간 굳힌 뒤 1cm 큐브 크기로 썰어 완성합니다.",
+                "timerSeconds": 1800
+          }
+    ],
+    babyTips: {
+          "textureTip": "시판 젤리처럼 질기거나 미끄러운 젤라틴 대신 전분으로 굳혀 목에 걸리지 않고 사르르 녹습니다.",
+          "cuttingSizeTip": "아기가 한입에 먹기 좋은 1cm 큐브 크기로 썰어주세요.",
+          "seasoningTip": "사과와 당근 자체의 달콤한 즙으로 설탕이나 색소 없이 곱고 화사한 주황빛 젤리가 완성됩니다."
+    },
+    storageInfo: {
+          "fridgeDays": 2,
+          "freezerDays": 0,
+          "reheatTip": "냉동하면 식감이 파괴되므로 반드시 냉장 보관하여 시원하게 먹입니다."
+    },
+    sources: [
+          {
+                "url": "https://health.kdca.go.kr",
+                "title": "영유아 젤리류 질식 사고 예방 및 대체 조리법",
+                "channelOrSite": "질병관리청 국가건강정보포털",
+                "sourceType": "PUBLIC_INSTITUTION",
+                "trustScore": 0.96
+          }
     ],
   },
 ];

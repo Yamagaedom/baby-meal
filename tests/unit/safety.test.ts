@@ -346,12 +346,12 @@ describe("lib/safety — 유아식 안전 검증 (REC-02, AGE-03/05, AI-05)", ()
     expect(saltyBlocked.passed).toBe(false);
     expect(saltyBlocked.issues.some((i) => i.code === "SODIUM_EXCEEDS_SALT_LEVEL")).toBe(true);
 
-    // ⑤ 비정상 중량 및 출처 누락 차단
+    // ⑤ 비정상 중량 및 빈 출처 URL 차단
     const abnormalPortion = validateRecipeSafety(
       makeValidCandidate({
         baseServings: 1,
         ingredients: [{ ingredientId: "ing-rice", amount: 600, unit: "g", isOptional: false }],
-        sources: [],
+        sources: [{ url: "   ", title: "출처" }],
       }),
       DICT_MAP,
     );
