@@ -126,6 +126,7 @@ export class GeminiRestLlmProvider implements AiRecipeLlmProvider {
       ],
       generationConfig: {
         temperature: 0.3,
+        thinkingConfig: { thinkingBudget: 0 },
         ...(useGoogleSearchTool ? {} : { responseMimeType: "application/json" }),
       },
       ...(useGoogleSearchTool ? { tools: [{ google_search: {} }] } : {}),

@@ -107,86 +107,98 @@ export class YouTubeDataApiSearchProvider implements AiSearchProvider {
       return [];
     }
 
-    const searchQuery = buildToddlerSearchQuery(input.queryText, input.ageStage, input.saltLevel);
-    const searchUrl = new URL("https://www.googleapis.com/youtube/v3/search");
-    searchUrl.searchParams.set("part", "snippet");
-    searchUrl.searchParams.set("type", "video");
-    searchUrl.searchParams.set("safeSearch", "strict");
-    searchUrl.searchParams.set("relevanceLanguage", "ko");
-    searchUrl.searchParams.set("maxResults", "5");
-    searchUrl.searchParams.set("q", searchQuery);
-    searchUrl.searchParams.set("key", key);
-
-    const searchRes = await fetch(searchUrl.toString(), { signal: input.signal });
-    if (!searchRes.ok) {
-      return [];
-    }
-
-    const searchJson = (await searchRes.json()) as {
-      items?: {
-        id?: { videoId?: string };
-        snippet?: { title?: string; channelTitle?: string };
-      }[];
-    };
-
-    const items = (searchJson.items ?? []).filter(
-      (it) => Boolean(it.id?.videoId) && Boolean(it.snippet?.title),
-    );
-    if (items.length === 0) {
-      return [];
-    }
-
-    const videoIds = items.map((it) => it.id!.videoId!);
-    const viewCounts = new Map<string, number>();
+    const ytAbort = new AbortController();
+    const ytTimer = setTimeout(() => ytAbort.abort(), 2500);
+    const combinedSignal = input.signal
+      ? AbortSignal.any([input.signal, ytAbort.signal])
+      : ytAbort.signal;
 
     try {
-      const statsUrl = new URL("https://www.googleapis.com/youtube/v3/videos");
-      statsUrl.searchParams.set("part", "statistics");
-      statsUrl.searchParams.set("id", videoIds.join(","));
-      statsUrl.searchParams.set("key", key);
-      const statsRes = await fetch(statsUrl.toString(), { signal: input.signal });
-      if (statsRes.ok) {
-        const statsJson = (await statsRes.json()) as {
-          items?: { id?: string; statistics?: { viewCount?: string } }[];
-        };
-        for (const st of statsJson.items ?? []) {
-          if (st.id && st.statistics?.viewCount) {
-            const parsed = Number(st.statistics.viewCount);
-            if (Number.isFinite(parsed)) {
-              viewCounts.set(st.id, parsed);
+      const searchQuery = buildToddlerSearchQuery(input.queryText, input.ageStage, input.saltLevel);
+      const searchUrl = new URL("https://www.googleapis.com/youtube/v3/search");
+      searchUrl.searchParams.set("part", "snippet");
+      searchUrl.searchParams.set("type", "video");
+      searchUrl.searchParams.set("safeSearch", "strict");
+      searchUrl.searchParams.set("relevanceLanguage", "ko");
+      searchUrl.searchParams.set("maxResults", "5");
+      searchUrl.searchParams.set("q", searchQuery);
+      searchUrl.searchParams.set("key", key);
+
+      const searchRes = await fetch(searchUrl.toString(), { signal: combinedSignal });
+      if (!searchRes.ok) {
+        return [];
+      }
+
+      const searchJson = (await searchRes.json()) as {
+        items?: {
+          id?: { videoId?: string };
+          snippet?: { title?: string; channelTitle?: string };
+        }[];
+      };
+
+      const items = (searchJson.items ?? []).filter(
+        (it) => Boolean(it.id?.videoId) && Boolean(it.snippet?.title),
+      );
+      if (items.length === 0) {
+        return [];
+      }
+
+      const videoIds = items.map((it) => it.id!.videoId!);
+      const viewCounts = new Map<string, number>();
+
+      try {
+        const statsUrl = new URL("https://www.googleapis.com/youtube/v3/videos");
+        statsUrl.searchParams.set("part", "statistics");
+        statsUrl.searchParams.set("id", videoIds.join(","));
+        statsUrl.searchParams.set("key", key);
+        const statsRes = await fetch(statsUrl.toString(), { signal: combinedSignal });
+        if (statsRes.ok) {
+          const statsJson = (await statsRes.json()) as {
+            items?: { id?: string; statistics?: { viewCount?: string } }[];
+          };
+          for (const st of statsJson.items ?? []) {
+            if (st.id && st.statistics?.viewCount) {
+              const parsed = Number(st.statistics.viewCount);
+              if (Number.isFinite(parsed)) {
+                viewCounts.set(st.id, parsed);
+              }
             }
           }
         }
+      } catch {
+        // 조회수 부가 조회 실패는 무시하고 기본 신뢰도 점수 사용
       }
-    } catch {
-      // 조회수 부가 조회 실패는 무시하고 기본 신뢰도 점수 사용
-    }
 
-    const collected: CollectedSource[] = items.map((it) => {
-      const videoId = it.id!.videoId!;
-      const url = `https://www.youtube.com/watch?v=${videoId}`;
-      const title = it.snippet!.title!.trim();
-      const channelOrSite = (it.snippet?.channelTitle ?? "YouTube").trim();
-      const viewCount = viewCounts.get(videoId);
-      const trustScore = computeSourceTrustScore({
-        url,
-        title,
-        channelOrSite,
-        sourceType: "YOUTUBE",
-        viewCount,
+      const collected: CollectedSource[] = items.map((it) => {
+        const videoId = it.id!.videoId!;
+        const url = `https://www.youtube.com/watch?v=${videoId}`;
+        const title = it.snippet!.title!.trim();
+        const channelOrSite = (it.snippet?.channelTitle ?? "YouTube").trim();
+        const viewCount = viewCounts.get(videoId);
+        const trustScore = computeSourceTrustScore({
+          url,
+          title,
+          channelOrSite,
+          sourceType: "YOUTUBE",
+          viewCount,
+        });
+
+        return {
+          url,
+          title,
+          channelOrSite,
+          sourceType: "YOUTUBE",
+          viewCount,
+          trustScore,
+        };
       });
 
-      return {
-        url,
-        title,
-        channelOrSite,
-        sourceType: "YOUTUBE",
-        viewCount,
-        trustScore,
-      };
-    });
-
-    return collected.sort((a, b) => b.trustScore - a.trustScore);
+      return collected.sort((a, b) => b.trustScore - a.trustScore);
+    } catch {
+      return [];
+    } finally {
+      clearTimeout(ytTimer);
+    }
   }
 }
 
