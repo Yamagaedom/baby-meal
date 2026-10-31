@@ -34,7 +34,14 @@ test("weekly meal planning: questionnaire → confirm → cook → serve → inv
     await expect(page.getByRole("button", { name: "식단 수정", exact: true })).toBeVisible();
     const state = await (await page.request.get("/api/meal-plans")).json();
     const plan = state.plans[0];
-    const task = plan.tasks.find((t: { date: string }) => t.date === plan.startDate);
+    const dinner = plan.entries.find(
+      (e: { date: string; mealTime: string; kind: string }) =>
+        e.date === plan.startDate && e.mealTime === "DINNER" && e.kind === "HOME",
+    );
+    const task = plan.tasks.find(
+      (t: { date: string; recipeId: string }) =>
+        t.date === plan.startDate && t.recipeId === dinner.recipeId,
+    );
     const cooked = await page.request.patch(`/api/meal-plans/${plan.id}`, {
       data: {
         action: "COOK",
