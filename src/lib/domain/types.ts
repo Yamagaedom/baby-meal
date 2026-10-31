@@ -102,3 +102,15 @@ export interface RecipeIngredientInput {
   unit: string;
   isOptional: boolean;
 }
+
+/** 영유아(12~48개월) 1회 제공량 기준 영양 정보 */
+export interface RecipeNutritionFacts {
+  caloriesKcal: number;
+  carbohydrateG: number;
+  proteinG: number;
+  fatG: number;
+  sodiumMg: number;
+  calciumMg: number;
+  ironMg: number;
+  dietaryFiberG: number;
+}

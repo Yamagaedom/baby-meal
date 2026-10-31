@@ -34,6 +34,8 @@ export const recipeFilterInputSchema = z.object({
   saltLevel: z.enum(SALT_LEVELS).optional(),
   favoritesOnly: z.boolean().optional().default(false),
   query: z.string().trim().optional(),
+  sourceType: z.enum(["ALL", "SEED", "AI"]).optional().default("ALL"),
+  sortBy: z.enum(["QUALITY", "POPULAR", "RATING", "LATEST"]).optional().default("QUALITY"),
 });
 
 export type RecipeFilterInput = z.infer<typeof recipeFilterInputSchema>;
@@ -178,12 +180,38 @@ export async function searchRecipesForBaby(
               : filter.maxCookMinutes === "30_PLUS"
                 ? { cookMinutes: { gt: 30 } }
                 : {}),
+        ...(filter.sourceType === "AI"
+          ? { isAiGenerated: true }
+          : filter.sourceType === "SEED"
+            ? { isAiGenerated: false }
+            : {}),
         ...(filter.query
           ? {
-              name: {
-                contains: filter.query,
-                mode: "insensitive",
-              },
+              OR: [
+                {
+                  name: {
+                    contains: filter.query,
+                    mode: "insensitive" as const,
+                  },
+                },
+                {
+                  ingredients: {
+                    some: {
+                      ingredient: {
+                        OR: [
+                          {
+                            name: {
+                              contains: filter.query,
+                              mode: "insensitive" as const,
+                            },
+                          },
+                          { synonyms: { has: filter.query } },
+                        ],
+                      },
+                    },
+                  },
+                },
+              ],
             }
           : {}),
       },
@@ -194,7 +222,14 @@ export async function searchRecipesForBaby(
           },
         },
       },
-      orderBy: [{ qualityScore: "desc" }, { cookMinutes: "asc" }, { name: "asc" }],
+      orderBy:
+        filter.sortBy === "POPULAR"
+          ? [{ favoriteCount: "desc" as const }, { averageRating: "desc" as const }, { qualityScore: "desc" as const }]
+          : filter.sortBy === "RATING"
+            ? [{ averageRating: "desc" as const }, { reviewCount: "desc" as const }, { qualityScore: "desc" as const }]
+            : filter.sortBy === "LATEST"
+              ? [{ generatedAt: "desc" as const }]
+              : [{ qualityScore: "desc" as const }, { cookMinutes: "asc" as const }, { name: "asc" as const }],
     }),
     loadIngredientDictionaryMap(prisma),
     prisma.favorite.findMany({
@@ -227,7 +262,7 @@ export async function toggleRecipeFavorite(
   baby: BabyProfileView,
   recipeId: string,
   prisma: PrismaClient = getPrisma(),
-): Promise<{ isFavorite: boolean }> {
+): Promise<{ isFavorite: boolean; favoriteCount: number }> {
   if (!isValidUuid(recipeId)) {
     throw new AppError(404, "RECIPE_NOT_FOUND", "레시피를 찾을 수 없습니다.");
   }
@@ -255,12 +290,32 @@ export async function toggleRecipeFavorite(
   });
 
   if (existing) {
-    await prisma.favorite.delete({ where: { id: existing.id } });
-    return { isFavorite: false };
+    await prisma.$transaction([
+      prisma.favorite.delete({ where: { id: existing.id } }),
+      prisma.recipe.update({
+        where: { id: recipeId },
+        data: { favoriteCount: { decrement: 1 } },
+      }),
+    ]);
+    const updated = await prisma.recipe.findUnique({
+      where: { id: recipeId },
+      select: { favoriteCount: true },
+    });
+    return { isFavorite: false, favoriteCount: Math.max(0, updated?.favoriteCount ?? 0) };
   }
 
-  await prisma.favorite.create({
-    data: { userId, recipeId },
+  await prisma.$transaction([
+    prisma.favorite.create({
+      data: { userId, recipeId },
+    }),
+    prisma.recipe.update({
+      where: { id: recipeId },
+      data: { favoriteCount: { increment: 1 } },
+    }),
+  ]);
+  const updated = await prisma.recipe.findUnique({
+    where: { id: recipeId },
+    select: { favoriteCount: true },
   });
-  return { isFavorite: true };
+  return { isFavorite: true, favoriteCount: updated?.favoriteCount ?? 1 };
 }

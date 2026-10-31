@@ -87,6 +87,7 @@ async function main() {
         "food_batches",
         "food_reservations",
         "food_movements",
+        "recipe_reviews",
       ]) {
         // This app uses server-side sessions, not Supabase Auth JWTs. No public Data API policy.
         await protection.query(`ALTER TABLE public.${table} ENABLE ROW LEVEL SECURITY`);

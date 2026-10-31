@@ -43,6 +43,8 @@ export function RecipesExplorerClient({
   const [tool, setTool] = useState("");
   const [ingredientGroup, setIngredientGroup] = useState("");
   const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [sourceType, setSourceType] = useState<"ALL" | "SEED" | "AI">("ALL");
+  const [sortBy, setSortBy] = useState<"QUALITY" | "POPULAR" | "RATING" | "LATEST">("QUALITY");
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,6 +62,8 @@ export function RecipesExplorerClient({
       tool: string;
       ingredientGroup: string;
       favoritesOnly: boolean;
+      sourceType: "ALL" | "SEED" | "AI";
+      sortBy: "QUALITY" | "POPULAR" | "RATING" | "LATEST";
       query: string;
     }>,
   ) {
@@ -71,6 +75,8 @@ export function RecipesExplorerClient({
       tool: overrides?.tool ?? tool,
       ingredientGroup: overrides?.ingredientGroup ?? ingredientGroup,
       favoritesOnly: overrides?.favoritesOnly ?? favoritesOnly,
+      sourceType: overrides?.sourceType ?? sourceType,
+      sortBy: overrides?.sortBy ?? sortBy,
       query: overrides?.query ?? query,
     };
 
@@ -82,6 +88,8 @@ export function RecipesExplorerClient({
     if (next.tool) params.set("tool", next.tool);
     if (next.ingredientGroup) params.set("ingredientGroup", next.ingredientGroup);
     if (next.favoritesOnly) params.set("favoritesOnly", "true");
+    if (next.sourceType && next.sourceType !== "ALL") params.set("sourceType", next.sourceType);
+    if (next.sortBy && next.sortBy !== "QUALITY") params.set("sortBy", next.sortBy);
     if (next.query.trim()) params.set("q", next.query.trim());
 
     setLoading(true);
@@ -138,6 +146,8 @@ export function RecipesExplorerClient({
     setTool("");
     setIngredientGroup("");
     setFavoritesOnly(false);
+    setSourceType("ALL");
+    setSortBy("QUALITY");
     setQuery("");
     void applyFilters({
       category: "",
@@ -147,6 +157,8 @@ export function RecipesExplorerClient({
       tool: "",
       ingredientGroup: "",
       favoritesOnly: false,
+      sourceType: "ALL",
+      sortBy: "QUALITY",
       query: "",
     });
   }
@@ -184,13 +196,65 @@ export function RecipesExplorerClient({
           }}
           className="space-y-4"
         >
+          {/* 출처 유형 탭 & 정렬 */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap gap-1.5" role="tablist" aria-label="출처 유형">
+              {(
+                [
+                  { value: "ALL", label: "전체" },
+                  { value: "SEED", label: "전문가 추천" },
+                  { value: "AI", label: "AI 맞춤 추천" },
+                ] as const
+              ).map((tab) => {
+                const active = sourceType === tab.value;
+                return (
+                  <button
+                    key={tab.value}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => {
+                      setSourceType(tab.value);
+                      void applyFilters({ sourceType: tab.value });
+                    }}
+                    className={`min-h-9 rounded-full px-3.5 text-xs font-semibold transition-colors ${
+                      active
+                        ? "bg-[var(--color-primary)] text-white"
+                        : "bg-[var(--color-surface-muted)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="w-40">
+              <Select
+                id="filter-sort"
+                label=""
+                value={sortBy}
+                onChange={(e) => {
+                  const val = e.target.value as "QUALITY" | "POPULAR" | "RATING" | "LATEST";
+                  setSortBy(val);
+                  void applyFilters({ sortBy: val });
+                }}
+              >
+                <option value="QUALITY">추천순</option>
+                <option value="POPULAR">인기순 (즐겨찾기)</option>
+                <option value="RATING">평점순 (별점)</option>
+                <option value="LATEST">최신 등록순</option>
+              </Select>
+            </div>
+          </div>
+
           <div>
             <Input
               type="search"
-              aria-label="레시피 이름 검색"
+              aria-label="레시피 이름 또는 식재료 검색"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="메뉴명 검색 (예: 주먹밥, 덮밥)"
+              placeholder="메뉴명 또는 식재료 검색 (예: 소고기, 당근, 진밥)"
             />
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

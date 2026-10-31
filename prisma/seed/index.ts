@@ -11,6 +11,7 @@ import { Pool } from "pg";
 import { PrismaClient } from "../../src/generated/prisma/client";
 import type { IngredientInfo } from "../../src/lib/domain/types";
 import { validateRecipeSafety } from "../../src/lib/safety";
+import { computeRecipeNutrition } from "../../src/features/nutrition";
 import { SEED_INGREDIENTS } from "./ingredients";
 import { SEED_RECIPES } from "./recipes";
 
@@ -119,6 +120,13 @@ async function main() {
         throw new Error(`[seed] 샘플 레시피 안전 검증 실패 (${recipe.slug}): ${detail}`);
       }
 
+      const nutrition = computeRecipeNutrition(mappedIngredients, dictById, recipe.baseServings);
+      const hashVal = Math.abs(recipe.slug.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0));
+      const favoriteCount = 35 + (hashVal % 95);
+      const averageRating = Math.round((4.7 + (hashVal % 3) * 0.1) * 10) / 10;
+      const reviewCount = 8 + (hashVal % 25);
+      const qualityScore = 88 + (hashVal % 8);
+
       const upserted = await prisma.recipe.upsert({
         where: { slug: recipe.slug },
         update: {
@@ -138,6 +146,12 @@ async function main() {
           babyTips: recipe.babyTips,
           storageInfo: recipe.storageInfo,
           status: "ACTIVE",
+          isAiGenerated: false,
+          nutrition: nutrition as any,
+          favoriteCount,
+          averageRating,
+          reviewCount,
+          qualityScore,
         },
         create: {
           slug: recipe.slug,
@@ -157,6 +171,12 @@ async function main() {
           babyTips: recipe.babyTips,
           storageInfo: recipe.storageInfo,
           status: "ACTIVE",
+          isAiGenerated: false,
+          nutrition: nutrition as any,
+          favoriteCount,
+          averageRating,
+          reviewCount,
+          qualityScore,
         },
       });
 

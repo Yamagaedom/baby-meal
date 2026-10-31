@@ -120,6 +120,7 @@ model User {
   reports     Report[]
   mealPlans   MealPlan[]
   foodBatches FoodBatch[]
+  recipeReviews RecipeReview[]
 
   @@map("users")
 }
@@ -243,19 +244,28 @@ model Recipe {
   storageInfo        Json           @map("storage_info")
   status             RecipeStatus   @default(ACTIVE)
   qualityScore       Float          @default(0) @map("quality_score")
+  isAiGenerated      Boolean        @default(false) @map("is_ai_generated")
+  nutrition          Json?          @map("nutrition")
+  favoriteCount      Int            @default(0) @map("favorite_count")
+  averageRating      Float          @default(0.0) @map("average_rating")
+  reviewCount        Int            @default(0) @map("review_count")
   generatedAt        DateTime       @default(now()) @map("generated_at")
   updatedAt          DateTime       @updatedAt @map("updated_at")
 
-  ingredients RecipeIngredient[]
-  sources     RecipeSource[]
-  mealLogs    MealLog[]
-  favorites   Favorite[]
-  reports     Report[]
+  ingredients   RecipeIngredient[]
+  sources       RecipeSource[]
+  mealLogs      MealLog[]
+  favorites     Favorite[]
+  reports       Report[]
+  recipeReviews RecipeReview[]
 
   @@index([status, saltLevel, category])
   @@index([ageStages], type: Gin)
   @@index([allergens], type: Gin)
   @@index([qualityScore(sort: Desc)])
+  @@index([averageRating(sort: Desc)])
+  @@index([favoriteCount(sort: Desc)])
+  @@index([isAiGenerated])
   @@map("recipes")
 }
 
@@ -363,6 +373,27 @@ model Report {
   @@unique([recipeId, userId])
   @@index([recipeId])
   @@map("reports")
+}
+
+/// 레시피 솔직 후기 및 별점 (PRD 커뮤니티, ACC-07, ACC-08 준수)
+model RecipeReview {
+  id           String   @id @default(uuid()) @db.Uuid
+  recipeId     String   @map("recipe_id") @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  authorName   String   @map("author_name")
+  rating       Int
+  content      String   @db.Text
+  babyAgeMonth Int?     @map("baby_age_month")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([recipeId, userId])
+  @@index([recipeId, createdAt(sort: Desc)])
+  @@index([userId])
+  @@map("recipe_reviews")
 }
 
 /// 주간 계획. 확정 시에만 재고를 예약한다.

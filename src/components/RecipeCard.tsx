@@ -32,6 +32,7 @@ export function RecipeCard({
   } | null>(null);
   const isFavorite =
     favoriteOverride?.initial === recipe.isFavorite ? favoriteOverride.value : recipe.isFavorite;
+  const [favCount, setFavCount] = useState(recipe.favoriteCount ?? 0);
   const [pending, setPending] = useState(false);
   const secondaryBadge =
     extraBadge === "추가 추천" ? recipe.ratingBadge : extraBadge || recipe.ratingBadge;
@@ -51,6 +52,11 @@ export function RecipeCard({
       const data = await res.json();
       const nextFav = Boolean(data.isFavorite);
       setFavoriteOverride({ initial: recipe.isFavorite, value: nextFav });
+      if (typeof data.favoriteCount === "number") {
+        setFavCount(data.favoriteCount);
+      } else {
+        setFavCount((c) => (nextFav ? c + 1 : Math.max(0, c - 1)));
+      }
       if (babyId) void syncFavoriteSnapshotById(babyId, recipe.id, nextFav);
       router.refresh();
     } catch {
@@ -91,7 +97,21 @@ export function RecipeCard({
         )}
       </p>
       <div className="mt-3 flex flex-wrap items-center gap-1.5" data-testid="recipe-card-badges">
+        {recipe.isAiGenerated && (
+          <Badge variant="primary">AI 추천</Badge>
+        )}
         <Badge variant="neutral">{recipe.category === "MEAL" ? "식사" : "간식"}</Badge>
+        {recipe.averageRating > 0 && (
+          <span className="inline-flex items-center gap-0.5 rounded-sm bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-700">
+            ★ {recipe.averageRating.toFixed(1)}
+            <span className="font-normal text-amber-600">({recipe.reviewCount})</span>
+          </span>
+        )}
+        {favCount > 0 && (
+          <span className="inline-flex items-center gap-1 text-xs text-[var(--color-text-secondary)]">
+            ❤️ {favCount}
+          </span>
+        )}
         {secondaryBadge && (
           <Badge variant={secondaryBadge.includes("%") ? "primary" : "age"}>{secondaryBadge}</Badge>
         )}

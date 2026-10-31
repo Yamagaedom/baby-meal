@@ -20,6 +20,8 @@ export async function GET(request: NextRequest) {
       saltLevel: sp.get("saltLevel") || undefined,
       favoritesOnly: sp.get("favoritesOnly") === "true",
       query: sp.get("q") || undefined,
+      sourceType: sp.get("sourceType") || undefined,
+      sortBy: sp.get("sortBy") || undefined,
     });
 
     return NextResponse.json({ baby, items });

@@ -22,8 +22,10 @@ import {
   type IngredientInfo,
   type MealTime,
   type RecipeCategory,
+  type RecipeNutritionFacts,
   type SaltLevel,
 } from "@/lib/domain/types";
+import { computeRecipeNutrition } from "@/features/nutrition";
 import { AppError } from "@/lib/http/errors";
 import { checkAllergyConflicts } from "@/lib/safety";
 import {
@@ -151,6 +153,10 @@ export interface RecipeCardView {
   isFavorite: boolean;
   ratingBadge: string | null;
   aboveAgeWarning: boolean;
+  isAiGenerated: boolean;
+  favoriteCount: number;
+  averageRating: number;
+  reviewCount: number;
 }
 
 export interface RecipeDetailView extends RecipeCardView {
@@ -160,6 +166,7 @@ export interface RecipeDetailView extends RecipeCardView {
   aboveAgeWarningMessage: string | null;
   unsaltedFlavorGuide: string | null;
   cautionIngredients: { name: string; cautionNote: string }[];
+  nutrition: RecipeNutritionFacts | null;
   ingredients: {
     ingredientId: string;
     name: string;
@@ -225,6 +232,10 @@ export function toRecipeCardView(
     baseServings: number;
     sodiumMgPerServing: number;
     allergens: Allergen[];
+    isAiGenerated?: boolean;
+    favoriteCount?: number;
+    averageRating?: number;
+    reviewCount?: number;
   },
   baby: BabyProfileView,
   favoriteSet: ReadonlySet<string>,
@@ -251,6 +262,10 @@ export function toRecipeCardView(
     isFavorite: favoriteSet.has(row.id),
     ratingBadge: logSummaries.get(row.id)?.badgeText ?? null,
     aboveAgeWarning: isRecipeAboveAge(stages, baby.currentAgeMonth),
+    isAiGenerated: Boolean(row.isAiGenerated),
+    favoriteCount: row.favoriteCount ?? 0,
+    averageRating: row.averageRating ? Math.round(row.averageRating * 10) / 10 : 0,
+    reviewCount: row.reviewCount ?? 0,
   };
 }
 
@@ -321,6 +336,11 @@ export async function getRecipeDetailForBaby(
       cautionNote: ri.ingredient.cautionNote!,
     }));
 
+  let nutrition = (row.nutrition as unknown as RecipeNutritionFacts) ?? null;
+  if (!nutrition) {
+    nutrition = computeRecipeNutrition(row.ingredients, dictMap, targetServings);
+  }
+
   return {
     ...card,
     targetServings,
@@ -331,6 +351,7 @@ export async function getRecipeDetailForBaby(
       : null,
     unsaltedFlavorGuide: row.saltLevel === "NONE" ? UNSALTED_FLAVOR_GUIDE : null,
     cautionIngredients,
+    nutrition,
     ingredients: row.ingredients.map((ri) => {
       const scaled = scaleIngredientAmount(ri.amount, ri.unit, row.baseServings, targetServings);
       let safeSubstituteName: string | null = null;

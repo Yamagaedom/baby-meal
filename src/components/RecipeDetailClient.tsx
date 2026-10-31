@@ -27,6 +27,8 @@ import {
   removeOfflineRecipeEverywhere,
   saveOfflineFavoriteSnapshot,
 } from "@/lib/offline-favorites";
+import { RecipeNutritionWidget } from "@/components/RecipeNutritionWidget";
+import { RecipeCommunitySection } from "@/components/RecipeCommunitySection";
 
 interface RecipeDetailClientProps {
   babyId: string;
@@ -42,6 +44,7 @@ export function RecipeDetailClient({
   const router = useRouter();
   const [servings, setServings] = useState<number>(recipe.targetServings);
   const [isFavorite, setIsFavorite] = useState(recipe.isFavorite);
+  const [favoriteCount, setFavoriteCount] = useState<number>(recipe.favoriteCount ?? 0);
   const [favPending, setFavPending] = useState(false);
   const [cookingModeOpen, setCookingModeOpen] = useState(false);
   const [checkedIngredients, setCheckedIngredients] = useState<string[]>([]);
@@ -139,6 +142,11 @@ export function RecipeDetailClient({
         const data = await res.json();
         const nextFav = Boolean(data.isFavorite);
         setIsFavorite(nextFav);
+        if (typeof data.favoriteCount === "number") {
+          setFavoriteCount(data.favoriteCount);
+        } else {
+          setFavoriteCount((c) => (nextFav ? c + 1 : Math.max(0, c - 1)));
+        }
         if (nextFav) {
           saveOfflineFavoriteSnapshot(babyId, { ...recipe, isFavorite: true });
         } else {
@@ -280,8 +288,30 @@ export function RecipeDetailClient({
               >
                 식단에 담기
               </Link>
+              {recipe.isAiGenerated && (
+                <Badge variant="primary">AI 추천 레시피</Badge>
+              )}
               <Badge variant="primary">{recipe.category === "MEAL" ? "식사" : "간식"}</Badge>
               <Badge variant="salt">{recipe.saltLevelLabel}</Badge>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 pt-1 text-sm font-medium text-[var(--color-text)]">
+              <a
+                href="#recipe-community-section"
+                className="flex items-center gap-1 text-amber-600 hover:underline"
+              >
+                <span className="text-amber-500">★</span>
+                <span className="font-bold">
+                  {recipe.averageRating > 0 ? recipe.averageRating.toFixed(1) : "평가 0"}
+                </span>
+                <span className="text-xs text-[var(--color-text-secondary)]">
+                  ({recipe.reviewCount}개 후기)
+                </span>
+              </a>
+              <span aria-hidden="true" className="text-gray-300">|</span>
+              <span className="text-xs text-[var(--color-text-secondary)]">
+                ❤️ 즐겨찾기 <strong className="text-[var(--color-text)]">{favoriteCount}</strong>명
+              </span>
             </div>
 
             <p className="text-sm text-[var(--color-text-secondary)]">
@@ -310,7 +340,7 @@ export function RecipeDetailClient({
             }`}
           >
             <Icon name="star" fill={isFavorite ? "currentColor" : "none"} />
-            <span>{isFavorite ? "즐겨찾기됨 (오프라인 보관)" : "즐겨찾기"}</span>
+            <span>{isFavorite ? `즐겨찾기됨 (${favoriteCount})` : `즐겨찾기 (${favoriteCount})`}</span>
           </button>
         </div>
 
@@ -459,6 +489,12 @@ export function RecipeDetailClient({
           })}
         </ul>
       </section>
+
+      {/* 1회 제공량 영양 성분 분석표 */}
+      <RecipeNutritionWidget
+        nutrition={recipe.nutrition}
+        targetServings={servings}
+      />
 
       {/* 단계별 조리 순서 (RCP-03, RCP-07) */}
       <section className="space-y-4 border-t border-[var(--color-border)] pt-6">
@@ -903,6 +939,14 @@ export function RecipeDetailClient({
           </form>
         )}
       </section>
+
+      {/* 부모님 솔직 후기 & 평점 커뮤니티 */}
+      <RecipeCommunitySection
+        recipeId={recipe.id}
+        initialAverageRating={recipe.averageRating ?? 0}
+        initialReviewCount={recipe.reviewCount ?? 0}
+        initialFavoriteCount={favoriteCount}
+      />
     </article>
   );
 }

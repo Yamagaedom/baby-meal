@@ -121,6 +121,16 @@ describeWithDb("DB 스키마 개인정보 미수집 및 회원 탈퇴 연쇄 삭
       },
     });
 
+    await prisma.recipeReview.create({
+      data: {
+        userId: user.id,
+        recipeId: sampleRecipe.id,
+        authorName: "탈퇴유저 부모님",
+        rating: 5,
+        content: "탈퇴 시 함께 삭제되어야 하는 후기입니다.",
+      },
+    });
+
     // 회원 탈퇴(삭제) 실행
     await prisma.user.delete({ where: { id: user.id } });
 
@@ -133,6 +143,7 @@ describeWithDb("DB 스키마 개인정보 미수집 및 회원 탈퇴 연쇄 삭
       remainingPantry,
       remainingFavorites,
       remainingReports,
+      remainingReviews,
     ] = await Promise.all([
       prisma.session.count({ where: { id: session.id } }),
       prisma.aiUsage.count({ where: { userId: user.id } }),
@@ -142,6 +153,7 @@ describeWithDb("DB 스키마 개인정보 미수집 및 회원 탈퇴 연쇄 삭
       prisma.pantryItem.count({ where: { userId: user.id } }),
       prisma.favorite.count({ where: { userId: user.id } }),
       prisma.report.count({ where: { userId: user.id } }),
+      prisma.recipeReview.count({ where: { userId: user.id } }),
     ]);
 
     expect(remainingSessions).toBe(0);
@@ -152,5 +164,6 @@ describeWithDb("DB 스키마 개인정보 미수집 및 회원 탈퇴 연쇄 삭
     expect(remainingPantry).toBe(0);
     expect(remainingFavorites).toBe(0);
     expect(remainingReports).toBe(0);
+    expect(remainingReviews).toBe(0);
   });
 });

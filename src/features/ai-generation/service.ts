@@ -10,6 +10,7 @@ import {
   isRecipeSafeForBaby,
   loadIngredientDictionaryMap,
 } from "@/features/recipe";
+import { computeRecipeNutrition } from "@/features/nutrition";
 import { getPrisma } from "@/lib/db";
 import {
   ALLERGENS,
@@ -59,10 +60,17 @@ export async function persistValidatedAiRecipe(
   payload: ValidatedAiRecipePayload,
   options: { cacheKey?: string | null; slug?: string | null },
   prisma: PrismaClient = getPrisma(),
+  dictMap?: ReadonlyMap<string, IngredientInfo>,
 ): Promise<string> {
+  const dict = dictMap ?? (await loadIngredientDictionaryMap(prisma));
+  const nutrition = computeRecipeNutrition(payload.ingredients, dict, payload.baseServings);
+  const slug =
+    options.slug ??
+    `ai-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
+
   const created = await prisma.recipe.create({
     data: {
-      slug: options.slug ?? null,
+      slug,
       cacheKey: options.cacheKey ?? null,
       name: payload.name,
       summary: payload.summary,
@@ -80,7 +88,12 @@ export async function persistValidatedAiRecipe(
       babyTips: payload.babyTips,
       storageInfo: payload.storageInfo,
       status: "ACTIVE",
-      qualityScore: 0,
+      qualityScore: 70,
+      isAiGenerated: true,
+      nutrition: nutrition as any,
+      favoriteCount: 0,
+      averageRating: 0.0,
+      reviewCount: 0,
       ingredients: {
         create: payload.ingredients.map((ing) => ({
           ingredientId: ing.ingredientId,
