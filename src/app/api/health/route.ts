@@ -28,6 +28,7 @@ export async function GET() {
         status: "error",
         db: "disconnected",
         message: "데이터베이스에 연결할 수 없습니다.",
+        detail: error instanceof Error ? error.message : String(error),
       },
       { status: 503 },
     );
