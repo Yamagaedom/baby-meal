@@ -23,12 +23,30 @@ export async function GET() {
     });
   } catch (error) {
     console.error("[/api/health] DB 연결 확인 실패:", error);
+    const rawUrl = process.env.DATABASE_URL || "";
+    let dbConfig: Record<string, unknown> = {};
+    try {
+      const u = new URL(rawUrl);
+      dbConfig = {
+        protocol: u.protocol,
+        username: u.username,
+        hostname: u.hostname,
+        port: u.port,
+        pathname: u.pathname,
+        passwordLength: u.password.length,
+        hasBrackets: u.password.startsWith("[") || u.password.endsWith("]"),
+      };
+    } catch (e) {
+      dbConfig = { parseError: String(e), prefix: rawUrl.slice(0, 15) };
+    }
+
     return NextResponse.json(
       {
         status: "error",
         db: "disconnected",
         message: "데이터베이스에 연결할 수 없습니다.",
         detail: error instanceof Error ? error.message : String(error),
+        dbConfig,
       },
       { status: 503 },
     );
