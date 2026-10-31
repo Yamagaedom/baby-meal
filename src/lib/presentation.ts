@@ -42,7 +42,9 @@ export function isVerifiedAuthoritativeSource(source: {
   url?: string | null;
   title?: string | null;
   channelOrSite?: string | null;
+  verificationStatus?: string;
 }): boolean {
+  if (source.verificationStatus !== "VERIFIED") return false;
   if (!source || !source.url || !source.title) return false;
   const rawUrl = source.url.trim();
   const rawTitle = source.title.trim();
@@ -77,7 +79,12 @@ export function isVerifiedAuthoritativeSource(source: {
 }
 
 /** 예시 출처를 검증된 채널로 포장하지 않고 실제 목적지와 참고 성격을 표시합니다. */
-export function sourceDisplayLabel(source: { title: string; channelOrSite: string; url: string }) {
+export function sourceDisplayLabel(source: {
+  title: string;
+  channelOrSite: string;
+  url: string;
+  verificationStatus?: string;
+}) {
   const isVerified = isVerifiedAuthoritativeSource(source);
   const title = source.title.replace(/\[(?:시드\s*)?샘플\]\s*/g, "").trim();
   if (isVerified) return { title, publisher: source.channelOrSite, isExample: false };

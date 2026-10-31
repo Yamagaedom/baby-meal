@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { OfflineRecipeReader } from "@/components/PwaProviderAndOfflineBanner";
 import { RecipeCard } from "@/components/RecipeCard";
 import {
@@ -152,6 +153,14 @@ export function RecipesExplorerClient({
 
   return (
     <div className="space-y-6">
+      <div className="flex gap-4 text-sm">
+        <span className="inline-flex min-h-11 items-center font-semibold" aria-current="page">
+          전체 레시피
+        </span>
+        <Link href="/ingredients" className="inline-flex min-h-11 items-center underline">
+          재료로 찾기
+        </Link>
+      </div>
       <section className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>

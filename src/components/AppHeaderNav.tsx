@@ -16,13 +16,14 @@ interface AppHeaderNavProps {
 
 export const APP_NAV_ITEMS = [
   { href: "/", label: "홈", shortLabel: "홈", icon: "home" },
-  { href: "/ingredients", label: "재료로 찾기", shortLabel: "재료", icon: "ingredients" },
   { href: "/recipes", label: "레시피", shortLabel: "레시피", icon: "book" },
+  { href: "/meal-plan", label: "식단", shortLabel: "식단", icon: "logs" },
   { href: "/logs", label: "기록", shortLabel: "기록", icon: "logs" },
   { href: "/my", label: "마이", shortLabel: "마이", icon: "profile" },
 ] as const;
 
 function isNavActive(pathname: string, href: string) {
+  if (href === "/recipes" && pathname.startsWith("/ingredients")) return true;
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
 }
 
@@ -160,7 +161,7 @@ export function BottomNav() {
               <Link
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                aria-label={item.href === "/ingredients" ? "재료 (재료로 찾기)" : item.label}
+                aria-label={item.label}
                 className={`flex min-h-14 w-full min-w-0 flex-col items-center justify-center gap-1 border-t-2 px-1 py-2 text-xs font-medium transition-colors ${
                   active
                     ? "border-[var(--color-primary)] text-[var(--color-primary-text)]"

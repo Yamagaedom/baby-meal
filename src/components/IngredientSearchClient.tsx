@@ -246,6 +246,20 @@ export function IngredientSearchClient({
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-wrap gap-4 text-sm">
+        <Link href="/recipes" className="inline-flex min-h-11 items-center underline">
+          전체 레시피
+        </Link>
+        <span className="inline-flex min-h-11 items-center font-semibold" aria-current="page">
+          재료로 찾기
+        </span>
+        <Link
+          href={`/meal-plan?ingredients=${selected.map((i) => i.id).join(",")}`}
+          className="inline-flex min-h-11 items-center font-medium text-[var(--color-primary)] underline"
+        >
+          이 재료로 일주일 구성
+        </Link>
+      </div>
       <section className="space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>

@@ -1,11 +1,17 @@
 "use client";
 
+import Link from "next/link";
+
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CookingModeModal } from "@/components/CookingModeModal";
 import { Badge, Button, Input, Select, Stepper } from "@/components/ui";
 import { Icon } from "@/components/ui/Icon";
-import { isVerifiedAuthoritativeSource, normalizeRecipeSummary, sourceDisplayLabel } from "@/lib/presentation";
+import {
+  isVerifiedAuthoritativeSource,
+  normalizeRecipeSummary,
+  sourceDisplayLabel,
+} from "@/lib/presentation";
 import type { RecipeDetailView } from "@/features/recipe";
 import {
   AMOUNT_EATEN_LABELS,
@@ -268,6 +274,12 @@ export function RecipeDetailClient({
               {recipe.name}
             </h1>
             <div className="flex flex-wrap gap-1.5">
+              <Link
+                href={`/meal-plan?recipe=${recipe.id}`}
+                className="inline-flex min-h-11 items-center rounded-md border border-[var(--color-border)] px-3 text-sm font-medium"
+              >
+                식단에 담기
+              </Link>
               <Badge variant="primary">{recipe.category === "MEAL" ? "식사" : "간식"}</Badge>
               <Badge variant="salt">{recipe.saltLevelLabel}</Badge>
             </div>
@@ -553,7 +565,12 @@ export function RecipeDetailClient({
               ...sourceDisplayLabel(src),
             }));
 
-          if (verifiedSources.length === 0) return null;
+          if (verifiedSources.length === 0)
+            return (
+              <p className="border-t border-[var(--color-border)] pt-3.5 text-sm text-[var(--color-warning-text)]">
+                현재 확인된 레시피 출처가 없습니다. 재료·조리법을 확인해 주세요.
+              </p>
+            );
 
           return (
             <div className="border-t border-[var(--color-border)] pt-3.5 text-xs text-[var(--color-text-secondary)]">

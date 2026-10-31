@@ -11,7 +11,12 @@ import {
   loadIngredientDictionaryMap,
 } from "@/features/recipe";
 import { getPrisma } from "@/lib/db";
-import { ALLERGENS, RECIPE_CATEGORIES, type Allergen, type IngredientInfo } from "@/lib/domain/types";
+import {
+  ALLERGENS,
+  RECIPE_CATEGORIES,
+  type Allergen,
+  type IngredientInfo,
+} from "@/lib/domain/types";
 import { AppError } from "@/lib/http/errors";
 import { checkAllergyConflicts } from "@/lib/safety";
 import {
@@ -369,18 +374,12 @@ export async function generateOnDemandRecipeForBaby(
   }
 
   // 2. 원자적 일일 한도 예약 (동시 4개 요청 레이스 컨디션 차단 + 전역 상한 보호)
-  const reservation = await reserveAiGenerationSlot(
-    userId,
-    prisma,
-    now,
-    deps.globalLimitOverride,
-  );
+  const reservation = await reserveAiGenerationSlot(userId, prisma, now, deps.globalLimitOverride);
 
   const mockProviders = buildDevMockProvidersIfEnabled(deps.mockBehavior, deps.allowE2eMock);
   const searchProvider =
     deps.searchProvider ?? mockProviders?.searchProvider ?? new YouTubeDataApiSearchProvider();
-  const llmProvider =
-    deps.llmProvider ?? mockProviders?.llmProvider ?? new GeminiRestLlmProvider();
+  const llmProvider = deps.llmProvider ?? mockProviders?.llmProvider ?? new GeminiRestLlmProvider();
 
   const allowedIngredientsForBaby = allDictionary
     .filter(
@@ -412,18 +411,8 @@ export async function generateOnDemandRecipeForBaby(
       externalSources = [];
     }
 
-    // 외부 검색 결과가 없으면 공공기관 검증 출처(식품안전나라)를 기본 제공하여 빠른 순수 JSON 생성과 확실한 출처를 보장
-    if (externalSources.length === 0) {
-      externalSources = [
-        {
-          url: "https://www.foodsafetykorea.go.kr/portal/board/board.do",
-          title: "영유아 이유식 및 유아식 식생활 안전 가이드",
-          channelOrSite: "식품안전나라",
-          sourceType: "PUBLIC_INSTITUTION",
-          trustScore: 0.95,
-        },
-      ];
-    }
+    // With no collected sources, Gemini may use grounded search. A generic public homepage
+    // is not evidence for the generated recipe and must never be invented as a fallback.
 
     let previousFailureReasons: string[] = [];
     let validatedPayload: ValidatedAiRecipePayload | null = null;

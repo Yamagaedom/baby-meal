@@ -193,6 +193,7 @@ export interface RecipeDetailView extends RecipeCardView {
     title: string;
     channelOrSite: string;
     sourceType: string;
+    verificationStatus?: string;
   }[];
   aiDisclaimer: string;
   medicalDisclaimer: string;
@@ -307,12 +308,7 @@ export async function getRecipeDetailForBaby(
     loadMealLogSummariesByRecipe(baby.id, prisma),
   ]);
 
-  const card = toRecipeCardView(
-    row,
-    baby,
-    new Set(favRow ? [row.id] : []),
-    logSummaries,
-  );
+  const card = toRecipeCardView(row, baby, new Set(favRow ? [row.id] : []), logSummaries);
 
   const parsedSteps = z.array(recipeStepSchema).parse(row.steps);
   const parsedTips = babyTipsSchema.parse(row.babyTips);
@@ -336,12 +332,7 @@ export async function getRecipeDetailForBaby(
     unsaltedFlavorGuide: row.saltLevel === "NONE" ? UNSALTED_FLAVOR_GUIDE : null,
     cautionIngredients,
     ingredients: row.ingredients.map((ri) => {
-      const scaled = scaleIngredientAmount(
-        ri.amount,
-        ri.unit,
-        row.baseServings,
-        targetServings,
-      );
+      const scaled = scaleIngredientAmount(ri.amount, ri.unit, row.baseServings, targetServings);
       let safeSubstituteName: string | null = null;
       if (ri.substitute) {
         const subInfo = dictMap.get(ri.substitute.id);
@@ -393,6 +384,7 @@ export async function getRecipeDetailForBaby(
       title: src.title,
       channelOrSite: src.channelOrSite,
       sourceType: src.sourceType,
+      verificationStatus: src.verificationStatus,
     })),
     aiDisclaimer: AI_RECIPE_DISCLAIMER,
     medicalDisclaimer: MEDICAL_DISCLAIMER,

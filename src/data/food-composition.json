@@ -1,0 +1,650 @@
+{
+  "white-rice-cooked": {
+    "foodCode": "168932",
+    "description": "Rice, white, short-grain, cooked, unenriched",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 130.0,
+      "protein": 2.36,
+      "fat": 0.19,
+      "carbohydrate": 28.73,
+      "iron": 0.2,
+      "calcium": 1.0,
+      "sodium": 0.0,
+      "fiber": null
+    }
+  },
+  "white-rice-raw": {
+    "foodCode": "168931",
+    "description": "Rice, white, short-grain, raw, unenriched",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 358.0,
+      "protein": 6.5,
+      "fat": 0.52,
+      "carbohydrate": 79.15,
+      "iron": 0.8,
+      "calcium": 3.0,
+      "sodium": 1.0,
+      "fiber": null
+    }
+  },
+  "brown-rice": {
+    "foodCode": "169703",
+    "description": "Rice, brown, long-grain, raw (Includes foods for USDA's Food Distribution Program)",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 367.0,
+      "protein": 7.54,
+      "fat": 3.2,
+      "carbohydrate": 76.25,
+      "iron": 1.29,
+      "calcium": 9.0,
+      "sodium": 5.0,
+      "fiber": 3.6
+    }
+  },
+  "rice-flour": {
+    "foodCode": "169714",
+    "description": "Rice flour, white, unenriched",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 366.0,
+      "protein": 5.95,
+      "fat": 1.42,
+      "carbohydrate": 80.13,
+      "iron": 0.35,
+      "calcium": 10.0,
+      "sodium": 0.0,
+      "fiber": 2.4
+    }
+  },
+  "oats": {
+    "foodCode": "169705",
+    "description": "Oats (Includes foods for USDA's Food Distribution Program)",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 389.0,
+      "protein": 16.89,
+      "fat": 6.9,
+      "carbohydrate": 66.27,
+      "iron": 4.72,
+      "calcium": 54.0,
+      "sodium": 2.0,
+      "fiber": 10.6
+    }
+  },
+  "millet": {
+    "foodCode": "169702",
+    "description": "Millet, raw",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 378.0,
+      "protein": 11.02,
+      "fat": 4.22,
+      "carbohydrate": 72.85,
+      "iron": 3.01,
+      "calcium": 8.0,
+      "sodium": 5.0,
+      "fiber": 8.5
+    }
+  },
+  "quinoa": {
+    "foodCode": "168874",
+    "description": "Quinoa, uncooked",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 368.0,
+      "protein": 14.12,
+      "fat": 6.07,
+      "carbohydrate": 64.16,
+      "iron": 4.57,
+      "calcium": 47.0,
+      "sodium": 5.0,
+      "fiber": 7.0
+    }
+  },
+  "amaranth": {
+    "foodCode": "170682",
+    "description": "Amaranth grain, uncooked",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 371.0,
+      "protein": 13.56,
+      "fat": 7.02,
+      "carbohydrate": 65.25,
+      "iron": 7.61,
+      "calcium": 159.0,
+      "sodium": 4.0,
+      "fiber": 6.7
+    }
+  },
+  "carrot": {
+    "foodCode": "170393",
+    "description": "Carrots, raw",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 41.0,
+      "protein": 0.93,
+      "fat": 0.24,
+      "carbohydrate": 9.58,
+      "iron": 0.3,
+      "calcium": 33.0,
+      "sodium": 69.0,
+      "fiber": 2.8
+    }
+  },
+  "broccoli": {
+    "foodCode": "170379",
+    "description": "Broccoli, raw",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 34.0,
+      "protein": 2.82,
+      "fat": 0.37,
+      "carbohydrate": 6.64,
+      "iron": 0.73,
+      "calcium": 47.0,
+      "sodium": 33.0,
+      "fiber": 2.6
+    }
+  },
+  "cauliflower": {
+    "foodCode": "169986",
+    "description": "Cauliflower, raw",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 25.0,
+      "protein": 1.92,
+      "fat": 0.28,
+      "carbohydrate": 4.97,
+      "iron": 0.42,
+      "calcium": 22.0,
+      "sodium": 30.0,
+      "fiber": 2.0
+    }
+  },
+  "spinach": {
+    "foodCode": "168462",
+    "description": "Spinach, raw",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 23.0,
+      "protein": 2.86,
+      "fat": 0.39,
+      "carbohydrate": 3.63,
+      "iron": 2.71,
+      "calcium": 99.0,
+      "sodium": 79.0,
+      "fiber": 2.2
+    }
+  },
+  "onion": {
+    "foodCode": "170000",
+    "description": "Onions, raw",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 40.0,
+      "protein": 1.1,
+      "fat": 0.1,
+      "carbohydrate": 9.34,
+      "iron": 0.21,
+      "calcium": 23.0,
+      "sodium": 4.0,
+      "fiber": 1.7
+    }
+  },
+  "cabbage": {
+    "foodCode": "169975",
+    "description": "Cabbage, raw",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 25.0,
+      "protein": 1.28,
+      "fat": 0.1,
+      "carbohydrate": 5.8,
+      "iron": 0.47,
+      "calcium": 40.0,
+      "sodium": 18.0,
+      "fiber": 2.5
+    }
+  },
+  "cucumber": {
+    "foodCode": "168409",
+    "description": "Cucumber, with peel, raw",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 15.0,
+      "protein": 0.65,
+      "fat": 0.11,
+      "carbohydrate": 3.63,
+      "iron": 0.28,
+      "calcium": 16.0,
+      "sodium": 2.0,
+      "fiber": 0.5
+    }
+  },
+  "eggplant": {
+    "foodCode": "169228",
+    "description": "Eggplant, raw",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 25.0,
+      "protein": 0.98,
+      "fat": 0.18,
+      "carbohydrate": 5.88,
+      "iron": 0.23,
+      "calcium": 9.0,
+      "sodium": 2.0,
+      "fiber": 3.0
+    }
+  },
+  "garlic": {
+    "foodCode": "169230",
+    "description": "Garlic, raw",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 149.0,
+      "protein": 6.36,
+      "fat": 0.5,
+      "carbohydrate": 33.06,
+      "iron": 1.7,
+      "calcium": 181.0,
+      "sodium": 17.0,
+      "fiber": 2.1
+    }
+  },
+  "potato": {
+    "foodCode": "170026",
+    "description": "Potatoes, flesh and skin, raw",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 77.0,
+      "protein": 2.05,
+      "fat": 0.09,
+      "carbohydrate": 17.49,
+      "iron": 0.81,
+      "calcium": 12.0,
+      "sodium": 6.0,
+      "fiber": 2.1
+    }
+  },
+  "sweet-potato": {
+    "foodCode": "168482",
+    "description": "Sweet potato, raw, unprepared (Includes foods for USDA's Food Distribution Program)",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 86.0,
+      "protein": 1.57,
+      "fat": 0.05,
+      "carbohydrate": 20.12,
+      "iron": 0.61,
+      "calcium": 30.0,
+      "sodium": 55.0,
+      "fiber": 3.0
+    }
+  },
+  "tomato": {
+    "foodCode": "170457",
+    "description": "Tomatoes, red, ripe, raw, year round average",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 18.0,
+      "protein": 0.88,
+      "fat": 0.2,
+      "carbohydrate": 3.89,
+      "iron": 0.27,
+      "calcium": 10.0,
+      "sodium": 5.0,
+      "fiber": 1.2
+    }
+  },
+  "green-peas": {
+    "foodCode": "170419",
+    "description": "Peas, green, raw",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 81.0,
+      "protein": 5.42,
+      "fat": 0.4,
+      "carbohydrate": 14.45,
+      "iron": 1.47,
+      "calcium": 25.0,
+      "sodium": 5.0,
+      "fiber": 5.7
+    }
+  },
+  "shiitake-mushroom": {
+    "foodCode": "169242",
+    "description": "Mushrooms, shiitake, raw",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 34.0,
+      "protein": 2.24,
+      "fat": 0.49,
+      "carbohydrate": 6.79,
+      "iron": 0.41,
+      "calcium": 2.0,
+      "sodium": 9.0,
+      "fiber": 2.5
+    }
+  },
+  "bok-choy": {
+    "foodCode": "170390",
+    "description": "Cabbage, chinese (pak-choi), raw",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 13.0,
+      "protein": 1.5,
+      "fat": 0.2,
+      "carbohydrate": 2.18,
+      "iron": 0.8,
+      "calcium": 105.0,
+      "sodium": 65.0,
+      "fiber": 1.0
+    }
+  },
+  "apple": {
+    "foodCode": "171689",
+    "description": "Apples, raw, without skin",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 48.0,
+      "protein": 0.27,
+      "fat": 0.13,
+      "carbohydrate": 12.76,
+      "iron": 0.07,
+      "calcium": 5.0,
+      "sodium": 0.0,
+      "fiber": 1.3
+    }
+  },
+  "banana": {
+    "foodCode": "173944",
+    "description": "Bananas, raw",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 89.0,
+      "protein": 1.09,
+      "fat": 0.33,
+      "carbohydrate": 22.84,
+      "iron": 0.26,
+      "calcium": 5.0,
+      "sodium": 1.0,
+      "fiber": 2.6
+    }
+  },
+  "strawberry": {
+    "foodCode": "167762",
+    "description": "Strawberries, raw",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 32.0,
+      "protein": 0.67,
+      "fat": 0.3,
+      "carbohydrate": 7.68,
+      "iron": 0.41,
+      "calcium": 16.0,
+      "sodium": 1.0,
+      "fiber": 2.0
+    }
+  },
+  "chicken-breast": {
+    "foodCode": "171077",
+    "description": "Chicken, broiler or fryers, breast, skinless, boneless, meat only, raw",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 120.0,
+      "protein": 22.5,
+      "fat": 2.62,
+      "carbohydrate": 0.0,
+      "iron": 0.37,
+      "calcium": 5.0,
+      "sodium": 45.0,
+      "fiber": 0.0
+    }
+  },
+  "tofu": {
+    "foodCode": "172476",
+    "description": "Tofu, raw, regular, prepared with calcium sulfate",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 76.0,
+      "protein": 8.08,
+      "fat": 4.78,
+      "carbohydrate": 1.87,
+      "iron": 5.36,
+      "calcium": 350.0,
+      "sodium": 7.0,
+      "fiber": 0.3
+    }
+  },
+  "soft-tofu": {
+    "foodCode": "172449",
+    "description": "Tofu, soft, prepared with calcium sulfate and magnesium chloride (nigari)",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 61.0,
+      "protein": 7.17,
+      "fat": 3.69,
+      "carbohydrate": 1.18,
+      "iron": 1.11,
+      "calcium": 111.0,
+      "sodium": 8.0,
+      "fiber": 0.2
+    }
+  },
+  "egg": {
+    "foodCode": "171287",
+    "description": "Egg, whole, raw, fresh",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 143.0,
+      "protein": 12.56,
+      "fat": 9.51,
+      "carbohydrate": 0.72,
+      "iron": 1.75,
+      "calcium": 56.0,
+      "sodium": 142.0,
+      "fiber": 0.0
+    }
+  },
+  "milk": {
+    "foodCode": "172217",
+    "description": "Milk, whole, 3.25% milkfat, without added vitamin A and vitamin D",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 61.0,
+      "protein": 3.15,
+      "fat": 3.27,
+      "carbohydrate": 4.78,
+      "iron": 0.03,
+      "calcium": 113.0,
+      "sodium": 43.0,
+      "fiber": 0.0
+    }
+  },
+  "yogurt-plain": {
+    "foodCode": "171284",
+    "description": "Yogurt, plain, whole milk",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 61.0,
+      "protein": 3.47,
+      "fat": 3.25,
+      "carbohydrate": 4.66,
+      "iron": 0.05,
+      "calcium": 121.0,
+      "sodium": 46.0,
+      "fiber": 0.0
+    }
+  },
+  "water": {
+    "foodCode": "173647",
+    "description": "Beverages, water, tap, drinking",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 0.0,
+      "protein": 0.0,
+      "fat": 0.0,
+      "carbohydrate": 0.0,
+      "iron": 0.0,
+      "calcium": 3.0,
+      "sodium": 4.0,
+      "fiber": 0.0
+    }
+  },
+  "sesame-oil": {
+    "foodCode": "171016",
+    "description": "Oil, sesame, salad or cooking",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 884.0,
+      "protein": 0.0,
+      "fat": 100.0,
+      "carbohydrate": 0.0,
+      "iron": 0.0,
+      "calcium": 0.0,
+      "sodium": 0.0,
+      "fiber": 0.0
+    }
+  },
+  "olive-oil": {
+    "foodCode": "171413",
+    "description": "Oil, olive, salad or cooking",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 884.0,
+      "protein": 0.0,
+      "fat": 100.0,
+      "carbohydrate": 0.0,
+      "iron": 0.56,
+      "calcium": 1.0,
+      "sodium": 2.0,
+      "fiber": 0.0
+    }
+  },
+  "canola-oil": {
+    "foodCode": "172336",
+    "description": "Oil, canola",
+    "source": "USDA FoodData Central · SR Legacy 2018",
+    "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+    "version": "SR Legacy April 2018 / FDC 2019-04-01",
+    "basis": "100g edible ingredient; standard reference food, product and variety differences apply",
+    "per100g": {
+      "energy": 884.0,
+      "protein": 0.0,
+      "fat": 100.0,
+      "carbohydrate": 0.0,
+      "iron": 0.0,
+      "calcium": 0.0,
+      "sodium": 0.0,
+      "fiber": 0.0
+    }
+  }
+}

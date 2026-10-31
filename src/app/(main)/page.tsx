@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { HomeRecommendClient } from "@/components/HomeRecommendClient";
+import { WeeklyPlanSummary } from "@/components/WeeklyPlanSummary";
 import { getActiveBabyIdCookie, requirePageUser } from "@/features/auth";
 import { getTasteReportForBaby } from "@/features/meal-log";
 import { resolveActiveBabyProfile } from "@/features/profile";
@@ -20,11 +21,14 @@ export default async function HomePage() {
   ]);
 
   return (
-    <HomeRecommendClient
-      key={baby.id}
-      baby={baby}
-      initialData={initialData}
-      recentGoodMenus={tasteReport.topMenus}
-    />
+    <div className="space-y-8">
+      <WeeklyPlanSummary userId={user.id} babyId={baby.id} />
+      <HomeRecommendClient
+        key={baby.id}
+        baby={baby}
+        initialData={initialData}
+        recentGoodMenus={tasteReport.topMenus}
+      />
+    </div>
   );
 }

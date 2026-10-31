@@ -53,18 +53,26 @@ describe("UI 검토서의 메뉴 중복, 조사, 출처 표시 회귀", () => {
         channelOrSite: "식품안전나라",
         url: "https://www.foodsafetykorea.go.kr",
       }),
-    ).toEqual({ title: "식생활 안내", publisher: "식품안전나라", isExample: false });
+    ).toEqual({ title: "식생활 안내", publisher: "foodsafetykorea.go.kr", isExample: true });
   });
 
   it("확실한 실제 출처 링크만 통과시키고 가상/샘플/임시/예시 링크는 배제한다", () => {
     // 유효한 공공기관 및 실제 외부 출처
     expect(
       isVerifiedAuthoritativeSource({
-        title: "영유아 이유식 가이드",
+        title: "식약처 조리식품 레시피 DB 16번",
+        channelOrSite: "식품안전나라",
+        url: "https://www.foodsafetykorea.go.kr/api/newDatasetDetail.do?svc_no=COOKRCP01",
+        verificationStatus: "VERIFIED",
+      }),
+    ).toBe(true);
+    expect(
+      isVerifiedAuthoritativeSource({
+        title: "미확인 자료",
         channelOrSite: "식품안전나라",
         url: "https://www.foodsafetykorea.go.kr/portal/board/board.do",
       }),
-    ).toBe(true);
+    ).toBe(false);
 
     // 샘플/시드/임시 키워드 포함
     expect(
