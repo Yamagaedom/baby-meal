@@ -29,9 +29,22 @@ mapping = {
     'green-peas':170419, 'shiitake-mushroom':169242, 'bok-choy':170390,
     'apple':171689, 'banana':173944, 'strawberry':167762,
     'chicken-breast':171077, 'tofu':172476, 'soft-tofu':172449,
-    'egg':171287, 'milk':172217, 'yogurt-plain':171284,
+    'egg':171287, 'milk':172217, 'plain-yogurt':171284,
     'water':173647, 'sesame-oil':171016, 'olive-oil':171413, 'canola-oil':172336,
+    'beef-minced':174030, 'beef-tenderloin':169542,
+    'pork-tenderloin':168249, 'pork-minced':167902,
+    'cod':171955, 'flounder':174196, 'salmon':175167,
+    'radish':168451, 'paprika':170108, 'green-onion':170005,
+    'napa-cabbage':169979, 'button-mushroom':169251,
+    'blueberry':171711, 'pear':168177, 'persimmon':169941,
+    'avocado':171705, 'pasta-fusilli':168927, 'rice-noodle':169742,
+    'unsalted-butter':173430, 'sesame-powder':170150, 'egg-yolk':172184,
 }
+# Reference-food substitutions are explicit, never represented as exact Korean varieties/cuts.
+proxies = {'zucchini': (169291, 'USDA zucchini is a reference substitute for Korean aehobak.'),
+    'sweet-pumpkin': (170489, 'USDA winter squash, all varieties; reference substitute for Korean danhobak.'),
+    'chicken-tenderloin': (171077, 'USDA skinless chicken breast; reference substitute for tenderloin.')}
+mapping.update({slug: code for slug, (code, _) in proxies.items()})
 nutrients = {'1008':'energy','1003':'protein','1004':'fat','1005':'carbohydrate','1089':'iron','1087':'calcium','1093':'sodium','1079':'fiber'}
 foods = {int(r['fdc_id']):r for r in rows('food.csv')}
 selected = set(mapping.values())
@@ -47,6 +60,8 @@ for slug, code in mapping.items():
         'version':'SR Legacy April 2018 / FDC 2019-04-01',
         'basis':'100g edible ingredient; standard reference food, product and variety differences apply',
         'per100g':values[code]}
+    if slug in proxies:
+        result[slug]['mappingNote'] = proxies[slug][1]
 Path('src/data').mkdir(exist_ok=True)
 Path('src/data/food-composition.json').write_text(json.dumps(result, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
 print(json.dumps({'foods':len(result),'archiveSha256':hashlib.sha256(cache.read_bytes()).hexdigest()}))
