@@ -147,46 +147,56 @@ export function RecipeCommunitySection({
         </div>
       </div>
 
-      {/* 평점 종합 요약 대시보드 */}
-      <div className="grid grid-cols-1 items-center gap-6 rounded-lg bg-[var(--color-surface-muted)] p-5 sm:grid-cols-3">
-        <div className="text-center sm:border-r sm:border-[var(--color-border)] sm:pr-6">
-          <span className="block text-4xl font-extrabold text-[var(--color-text)]">
-            {stats.averageRating > 0 ? stats.averageRating.toFixed(1) : "0.0"}
-          </span>
-          <div className="mt-1.5 flex justify-center gap-0.5 text-amber-400">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <span key={star} className="text-lg">
-                {star <= Math.round(stats.averageRating) ? "★" : "☆"}
+      {stats.totalReviews > 0 && (
+        <details className="disclosure">
+          <summary>
+            평점 상세 · {stats.averageRating.toFixed(1)}점 · 후기 {stats.totalReviews}개
+          </summary>
+          {/* 평점 종합 요약 대시보드 */}
+          <div className="grid grid-cols-1 items-center gap-6 rounded-lg bg-[var(--color-surface-muted)] p-5 sm:grid-cols-3">
+            <div className="text-center sm:border-r sm:border-[var(--color-border)] sm:pr-6">
+              <span className="block text-4xl font-extrabold text-[var(--color-text)]">
+                {stats.averageRating > 0 ? stats.averageRating.toFixed(1) : "0.0"}
               </span>
-            ))}
-          </div>
-          <span className="mt-1 block text-xs text-[var(--color-text-secondary)]">
-            {stats.totalReviews > 0 ? `총 ${stats.totalReviews}개 후기` : "등록된 후기 없음"}
-          </span>
-        </div>
-
-        {/* 별점별 비율 분포 바 */}
-        <div className="space-y-1.5 sm:col-span-2">
-          {[5, 4, 3, 2, 1].map((star) => {
-            const count = stats.ratingCounts[star as 1 | 2 | 3 | 4 | 5] ?? 0;
-            const pct = stats.totalReviews > 0 ? Math.round((count / stats.totalReviews) * 100) : 0;
-            return (
-              <div key={star} className="flex items-center gap-2 text-xs">
-                <span className="w-9 font-medium text-[var(--color-text-secondary)]">{star}점</span>
-                <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-gray-200">
-                  <div
-                    style={{ width: `${pct}%` }}
-                    className="h-full bg-amber-400 transition-all"
-                  />
-                </div>
-                <span className="w-8 text-right text-[11px] text-[var(--color-text-secondary)]">
-                  {count}개
-                </span>
+              <div className="mt-1.5 flex justify-center gap-0.5 text-amber-400">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <span key={star} className="text-lg">
+                    {star <= Math.round(stats.averageRating) ? "★" : "☆"}
+                  </span>
+                ))}
               </div>
-            );
-          })}
-        </div>
-      </div>
+              <span className="mt-1 block text-xs text-[var(--color-text-secondary)]">
+                {stats.totalReviews > 0 ? `총 ${stats.totalReviews}개 후기` : "등록된 후기 없음"}
+              </span>
+            </div>
+
+            {/* 별점별 비율 분포 바 */}
+            <div className="space-y-1.5 sm:col-span-2">
+              {[5, 4, 3, 2, 1].map((star) => {
+                const count = stats.ratingCounts[star as 1 | 2 | 3 | 4 | 5] ?? 0;
+                const pct =
+                  stats.totalReviews > 0 ? Math.round((count / stats.totalReviews) * 100) : 0;
+                return (
+                  <div key={star} className="flex items-center gap-2 text-xs">
+                    <span className="w-9 font-medium text-[var(--color-text-secondary)]">
+                      {star}점
+                    </span>
+                    <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-gray-200">
+                      <div
+                        style={{ width: `${pct}%` }}
+                        className="h-full bg-amber-400 transition-all"
+                      />
+                    </div>
+                    <span className="w-8 text-right text-[11px] text-[var(--color-text-secondary)]">
+                      {count}개
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </details>
+      )}
 
       <details className="disclosure">
         <summary>솔직 후기 작성하기</summary>
