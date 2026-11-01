@@ -116,7 +116,7 @@ export async function getTodayRecommendations(
         personalization,
       );
       return {
-        card: toRecipeCardView(r, baby, favSet, logSummaries),
+        card: toRecipeCardView(r, baby, favSet, logSummaries, dictMap),
         rankScore: scoreInfo.totalScore + seededJitter(r.id, seed) * jitterWeight,
       };
     })
@@ -224,12 +224,24 @@ export async function searchRecipesForBaby(
       },
       orderBy:
         filter.sortBy === "POPULAR"
-          ? [{ favoriteCount: "desc" as const }, { averageRating: "desc" as const }, { qualityScore: "desc" as const }]
+          ? [
+              { favoriteCount: "desc" as const },
+              { averageRating: "desc" as const },
+              { qualityScore: "desc" as const },
+            ]
           : filter.sortBy === "RATING"
-            ? [{ averageRating: "desc" as const }, { reviewCount: "desc" as const }, { qualityScore: "desc" as const }]
+            ? [
+                { averageRating: "desc" as const },
+                { reviewCount: "desc" as const },
+                { qualityScore: "desc" as const },
+              ]
             : filter.sortBy === "LATEST"
               ? [{ generatedAt: "desc" as const }]
-              : [{ qualityScore: "desc" as const }, { cookMinutes: "asc" as const }, { name: "asc" as const }],
+              : [
+                  { qualityScore: "desc" as const },
+                  { cookMinutes: "asc" as const },
+                  { name: "asc" as const },
+                ],
     }),
     loadIngredientDictionaryMap(prisma),
     prisma.favorite.findMany({
@@ -253,7 +265,7 @@ export async function searchRecipesForBaby(
       }
       return true;
     })
-    .map((r) => toRecipeCardView(r, baby, favSet, logSummaries));
+    .map((r) => toRecipeCardView(r, baby, favSet, logSummaries, dictMap));
 }
 
 /** REC-04: 즐겨찾기 토글 (알레르기 충돌·HIDDEN 레시피는 즐겨찾기 등록도 차단) */

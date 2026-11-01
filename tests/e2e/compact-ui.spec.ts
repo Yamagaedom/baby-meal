@@ -21,13 +21,33 @@ test("compact UI: more results, disclosures, mobile and desktop", async ({ page 
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/recipes");
     const cards = page.locator('article[data-testid^="recipe-card-"]');
-    const total = (await (await page.request.get("/api/recipes")).json()).items.length;
+    const items = (await (await page.request.get("/api/recipes")).json()).items;
+    const total = items.length;
     await expect(cards).toHaveCount(Math.min(12, total));
     if (total > 12) {
       const more = page.getByRole("button", { name: /레시피 더보기/ });
       await more.click();
       await expect(cards).toHaveCount(Math.min(24, total));
     }
+    const first = cards.first();
+    await expect(first.getByText("주요 재료:", { exact: false })).toBeVisible();
+    await expect(first.getByText(/현재 아기 월령보다 높은/)).toHaveCount(0);
+    const allergenCandidate = cards
+      .filter({ has: page.getByRole("button", { name: "알레르기 보기" }) })
+      .first();
+    if (await allergenCandidate.count()) {
+      const allergenCard = page.getByTestId((await allergenCandidate.getAttribute("data-testid"))!);
+      await expect(allergenCard.getByText(/알레르기 유발 성분:/)).toHaveCount(0);
+      await allergenCard.getByRole("button", { name: "알레르기 보기" }).click();
+      await expect(allergenCard.getByText(/알레르기 유발 성분:/)).toBeVisible();
+      await allergenCard.getByRole("button", { name: "알레르기 접기" }).click();
+      await expect(allergenCard.getByText(/알레르기 유발 성분:/)).toHaveCount(0);
+    }
+    expect(
+      items.some(
+        (item: { primaryIngredients?: string[] }) => (item.primaryIngredients?.length ?? 0) > 0,
+      ),
+    ).toBe(true);
     const href = await cards.first().getByRole("link").first().getAttribute("href");
     await page.screenshot({ path: testInfo.outputPath("recipes-mobile.png"), fullPage: true });
     await page.goto(href!);

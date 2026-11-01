@@ -34,6 +34,7 @@ export function RecipeCard({
     favoriteOverride?.initial === recipe.isFavorite ? favoriteOverride.value : recipe.isFavorite;
   const [favCount, setFavCount] = useState(recipe.favoriteCount ?? 0);
   const [pending, setPending] = useState(false);
+  const [showAllergens, setShowAllergens] = useState(false);
   const secondaryBadge =
     extraBadge === "추가 추천" ? recipe.ratingBadge : extraBadge || recipe.ratingBadge;
 
@@ -82,15 +83,20 @@ export function RecipeCard({
       >
         <Icon name="star" fill={isFavorite ? "currentColor" : "none"} />
       </button>
-      <h3 className="pr-8 text-base leading-snug font-semibold text-balance text-[var(--color-text)]">
-        <Link
-          href={`/recipes/${recipe.id}`}
-          className="rounded-sm underline-offset-4 hover:text-[var(--color-primary)] hover:underline"
-        >
-          {recipe.name}
-        </Link>
-      </h3>
-      <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-secondary)]">
+      <div className="flex items-start gap-2 pr-10">
+        <h3 className="min-w-0 text-lg leading-snug font-semibold text-balance text-[var(--color-text)]">
+          <Link
+            href={`/recipes/${recipe.id}`}
+            className="rounded-sm underline-offset-4 hover:text-[var(--color-primary)] hover:underline"
+          >
+            {recipe.name}
+          </Link>
+        </h3>
+        <Badge variant="neutral" className="mt-0.5 shrink-0">
+          {recipe.category === "MEAL" ? "식사" : "간식"}
+        </Badge>
+      </div>
+      <p className="mt-1.5 text-xs leading-relaxed text-[var(--color-text-muted)]">
         {recipe.cookMinutes}분 <span aria-hidden="true">·</span> {recipe.ageStageLabels.join(" · ")}
         {profileSaltLevel && recipe.saltLevel !== profileSaltLevel && (
           <> · {recipe.saltLevelLabel}</>
@@ -99,7 +105,6 @@ export function RecipeCard({
       <div className="mt-3 flex flex-wrap items-center justify-between gap-1.5">
         <div className="flex flex-wrap items-center gap-1.5" data-testid="recipe-card-badges">
           {recipe.isAiGenerated && <Badge variant="primary">AI 추천</Badge>}
-          <Badge variant="neutral">{recipe.category === "MEAL" ? "식사" : "간식"}</Badge>
           {secondaryBadge && (
             <Badge variant={secondaryBadge.includes("%") ? "primary" : "age"}>
               {secondaryBadge}
@@ -125,24 +130,29 @@ export function RecipeCard({
       {subText && (
         <p className="mt-3 text-xs font-medium text-[var(--color-text-secondary)]">{subText}</p>
       )}
-      {(recipe.aboveAgeWarning || recipe.allergens.length > 0) && (
-        <div className="mt-3 space-y-2 border-t border-[var(--color-border)] pt-3 text-sm leading-relaxed">
-          {recipe.aboveAgeWarning && (
-            <p className="flex items-start gap-1.5 font-semibold text-[var(--color-warning-text)]">
-              <Icon name="warning" className="mt-0.5 shrink-0" width="16" height="16" />
-              <span>현재 아기 월령보다 높은 단계 메뉴입니다 (식감·크기 주의)</span>
-            </p>
-          )}
-          {recipe.allergens.length > 0 && (
-            <p className="text-[var(--color-text-secondary)]">
-              알레르기 유발 성분:{" "}
-              <strong className="font-semibold text-[var(--color-text)]">
-                {recipe.allergens.map((a) => a.label).join(", ")}
-              </strong>
-            </p>
-          )}
-        </div>
-      )}
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-[var(--color-border)] pt-2 text-sm">
+        <p className="min-w-0 text-[var(--color-text-secondary)]">
+          주요 재료:{" "}
+          <span className="font-medium text-[var(--color-text)]">
+            {recipe.primaryIngredients?.join(", ") || "상세에서 확인"}
+          </span>
+        </p>
+        {recipe.allergens.length > 0 && (
+          <button
+            type="button"
+            aria-expanded={showAllergens}
+            onClick={() => setShowAllergens((value) => !value)}
+            className="min-h-11 text-xs font-semibold text-[var(--color-primary-text)] underline underline-offset-4"
+          >
+            {showAllergens ? "알레르기 접기" : "알레르기 보기"}
+          </button>
+        )}
+        {showAllergens && (
+          <p className="text-xs text-[var(--color-danger-text)]" role="status">
+            알레르기 유발 성분: {recipe.allergens.map((a) => a.label).join(", ")}
+          </p>
+        )}
+      </div>
     </article>
   );
 }

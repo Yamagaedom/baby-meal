@@ -288,9 +288,7 @@ export async function recommendRecipesByIngredients(
     ]),
   );
 
-  const pantryBasicIds = new Set(
-    allIngredientRows.filter((r) => r.isPantryBasic).map((r) => r.id),
-  );
+  const pantryBasicIds = new Set(allIngredientRows.filter((r) => r.isPantryBasic).map((r) => r.id));
   const favSet = new Set(favorites.map((f) => f.recipeId));
 
   // 사용자가 입력한 재료(기본 양념 제외) 중 최소 1개라도 포함된 안전 레시피를 매칭
@@ -324,7 +322,7 @@ export async function recommendRecipesByIngredients(
     );
     personalScoreById.set(row.id, pScore.totalScore);
 
-    const card = toRecipeCardView(row, baby, favSet, logSummaries);
+    const card = toRecipeCardView(row, baby, favSet, logSummaries, dictMap);
     items.push({
       ...card,
       ...match,

@@ -152,6 +152,7 @@ export interface RecipeCardView {
   baseServings: number;
   sodiumMgPerServing: number;
   allergens: { code: Allergen; label: string }[];
+  primaryIngredients?: string[];
   isFavorite: boolean;
   ratingBadge: string | null;
   aboveAgeWarning: boolean;
@@ -234,6 +235,7 @@ export function toRecipeCardView(
     baseServings: number;
     sodiumMgPerServing: number;
     allergens: Allergen[];
+    ingredients: readonly { ingredientId: string; isOptional: boolean }[];
     isAiGenerated?: boolean;
     favoriteCount?: number;
     averageRating?: number;
@@ -242,6 +244,7 @@ export function toRecipeCardView(
   baby: BabyProfileView,
   favoriteSet: ReadonlySet<string>,
   logSummaries: ReadonlyMap<string, MealLogBadgeSummary>,
+  dictMap: ReadonlyMap<string, IngredientInfo>,
 ): RecipeCardView {
   const stages = row.ageStages as AgeStage[];
   return {
@@ -261,6 +264,27 @@ export function toRecipeCardView(
     baseServings: row.baseServings,
     sodiumMgPerServing: row.sodiumMgPerServing,
     allergens: row.allergens.map((code) => ({ code, label: ALLERGEN_LABELS[code] })),
+    primaryIngredients: row.ingredients
+      .filter((item) => !item.isOptional)
+      .map((item) => dictMap.get(item.ingredientId))
+      .filter(
+        (item): item is IngredientInfo =>
+          Boolean(item) && item?.group !== "SEASONING" && item?.name !== "물",
+      )
+      .sort((a, b) => {
+        const title = row.name.replace(/\s/g, "");
+        const position = (item: IngredientInfo) => {
+          const names = [item.name, ...item.synonyms].map((name) => name.replace(/\s/g, ""));
+          const matches = names
+            .flatMap((name) => [name, name.slice(0, 2)])
+            .filter((name) => name.length >= 2 && title.includes(name))
+            .map((name) => title.indexOf(name));
+          return matches.length ? Math.min(...matches) : Number.MAX_SAFE_INTEGER;
+        };
+        return position(a) - position(b) || a.name.localeCompare(b.name, "ko");
+      })
+      .slice(0, 2)
+      .map((item) => item.name),
     isFavorite: favoriteSet.has(row.id),
     ratingBadge: logSummaries.get(row.id)?.badgeText ?? null,
     aboveAgeWarning: isRecipeAboveAge(stages, baby.currentAgeMonth),
@@ -325,7 +349,7 @@ export async function getRecipeDetailForBaby(
     loadMealLogSummariesByRecipe(baby.id, prisma),
   ]);
 
-  const card = toRecipeCardView(row, baby, new Set(favRow ? [row.id] : []), logSummaries);
+  const card = toRecipeCardView(row, baby, new Set(favRow ? [row.id] : []), logSummaries, dictMap);
 
   const parsedSteps = z.array(recipeStepSchema).parse(row.steps);
   const parsedTips = babyTipsSchema.parse(row.babyTips);
