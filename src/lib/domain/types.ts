@@ -80,6 +80,8 @@ export type IngredientGroup = (typeof INGREDIENT_GROUPS)[number];
 /** 안전 검증에 필요한 식재료 사전 필드 (Prisma Ingredient의 부분집합) */
 export interface IngredientInfo {
   id: string;
+  slug?: string;
+  nutrition?: unknown;
   name: string;
   synonyms: string[];
   group: IngredientGroup;
@@ -103,14 +105,15 @@ export interface RecipeIngredientInput {
   isOptional: boolean;
 }
 
-/** 영유아(12~48개월) 1회 제공량 기준 영양 정보 */
+/** Per serving. Null means unknown, not zero. */
 export interface RecipeNutritionFacts {
-  caloriesKcal: number;
-  carbohydrateG: number;
-  proteinG: number;
-  fatG: number;
-  sodiumMg: number;
-  calciumMg: number;
-  ironMg: number;
-  dietaryFiberG: number;
+  caloriesKcal: number | null;
+  carbohydrateG: number | null;
+  proteinG: number | null;
+  fatG: number | null;
+  sodiumMg: number | null;
+  calciumMg: number | null;
+  ironMg: number | null;
+  dietaryFiberG: number | null;
+  estimate?: import("@/features/meal-plan/types").NutritionEstimate;
 }

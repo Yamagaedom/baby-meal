@@ -17,6 +17,9 @@
     "db:deploy": "tsx scripts/deploy-database.ts && tsx scripts/bootstrap-weekly.ts",
     "db:seed": "prisma db seed",
     "generate:batch": "tsx scripts/generate-batch-recipes.ts",
+    "catalog:prepare": "tsx scripts/prepare-catalog-repair.ts",
+    "catalog:sql": "node scripts/catalog-repair-sql.mjs",
+    "catalog:check": "node scripts/check-catalog-repair.mjs",
     "format": "prettier --write ."
   },
   "dependencies": {

@@ -152,6 +152,8 @@ describeWithDb("P0 도메인 통합 검증 — 프로필·추천·재료검색·
       where: { slug: "beef-potato-braised-low-sodium" }, // ageStages: [2, 3, 4]
     });
     const detail = await getRecipeDetailForBaby(u.user.id, baby, braisedPotato.id, 4, prisma);
+    const oneServing = await getRecipeDetailForBaby(u.user.id, baby, braisedPotato.id, 1, prisma);
+    expect(detail.nutrition).toEqual(oneServing.nutrition);
     expect(detail.aboveAgeWarning).toBe(true);
     expect(detail.aboveAgeWarningMessage).toContain("주의");
     expect(detail.showPortionStorageTip).toBe(true);

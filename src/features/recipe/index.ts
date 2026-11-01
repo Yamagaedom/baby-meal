@@ -67,6 +67,8 @@ export async function loadIngredientDictionaryMap(
       r.id,
       {
         id: r.id,
+        slug: r.slug,
+        nutrition: r.nutrition,
         name: r.name,
         synonyms: r.synonyms,
         group: r.group,
@@ -336,10 +338,9 @@ export async function getRecipeDetailForBaby(
       cautionNote: ri.ingredient.cautionNote!,
     }));
 
-  let nutrition = (row.nutrition as unknown as RecipeNutritionFacts) ?? null;
-  if (!nutrition) {
-    nutrition = computeRecipeNutrition(row.ingredients, dictMap, targetServings);
-  }
+  // Cooking more servings scales ingredients, never the nutrition of one serving.
+  // Recompute old cached totals that used group averages without provenance.
+  const nutrition = computeRecipeNutrition(row.ingredients, dictMap, row.baseServings);
 
   return {
     ...card,
