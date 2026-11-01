@@ -5,6 +5,7 @@ import Link from "next/link";
 import { OfflineRecipeReader } from "@/components/PwaProviderAndOfflineBanner";
 import { RecipeCard } from "@/components/RecipeCard";
 import {
+  BottomSheet,
   Button,
   EmptyState,
   ErrorState,
@@ -13,6 +14,7 @@ import {
   RecipeCardSkeleton,
   Select,
 } from "@/components/ui";
+import { Icon } from "@/components/ui/Icon";
 import type { RecipeCardView, RecipeDetailView } from "@/features/recipe";
 import {
   AGE_STAGE_LABELS,
@@ -35,6 +37,7 @@ export function RecipesExplorerClient({
   initialItems,
 }: RecipesExplorerClientProps) {
   const [items, setItems] = useState<RecipeCardView[]>(initialItems);
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [category, setCategory] = useState("");
   const [stage, setStage] = useState("");
@@ -52,6 +55,7 @@ export function RecipesExplorerClient({
   const [offlineReaderRecipe, setOfflineReaderRecipe] = useState<RecipeDetailView | null>(null);
 
   const advancedCount = [stage, saltLevel, tool, ingredientGroup].filter(Boolean).length;
+  const totalFilterCount = [category, stage, saltLevel, maxCookMinutes, tool, ingredientGroup].filter(Boolean).length;
 
   async function applyFilters(
     overrides?: Partial<{
@@ -251,123 +255,133 @@ export function RecipesExplorerClient({
           <div>
             <Input
               type="search"
-              aria-label="레시피 이름 또는 식재료 검색"
+              aria-label="레시피 이름 검색"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="메뉴명 또는 식재료 검색 (예: 소고기, 당근, 진밥)"
             />
           </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <Select
-              id="filter-category"
-              label="분류"
-              value={category}
-              onChange={(e) => {
-                setCategory(e.target.value);
-                void applyFilters({ category: e.target.value });
-              }}
-            >
-              <option value="">전체 (식사+간식)</option>
-              <option value="MEAL">식사</option>
-              <option value="SNACK">간식</option>
-            </Select>
-            <Select
-              id="filter-time"
-              label="조리시간"
-              value={maxCookMinutes}
-              onChange={(e) => {
-                setMaxCookMinutes(e.target.value);
-                void applyFilters({ maxCookMinutes: e.target.value });
-              }}
-            >
-              <option value="">전체</option>
-              <option value="10">10분 이하</option>
-              <option value="20">20분 이하</option>
-              <option value="30">30분 이하</option>
-              <option value="30_PLUS">30분 초과</option>
-            </Select>
-          </div>
-          <button
-            type="button"
-            aria-expanded={advancedOpen}
-            aria-controls="advanced-recipe-filters"
-            onClick={() => setAdvancedOpen((open) => !open)}
-            className="inline-flex min-h-11 items-center rounded-md px-1 text-sm font-semibold text-[var(--color-primary-text)] underline underline-offset-4"
-          >
-            {advancedOpen ? "추가 필터 접기" : "필터 더보기"}
-            {advancedCount > 0 ? ` (${advancedCount}개 적용)` : ""}
-          </button>
-          <div id="advanced-recipe-filters" hidden={!advancedOpen}>
-            <div className="grid grid-cols-1 gap-3 border-t border-[var(--color-border)] pt-4 sm:grid-cols-2">
-              <Select
-                id="filter-stage"
-                label="연령 단계"
-                value={stage}
-                onChange={(e) => {
-                  setStage(e.target.value);
-                  void applyFilters({ stage: e.target.value });
-                }}
+
+          {/* 퀵 필터 칩스 (노션 UI 레퍼런스: Chips / Horizontal Scroll) */}
+          <div className="no-scrollbar -mx-1 flex items-center gap-2 overflow-x-auto px-1 py-1">
+            {[
+              {
+                id: "all",
+                label: "전체",
+                active:
+                  !category &&
+                  !stage &&
+                  !saltLevel &&
+                  !maxCookMinutes &&
+                  !query &&
+                  !tool &&
+                  !ingredientGroup &&
+                  !favoritesOnly,
+                onClick: handleReset,
+              },
+              {
+                id: "stage-1",
+                label: "초기 이유식",
+                active: stage === "1",
+                onClick: () => {
+                  const next = stage === "1" ? "" : "1";
+                  setStage(next);
+                  void applyFilters({ stage: next });
+                },
+              },
+              {
+                id: "stage-2",
+                label: "중기 이유식",
+                active: stage === "2",
+                onClick: () => {
+                  const next = stage === "2" ? "" : "2";
+                  setStage(next);
+                  void applyFilters({ stage: next });
+                },
+              },
+              {
+                id: "stage-3",
+                label: "후기·완료기",
+                active: stage === "3",
+                onClick: () => {
+                  const next = stage === "3" ? "" : "3";
+                  setStage(next);
+                  void applyFilters({ stage: next });
+                },
+              },
+              {
+                id: "beef",
+                label: "소고기",
+                active: query === "소고기",
+                onClick: () => {
+                  const next = query === "소고기" ? "" : "소고기";
+                  setQuery(next);
+                  void applyFilters({ query: next });
+                },
+              },
+              {
+                id: "quick",
+                label: "10분 초간단",
+                active: maxCookMinutes === "10",
+                onClick: () => {
+                  const next = maxCookMinutes === "10" ? "" : "10";
+                  setMaxCookMinutes(next);
+                  void applyFilters({ maxCookMinutes: next });
+                },
+              },
+              {
+                id: "nosalt",
+                label: "무염 안심",
+                active: saltLevel === "NONE",
+                onClick: () => {
+                  const next = saltLevel === "NONE" ? "" : "NONE";
+                  setSaltLevel(next);
+                  void applyFilters({ saltLevel: next });
+                },
+              },
+              {
+                id: "snack",
+                label: "간식만",
+                active: category === "SNACK",
+                onClick: () => {
+                  const next = category === "SNACK" ? "" : "SNACK";
+                  setCategory(next);
+                  void applyFilters({ category: next });
+                },
+              },
+            ].map((chip) => (
+              <button
+                key={chip.id}
+                type="button"
+                onClick={chip.onClick}
+                className={`inline-flex min-h-8 shrink-0 items-center rounded-full px-3.5 text-xs font-semibold transition-all ${
+                  chip.active
+                    ? "bg-[var(--color-primary)] text-white shadow-xs"
+                    : "border border-[var(--color-border)] bg-white text-[var(--color-text-secondary)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-text)]"
+                }`}
               >
-                <option value="">전체 단계</option>
-                {AGE_STAGE_VALUES.map((st) => (
-                  <option key={st} value={String(st)}>
-                    {AGE_STAGE_LABELS[st]}
-                  </option>
-                ))}
-              </Select>
-              <Select
-                id="filter-salt"
-                label="간(염분) 단계"
-                value={saltLevel}
-                onChange={(e) => {
-                  setSaltLevel(e.target.value);
-                  void applyFilters({ saltLevel: e.target.value });
-                }}
-              >
-                <option value="">아기 프로필 기준</option>
-                {SALT_LEVELS.map((lvl) => (
-                  <option key={lvl} value={lvl}>
-                    {SALT_LEVEL_LABELS[lvl]}
-                  </option>
-                ))}
-              </Select>
-              <Select
-                id="filter-tool"
-                label="조리도구"
-                value={tool}
-                onChange={(e) => {
-                  setTool(e.target.value);
-                  void applyFilters({ tool: e.target.value });
-                }}
-              >
-                <option value="">전체</option>
-                {COMMON_TOOLS.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </Select>
-              <Select
-                id="filter-group"
-                label="주재료 분류"
-                value={ingredientGroup}
-                onChange={(e) => {
-                  setIngredientGroup(e.target.value);
-                  void applyFilters({ ingredientGroup: e.target.value });
-                }}
-              >
-                <option value="">전체</option>
-                {INGREDIENT_GROUPS.map((grp) => (
-                  <option key={grp} value={grp}>
-                    {INGREDIENT_GROUP_LABELS[grp]}
-                  </option>
-                ))}
-              </Select>
-            </div>
+                {chip.label}
+              </button>
+            ))}
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 pt-1">
-            <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-canvas)] px-3.5 py-2 text-sm font-semibold text-[var(--color-text)]">
+          {/* 모바일 화면 (sm:hidden): 바텀 시트 열기 버튼 & 빠른 토글 */}
+          <div className="flex sm:hidden flex-wrap items-center justify-between gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => setFilterSheetOpen(true)}
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-[var(--color-border-strong)] bg-white px-3.5 py-2 text-sm font-semibold text-[var(--color-text)] shadow-xs transition-colors hover:bg-[var(--color-surface-muted)]"
+            >
+              <Icon name="filter" width={16} height={16} />
+              <span>상세 필터</span>
+              {totalFilterCount > 0 && (
+                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--color-primary)] px-1.5 text-xs font-bold text-white">
+                  {totalFilterCount}
+                </span>
+              )}
+            </button>
+
+            <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-[var(--color-border-strong)] bg-[var(--color-canvas)] px-3 py-2 text-xs font-semibold text-[var(--color-text)]">
               <input
                 type="checkbox"
                 checked={favoritesOnly}
@@ -377,15 +391,273 @@ export function RecipesExplorerClient({
                 }}
                 className="h-4 w-4 accent-[var(--color-primary)]"
               />
-              <span>즐겨찾기만 보기</span>
+              <span>즐겨찾기만</span>
             </label>
 
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading} size="sm">
               {loading ? "검색 중..." : "검색"}
             </Button>
           </div>
+
+          {/* 데스크톱 화면 (hidden sm:block): 기존 인라인 필터 그리드 유지 */}
+          <div className="hidden sm:block space-y-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Select
+                id="filter-category"
+                label="분류"
+                value={category}
+                onChange={(e) => {
+                  setCategory(e.target.value);
+                  void applyFilters({ category: e.target.value });
+                }}
+              >
+                <option value="">전체 (식사+간식)</option>
+                <option value="MEAL">식사</option>
+                <option value="SNACK">간식</option>
+              </Select>
+              <Select
+                id="filter-time"
+                label="조리시간"
+                value={maxCookMinutes}
+                onChange={(e) => {
+                  setMaxCookMinutes(e.target.value);
+                  void applyFilters({ maxCookMinutes: e.target.value });
+                }}
+              >
+                <option value="">전체</option>
+                <option value="10">10분 이하</option>
+                <option value="20">20분 이하</option>
+                <option value="30">30분 이하</option>
+                <option value="30_PLUS">30분 초과</option>
+              </Select>
+            </div>
+            <button
+              type="button"
+              aria-expanded={advancedOpen}
+              aria-controls="advanced-recipe-filters"
+              onClick={() => setAdvancedOpen((open) => !open)}
+              className="inline-flex min-h-11 items-center rounded-md px-1 text-sm font-semibold text-[var(--color-primary-text)] underline underline-offset-4"
+            >
+              {advancedOpen ? "추가 필터 접기" : "필터 더보기"}
+              {advancedCount > 0 ? ` (${advancedCount}개 적용)` : ""}
+            </button>
+            <div id="advanced-recipe-filters" hidden={!advancedOpen}>
+              <div className="grid grid-cols-1 gap-3 border-t border-[var(--color-border)] pt-4 sm:grid-cols-2">
+                <Select
+                  id="filter-stage"
+                  label="연령 단계"
+                  value={stage}
+                  onChange={(e) => {
+                    setStage(e.target.value);
+                    void applyFilters({ stage: e.target.value });
+                  }}
+                >
+                  <option value="">전체 단계</option>
+                  {AGE_STAGE_VALUES.map((st) => (
+                    <option key={st} value={String(st)}>
+                      {AGE_STAGE_LABELS[st]}
+                    </option>
+                  ))}
+                </Select>
+                <Select
+                  id="filter-salt"
+                  label="간(염분) 단계"
+                  value={saltLevel}
+                  onChange={(e) => {
+                    setSaltLevel(e.target.value);
+                    void applyFilters({ saltLevel: e.target.value });
+                  }}
+                >
+                  <option value="">아기 프로필 기준</option>
+                  {SALT_LEVELS.map((lvl) => (
+                    <option key={lvl} value={lvl}>
+                      {SALT_LEVEL_LABELS[lvl]}
+                    </option>
+                  ))}
+                </Select>
+                <Select
+                  id="filter-tool"
+                  label="조리도구"
+                  value={tool}
+                  onChange={(e) => {
+                    setTool(e.target.value);
+                    void applyFilters({ tool: e.target.value });
+                  }}
+                >
+                  <option value="">전체</option>
+                  {COMMON_TOOLS.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </Select>
+                <Select
+                  id="filter-group"
+                  label="주재료 분류"
+                  value={ingredientGroup}
+                  onChange={(e) => {
+                    setIngredientGroup(e.target.value);
+                    void applyFilters({ ingredientGroup: e.target.value });
+                  }}
+                >
+                  <option value="">전체</option>
+                  {INGREDIENT_GROUPS.map((grp) => (
+                    <option key={grp} value={grp}>
+                      {INGREDIENT_GROUP_LABELS[grp]}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-canvas)] px-3.5 py-2 text-sm font-semibold text-[var(--color-text)]">
+                <input
+                  type="checkbox"
+                  checked={favoritesOnly}
+                  onChange={(e) => {
+                    setFavoritesOnly(e.target.checked);
+                    void applyFilters({ favoritesOnly: e.target.checked });
+                  }}
+                  className="h-4 w-4 accent-[var(--color-primary)]"
+                />
+                <span>즐겨찾기만 보기</span>
+              </label>
+
+              <Button type="submit" disabled={loading}>
+                {loading ? "검색 중..." : "검색"}
+              </Button>
+            </div>
+          </div>
         </form>
       </section>
+
+      {/* 모바일 상세 필터 바텀 시트 (노션 UI 레퍼런스: Bottom Sheet / Drawer) */}
+      <BottomSheet
+        open={filterSheetOpen}
+        onClose={() => setFilterSheetOpen(false)}
+        title="레시피 상세 필터"
+        footer={
+          <div className="flex items-center gap-2.5">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={() => {
+                handleReset();
+                setFilterSheetOpen(false);
+              }}
+            >
+              초기화
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              className="flex-1"
+              onClick={() => {
+                void applyFilters();
+                setFilterSheetOpen(false);
+              }}
+            >
+              결과 {items.length}건 보기
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4 py-1">
+          <Select
+            id="mobile-filter-category"
+            label="식사 분류"
+            value={category}
+            onChange={(e) => {
+              setCategory(e.target.value);
+            }}
+          >
+            <option value="">전체 (식사+간식)</option>
+            <option value="MEAL">식사</option>
+            <option value="SNACK">간식</option>
+          </Select>
+
+          <Select
+            id="mobile-filter-stage"
+            label="연령 단계"
+            value={stage}
+            onChange={(e) => {
+              setStage(e.target.value);
+            }}
+          >
+            <option value="">전체 단계</option>
+            {AGE_STAGE_VALUES.map((st) => (
+              <option key={st} value={String(st)}>
+                {AGE_STAGE_LABELS[st]}
+              </option>
+            ))}
+          </Select>
+
+          <Select
+            id="mobile-filter-salt"
+            label="간(염분) 단계"
+            value={saltLevel}
+            onChange={(e) => {
+              setSaltLevel(e.target.value);
+            }}
+          >
+            <option value="">아기 프로필 기준</option>
+            {SALT_LEVELS.map((lvl) => (
+              <option key={lvl} value={lvl}>
+                {SALT_LEVEL_LABELS[lvl]}
+              </option>
+            ))}
+          </Select>
+
+          <Select
+            id="mobile-filter-time"
+            label="조리시간"
+            value={maxCookMinutes}
+            onChange={(e) => {
+              setMaxCookMinutes(e.target.value);
+            }}
+          >
+            <option value="">전체</option>
+            <option value="10">10분 이하</option>
+            <option value="20">20분 이하</option>
+            <option value="30">30분 이하</option>
+            <option value="30_PLUS">30분 초과</option>
+          </Select>
+
+          <Select
+            id="mobile-filter-tool"
+            label="조리도구"
+            value={tool}
+            onChange={(e) => {
+              setTool(e.target.value);
+            }}
+          >
+            <option value="">전체</option>
+            {COMMON_TOOLS.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </Select>
+
+          <Select
+            id="mobile-filter-group"
+            label="주재료 분류"
+            value={ingredientGroup}
+            onChange={(e) => {
+              setIngredientGroup(e.target.value);
+            }}
+          >
+            <option value="">전체</option>
+            {INGREDIENT_GROUPS.map((grp) => (
+              <option key={grp} value={grp}>
+                {INGREDIENT_GROUP_LABELS[grp]}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </BottomSheet>
 
       {offlineFallbackMode && (
         <div
@@ -409,11 +681,20 @@ export function RecipesExplorerClient({
         ) : items.length === 0 ? (
           <EmptyState
             title="조건에 맞는 레시피가 없어요"
-            description="필터 조건을 완화하거나 초기화 버튼을 눌러 전체 메뉴를 확인해 보세요."
+            description="필터 조건을 완화하거나 초기화하여 다른 맛있는 유아식을 찾아보세요."
+            icon={<Icon name="book" width={28} height={28} />}
             action={
-              <Button variant="outline" size="sm" onClick={handleReset}>
-                필터 초기화하기
-              </Button>
+              <div className="flex flex-wrap justify-center gap-2.5">
+                <Button variant="primary" size="sm" onClick={handleReset}>
+                  필터 초기화하기
+                </Button>
+                <Link
+                  href="/"
+                  className="inline-flex min-h-9 items-center rounded-md border border-[var(--color-border)] px-3.5 text-xs font-semibold text-[var(--color-text)] hover:bg-[var(--color-surface-muted)] transition-colors"
+                >
+                  AI 맞춤 추천 받기
+                </Link>
+              </div>
             }
           />
         ) : (
@@ -422,7 +703,7 @@ export function RecipesExplorerClient({
               offlineFallbackMode ? (
                 <div
                   key={recipe.id}
-                  className="flex flex-col justify-between rounded-lg border border-[var(--color-border)] bg-white p-5"
+                  className="animate-fadeInUp flex flex-col justify-between rounded-lg border border-[var(--color-border)] bg-white p-5"
                 >
                   <div>
                     <h3 className="text-lg font-semibold text-[var(--color-text)]">
@@ -451,12 +732,13 @@ export function RecipesExplorerClient({
                   </div>
                 </div>
               ) : (
-                <RecipeCard
-                  key={recipe.id}
-                  babyId={babyId}
-                  profileSaltLevel={babySaltLevel}
-                  recipe={recipe}
-                />
+                <div key={recipe.id} className="animate-fadeInUp">
+                  <RecipeCard
+                    babyId={babyId}
+                    profileSaltLevel={babySaltLevel}
+                    recipe={recipe}
+                  />
+                </div>
               ),
             )}
           </div>

@@ -36,14 +36,17 @@ export function RecipeNutritionWidget({
       </div>
       <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {items.map(([label, value, unit, coverage]) => (
-          <div key={label} className="rounded-md bg-[var(--color-surface-muted)] p-3">
+          <div key={label} className="min-w-0 overflow-hidden rounded-md bg-[var(--color-surface-muted)] p-3">
             <dt className="text-xs text-[var(--color-text-secondary)]">{label}</dt>
-            <dd className="mt-1 font-semibold">{value === null ? "미확인" : value + " " + unit}</dd>
+            <dd className="mt-1 break-words font-semibold">
+              <span>{value === null ? "미확인" : value + " " + unit}</span>
+
             {value !== null && coverage < 1 && (
-              <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
+              <span className="mt-1 block text-xs font-normal text-[var(--color-text-secondary)]">
                 확인된 재료의 부분 합계
-              </p>
+              </span>
             )}
+            </dd>
           </div>
         ))}
       </dl>

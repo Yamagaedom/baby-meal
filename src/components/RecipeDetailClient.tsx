@@ -5,7 +5,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CookingModeModal } from "@/components/CookingModeModal";
-import { Badge, Button, Input, Select, Stepper } from "@/components/ui";
+import {
+  Accordion,
+  Badge,
+  Breadcrumb,
+  Button,
+  Input,
+  ScrollProgressBar,
+  Select,
+  Stepper,
+} from "@/components/ui";
 import { Icon } from "@/components/ui/Icon";
 import {
   isVerifiedAuthoritativeSource,
@@ -272,10 +281,126 @@ export function RecipeDetailClient({
     recipe.ingredients.map((ing) => ing.name),
   );
 
+  const verifiedSources = recipe.sources
+    .filter(isVerifiedAuthoritativeSource)
+    .map((src) => ({
+      ...src,
+      ...sourceDisplayLabel(src),
+    }));
+
+  const accordionItems = [
+    {
+      id: "tips-texture",
+      title: "식감 · 입자 · 간 조절 팁",
+      icon: <Icon name="timer" width={16} height={16} />,
+      defaultOpen: true,
+      content: (
+        <div className="space-y-2 pt-1 text-sm text-[var(--color-text-secondary)]">
+          <p>
+            <strong className="text-[var(--color-text)]">식감 조절:</strong>{" "}
+            {recipe.babyTips.textureTip}
+          </p>
+          <p>
+            <strong className="text-[var(--color-text)]">재료 크기:</strong>{" "}
+            {recipe.babyTips.cuttingSizeTip}
+          </p>
+          <p>
+            <strong className="text-[var(--color-text)]">간 조절 팁:</strong>{" "}
+            {recipe.babyTips.seasoningTip}
+          </p>
+        </div>
+      ),
+    },
+    ...(Object.keys(recipe.babyTips.stageVariations).length > 0
+      ? [
+          {
+            id: "tips-stages",
+            title: "연령 단계별 맞춤 변형 가이드",
+            icon: <Icon name="profile" width={16} height={16} />,
+            defaultOpen: false,
+            content: (
+              <div className="rounded-lg bg-[var(--color-surface-muted)] p-3.5 text-xs leading-relaxed text-[var(--color-text-secondary)]">
+                <ul className="space-y-1.5">
+                  {Object.entries(recipe.babyTips.stageVariations).map(([st, desc]) => (
+                    <li key={st}>
+                      • <strong className="text-[var(--color-text)]">{st}단계:</strong> {desc}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ),
+          },
+        ]
+      : []),
+    {
+      id: "tips-storage",
+      title: "보관 기한 및 안심 재가열 방법",
+      icon: <Icon name="ingredients" width={16} height={16} />,
+      defaultOpen: false,
+      content: (
+        <div className="space-y-2 pt-1 text-sm text-[var(--color-text-secondary)]">
+          <p>
+            <strong className="text-[var(--color-text)]">보관 기한:</strong> 냉장{" "}
+            {recipe.storageInfo.fridgeDays !== null
+              ? `${recipe.storageInfo.fridgeDays}일`
+              : "비권장"}{" "}
+            / 냉동{" "}
+            {recipe.storageInfo.freezerDays !== null
+              ? `${recipe.storageInfo.freezerDays}일`
+              : "비권장"}
+          </p>
+          <p>
+            <strong className="text-[var(--color-text)]">재가열 안내:</strong>{" "}
+            {recipe.storageInfo.reheatTip}
+          </p>
+        </div>
+      ),
+    },
+    {
+      id: "tips-sources",
+      title: "참고 출처 및 신뢰 정보",
+      icon: <Icon name="book" width={16} height={16} />,
+      defaultOpen: true,
+      content:
+        verifiedSources.length === 0 ? (
+          <p className="pt-1 text-sm text-[var(--color-warning-text)]">
+            현재 확인된 레시피 출처가 없습니다. 재료·조리법을 확인해 주세요.
+          </p>
+        ) : (
+          <div className="pt-1 text-xs text-[var(--color-text-secondary)]">
+            <ul className="space-y-1.5">
+              {verifiedSources.map((source) => (
+                <li key={source.id}>
+                  <a
+                    href={source.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex min-h-9 items-center font-semibold text-[var(--color-primary-text)] underline underline-offset-4 hover:text-[var(--color-text)]"
+                  >
+                    {source.publisher} · {source.title} ↗
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ),
+    },
+  ];
+
   return (
-    <article className="mx-auto max-w-3xl space-y-6">
-      {/* 레시피 기본 정보 */}
-      <section className="border-t border-[var(--color-border)] pt-6">
+    <>
+      <ScrollProgressBar />
+      <article className="mx-auto max-w-3xl w-full min-w-0 space-y-6 overflow-x-clip">
+        <Breadcrumb
+          items={[
+            { label: "홈", href: "/" },
+            { label: "레시피 탐색", href: "/recipes" },
+            { label: recipe.name },
+          ]}
+          className="pt-1"
+        />
+        {/* 레시피 기본 정보 */}
+        <section className="border-t border-[var(--color-border)] pt-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="space-y-2">
             <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-[var(--color-text)] sm:text-[32px]">
@@ -298,10 +423,10 @@ export function RecipeDetailClient({
             <div className="flex flex-wrap items-center gap-3 pt-1 text-sm font-medium text-[var(--color-text)]">
               <a
                 href="#recipe-community-section"
-                className="flex items-center gap-1 text-amber-600 hover:underline"
+                className="flex items-center gap-1 text-[var(--color-text)] hover:underline"
               >
-                <span className="text-amber-500">★</span>
-                <span className="font-bold">
+                <span className="text-amber-600 font-bold" aria-hidden="true">★</span>
+                <span className="font-bold text-[var(--color-text)]">
                   {recipe.averageRating > 0 ? recipe.averageRating.toFixed(1) : "평점 없음"}
                 </span>
                 <span className="text-xs text-[var(--color-text-secondary)]">
@@ -310,7 +435,7 @@ export function RecipeDetailClient({
               </a>
               <span aria-hidden="true" className="text-gray-300">|</span>
               <span className="text-xs text-[var(--color-text-secondary)]">
-                ❤️ 즐겨찾기 <strong className="text-[var(--color-text)]">{favoriteCount}</strong>명
+                즐겨찾기 <strong className="text-[var(--color-text)]">{favoriteCount}</strong>명
               </span>
             </div>
 
@@ -545,89 +670,17 @@ export function RecipeDetailClient({
         </ol>
       </section>
 
-      {/* 아기 맞춤 조리 팁 & 보관법 & 참고 출처 (RCP-04~06, AI-06) */}
-      <section className="space-y-4 rounded-lg border border-[var(--color-border)] bg-white p-5 text-sm shadow-none sm:p-6">
-        <h2 className="text-lg font-semibold text-[var(--color-text)]">아기 맞춤 팁 & 보관 안내</h2>
-        <div className="space-y-2 text-sm text-[var(--color-text-secondary)]">
-          <p>
-            <strong className="text-[var(--color-text)]">식감 조절:</strong>{" "}
-            {recipe.babyTips.textureTip}
-          </p>
-          <p>
-            <strong className="text-[var(--color-text)]">재료 크기:</strong>{" "}
-            {recipe.babyTips.cuttingSizeTip}
-          </p>
-          <p>
-            <strong className="text-[var(--color-text)]">간 조절 팁:</strong>{" "}
-            {recipe.babyTips.seasoningTip}
-          </p>
+      {/* 아기 맞춤 조리 팁 & 보관법 & 참고 출처 (RCP-04~06, AI-06, 아코디언 적용) */}
+      <section className="space-y-3.5 border-t border-[var(--color-border)] pt-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-[var(--color-text)]">
+            아기 맞춤 팁 & 보관 안내
+          </h2>
+          <span className="text-xs text-[var(--color-text-secondary)]">
+            탭하여 세부 내용 펼치기
+          </span>
         </div>
-
-        {Object.keys(recipe.babyTips.stageVariations).length > 0 && (
-          <div className="rounded-lg bg-[var(--color-surface-muted)] p-4 text-xs leading-relaxed text-[var(--color-text-secondary)]">
-            <p className="font-semibold text-[var(--color-text)]">연령 단계별 변형 가이드</p>
-            <ul className="mt-1.5 space-y-1">
-              {Object.entries(recipe.babyTips.stageVariations).map(([st, desc]) => (
-                <li key={st}>
-                  • <strong className="text-[var(--color-text)]">{st}단계:</strong> {desc}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <div className="border-t border-[var(--color-border)] pt-3.5 text-sm text-[var(--color-text-secondary)]">
-          <p>
-            <strong className="text-[var(--color-text)]">보관 기한:</strong> 냉장{" "}
-            {recipe.storageInfo.fridgeDays !== null
-              ? `${recipe.storageInfo.fridgeDays}일`
-              : "비권장"}{" "}
-            / 냉동{" "}
-            {recipe.storageInfo.freezerDays !== null
-              ? `${recipe.storageInfo.freezerDays}일`
-              : "비권장"}
-          </p>
-          <p className="mt-1">
-            <strong className="text-[var(--color-text)]">재가열 안내:</strong>{" "}
-            {recipe.storageInfo.reheatTip}
-          </p>
-        </div>
-
-        {(() => {
-          const verifiedSources = recipe.sources
-            .filter(isVerifiedAuthoritativeSource)
-            .map((src) => ({
-              ...src,
-              ...sourceDisplayLabel(src),
-            }));
-
-          if (verifiedSources.length === 0)
-            return (
-              <p className="border-t border-[var(--color-border)] pt-3.5 text-sm text-[var(--color-warning-text)]">
-                현재 확인된 레시피 출처가 없습니다. 재료·조리법을 확인해 주세요.
-              </p>
-            );
-
-          return (
-            <div className="border-t border-[var(--color-border)] pt-3.5 text-xs text-[var(--color-text-secondary)]">
-              <p className="font-semibold text-[var(--color-text)]">참고 출처</p>
-              <ul className="mt-2 space-y-1.5">
-                {verifiedSources.map((source) => (
-                  <li key={source.id}>
-                    <a
-                      href={source.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex min-h-9 items-center font-semibold text-[var(--color-primary-text)] underline underline-offset-4 hover:text-[var(--color-text)]"
-                    >
-                      {source.publisher} · {source.title}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          );
-        })()}
+        <Accordion items={accordionItems} allowMultiple={true} />
       </section>
 
       {cookingModeOpen && (
@@ -948,5 +1001,6 @@ export function RecipeDetailClient({
         initialFavoriteCount={favoriteCount}
       />
     </article>
-  );
+  </>
+);
 }

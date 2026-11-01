@@ -129,8 +129,9 @@ export function RecipeCommunitySection({
             실제 아이에게 만들어 먹인 부모님들의 생생한 조리 팁과 반응을 확인해 보세요.
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs font-semibold text-[var(--color-text-secondary)]">
-          <span>❤️ 즐겨찾기 {initialFavoriteCount}명</span>
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--color-text-secondary)]">
+          <Icon name="star" width={14} height={14} className="text-amber-500" fill="currentColor" />
+          <span>즐겨찾기 {initialFavoriteCount}명</span>
         </div>
       </div>
 
@@ -160,7 +161,7 @@ export function RecipeCommunitySection({
             return (
               <div key={star} className="flex items-center gap-2 text-xs">
                 <span className="w-9 font-medium text-[var(--color-text-secondary)]">{star}점</span>
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-200">
+                <div className="h-2 flex-1 min-w-0 overflow-hidden rounded-full bg-gray-200">
                   <div
                     style={{ width: `${pct}%` }}
                     className="h-full bg-amber-400 transition-all"

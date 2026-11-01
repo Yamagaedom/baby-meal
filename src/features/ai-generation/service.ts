@@ -111,6 +111,12 @@ export async function persistValidatedAiRecipe(
           channelOrSite: src.channelOrSite,
           sourceType: src.sourceType,
           trustScore: src.trustScore,
+          verificationStatus:
+            (src as { verificationStatus?: "VERIFIED" | "UNVERIFIED" }).verificationStatus ??
+            (src.trustScore >= 0.85 ? "VERIFIED" : "UNVERIFIED"),
+          verifiedAt:
+            (src as { verifiedAt?: Date }).verifiedAt ??
+            (src.trustScore >= 0.85 ? new Date() : null),
         })),
       },
     },
