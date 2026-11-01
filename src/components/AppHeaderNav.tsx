@@ -139,7 +139,7 @@ export function AppHeaderNav({ babies, activeBaby }: AppHeaderNavProps) {
               disabled={switching}
               value={activeBaby.id}
               onChange={(e) => void handleSwitchBaby(e.target.value)}
-              className="min-h-10 max-w-full rounded-lg border border-[var(--color-border)] bg-white px-3 text-xs font-semibold text-[var(--color-text)] shadow-xs transition-colors hover:border-[var(--color-border-strong)] focus:border-[var(--color-primary)] focus:outline-none"
+              className="min-h-11 max-w-full rounded-lg border border-[var(--color-border)] bg-white px-3 text-xs font-semibold text-[var(--color-text)] shadow-xs transition-colors hover:border-[var(--color-border-strong)] focus:border-[var(--color-primary)] focus:outline-none"
             >
               {babies.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -173,7 +173,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="하단 주 메뉴"
-      className="fixed right-0 bottom-0 left-0 z-40 border-t border-[var(--color-border)] bg-white/95 backdrop-blur-md px-2 pt-1.5 pb-[max(env(safe-area-inset-bottom),10px)] shadow-[0_-4px_16px_rgba(0,0,0,0.04)] lg:hidden"
+      className="fixed right-0 bottom-0 left-0 z-40 border-t border-[var(--color-border)] bg-white/95 px-2 pt-1.5 pb-[max(env(safe-area-inset-bottom),10px)] shadow-[0_-4px_16px_rgba(0,0,0,0.04)] backdrop-blur-md lg:hidden"
     >
       <ul className="mx-auto grid max-w-lg grid-cols-5 gap-1">
         {BOTTOM_NAV_ITEMS.map((item) => {
@@ -191,16 +191,16 @@ export function BottomNav() {
                 }`}
               >
                 <div
-                  className={`flex h-8 w-12 items-center justify-center rounded-full transition-all ${
+                  className={`flex h-8 w-12 items-center justify-center rounded-sm transition-colors ${
                     active
-                      ? "bg-[var(--color-primary-soft)] text-[var(--color-primary)] scale-105"
+                      ? "bg-[var(--color-primary-soft)] text-[var(--color-primary)]"
                       : "text-[var(--color-text-secondary)] group-hover:bg-[var(--color-surface-muted)]"
                   }`}
                 >
                   <Icon name={item.icon} width={20} height={20} />
                 </div>
                 <span
-                  className={`text-[11px] leading-tight transition-colors ${
+                  className={`text-xs leading-tight transition-colors ${
                     active ? "font-bold text-[var(--color-primary)]" : "font-medium"
                   }`}
                 >

@@ -309,124 +309,142 @@ export function MyPageClient({ loginId, babies }: MyPageClientProps) {
           </Button>
         </div>
 
-        {/* 비밀번호 변경 */}
-        <form
-          onSubmit={handleChangePassword}
-          className="space-y-4 border-t border-[var(--color-border)] pt-5"
-        >
-          <h3 className="text-base font-semibold text-[var(--color-text)]">비밀번호 변경</h3>
-          {pwMessage && (
-            <div
-              role="status"
-              className="rounded-md border border-[var(--color-success-border)] bg-[var(--color-success-soft)] p-3 text-xs font-semibold text-[var(--color-secondary-text)]"
+        <details className="disclosure">
+          <summary>비밀번호 변경</summary>
+          <div className="disclosure-body">
+            {/* 비밀번호 변경 */}
+            <form
+              onSubmit={handleChangePassword}
+              className="space-y-4 border-t border-[var(--color-border)] pt-5"
             >
-              ✓ {pwMessage}
-            </div>
-          )}
-          {pwError && (
-            <div
-              role="alert"
-              className="rounded-md border border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] p-3 text-xs font-semibold text-[var(--color-danger-text)]"
-            >
-              {pwError}
-            </div>
-          )}
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Input
-              type="password"
-              required
-              label="현재 비밀번호"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-            />
-            <Input
-              type="password"
-              required
-              label="새 비밀번호"
-              placeholder="영문+숫자 8자 이상"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
-          </div>
-          <Button type="submit" size="sm">
-            비밀번호 변경
-          </Button>
-        </form>
-
-        {/* 복구 코드 재발급 */}
-        <div className="space-y-3 border-t border-[var(--color-border)] pt-5">
-          <h3 className="text-base font-semibold text-[var(--color-text)]">복구 코드 재발급</h3>
-          <p className="text-sm text-[var(--color-text-secondary)]">
-            재발급 시 기존 복구 코드는 즉시 무효화됩니다.
-          </p>
-          {reissuedCode ? (
-            <RecoveryCodeCard
-              loginId={loginId}
-              recoveryCode={reissuedCode}
-              confirmLabel="확인 완료"
-              onConfirm={() => setReissuedCode(null)}
-            />
-          ) : (
-            <form onSubmit={handleReissueRecoveryCode} className="flex flex-wrap items-end gap-3">
-              <div className="min-w-0 flex-1 basis-56">
+              <h3 className="text-base font-semibold text-[var(--color-text)]">비밀번호 변경</h3>
+              {pwMessage && (
+                <div
+                  role="status"
+                  className="rounded-md border border-[var(--color-success-border)] bg-[var(--color-success-soft)] p-3 text-xs font-semibold text-[var(--color-secondary-text)]"
+                >
+                  ✓ {pwMessage}
+                </div>
+              )}
+              {pwError && (
+                <div
+                  role="alert"
+                  className="rounded-md border border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] p-3 text-xs font-semibold text-[var(--color-danger-text)]"
+                >
+                  {pwError}
+                </div>
+              )}
+              <div className="grid gap-3 sm:grid-cols-2">
                 <Input
                   type="password"
                   required
-                  label="복구 코드 재발급용 현재 비밀번호"
-                  error={reissueError}
-                  placeholder="현재 비밀번호 확인"
-                  value={reissuePassword}
-                  onChange={(e) => setReissuePassword(e.target.value)}
+                  label="현재 비밀번호"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                />
+                <Input
+                  type="password"
+                  required
+                  label="새 비밀번호"
+                  placeholder="영문+숫자 8자 이상"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
                 />
               </div>
-              <Button type="submit" variant="outline">
-                새 복구 코드 발급
+              <Button type="submit" size="sm">
+                비밀번호 변경
               </Button>
             </form>
-          )}
-        </div>
-
-        {/* 회원 탈퇴 — 2단계 확인 (ACC-07) */}
-        <form
-          onSubmit={handleOpenDeleteConfirm}
-          className="space-y-4 rounded-lg border border-[var(--color-danger-border)] bg-[var(--color-danger-soft)]/60 p-4 sm:p-5"
-        >
-          <div>
-            <h3 className="text-base font-semibold text-[var(--color-danger-text)]">
-              회원 탈퇴 (즉시 영구 삭제 · 2단계 확인)
-            </h3>
-            <p className="mt-1 text-xs leading-relaxed text-[var(--color-danger-text)]">
-              탈퇴 즉시 계정, 아기 프로필, 먹은 기록, 즐겨찾기, 내 냉장고 데이터가 복구 불가능하게
-              영구 삭제됩니다.
-            </p>
           </div>
+        </details>
 
-          <Input
-            type="password"
-            required
-            label="회원 탈퇴 확인용 현재 비밀번호"
-            error={deleteError}
-            placeholder="현재 비밀번호 입력"
-            value={deletePassword}
-            onChange={(e) => setDeletePassword(e.target.value)}
-          />
+        <details className="disclosure">
+          <summary>복구 코드 재발급</summary>
+          <div className="disclosure-body">
+            {/* 복구 코드 재발급 */}
+            <div className="space-y-3 border-t border-[var(--color-border)] pt-5">
+              <h3 className="text-base font-semibold text-[var(--color-text)]">복구 코드 재발급</h3>
+              <p className="text-sm text-[var(--color-text-secondary)]">
+                재발급 시 기존 복구 코드는 즉시 무효화됩니다.
+              </p>
+              {reissuedCode ? (
+                <RecoveryCodeCard
+                  loginId={loginId}
+                  recoveryCode={reissuedCode}
+                  confirmLabel="확인 완료"
+                  onConfirm={() => setReissuedCode(null)}
+                />
+              ) : (
+                <form
+                  onSubmit={handleReissueRecoveryCode}
+                  className="flex flex-wrap items-end gap-3"
+                >
+                  <div className="min-w-0 flex-1 basis-56">
+                    <Input
+                      type="password"
+                      required
+                      label="복구 코드 재발급용 현재 비밀번호"
+                      error={reissueError}
+                      placeholder="현재 비밀번호 확인"
+                      value={reissuePassword}
+                      onChange={(e) => setReissuePassword(e.target.value)}
+                    />
+                  </div>
+                  <Button type="submit" variant="outline">
+                    새 복구 코드 발급
+                  </Button>
+                </form>
+              )}
+            </div>
+          </div>
+        </details>
 
-          <label className="flex min-h-11 cursor-pointer items-center gap-2.5 text-sm font-semibold text-[var(--color-text)]">
-            <input
-              type="checkbox"
-              checked={deleteConfirmChecked}
-              onChange={(e) => setDeleteConfirmChecked(e.target.checked)}
-              className="h-5 w-5 shrink-0 accent-[var(--color-danger)]"
-            />
-            <span className="min-w-0">
-              모든 데이터가 즉시 영구 삭제됨을 확인했습니다. (1단계 동의)
-            </span>
-          </label>
+        <details className="disclosure">
+          <summary>회원 탈퇴</summary>
+          <div className="disclosure-body">
+            {/* 회원 탈퇴 — 2단계 확인 (ACC-07) */}
+            <form
+              onSubmit={handleOpenDeleteConfirm}
+              className="space-y-4 rounded-lg border border-[var(--color-danger-border)] bg-[var(--color-danger-soft)]/60 p-4 sm:p-5"
+            >
+              <div>
+                <h3 className="text-base font-semibold text-[var(--color-danger-text)]">
+                  회원 탈퇴 (즉시 영구 삭제 · 2단계 확인)
+                </h3>
+                <p className="mt-1 text-xs leading-relaxed text-[var(--color-danger-text)]">
+                  탈퇴 즉시 계정, 아기 프로필, 먹은 기록, 즐겨찾기, 내 냉장고 데이터가 복구
+                  불가능하게 영구 삭제됩니다.
+                </p>
+              </div>
 
-          <Button type="submit" variant="danger" size="sm" disabled={!deleteConfirmChecked}>
-            회원 탈퇴
-          </Button>
-        </form>
+              <Input
+                type="password"
+                required
+                label="회원 탈퇴 확인용 현재 비밀번호"
+                error={deleteError}
+                placeholder="현재 비밀번호 입력"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+              />
+
+              <label className="flex min-h-11 cursor-pointer items-center gap-2.5 text-sm font-semibold text-[var(--color-text)]">
+                <input
+                  type="checkbox"
+                  checked={deleteConfirmChecked}
+                  onChange={(e) => setDeleteConfirmChecked(e.target.checked)}
+                  className="h-5 w-5 shrink-0 accent-[var(--color-danger)]"
+                />
+                <span className="min-w-0">
+                  모든 데이터가 즉시 영구 삭제됨을 확인했습니다. (1단계 동의)
+                </span>
+              </label>
+
+              <Button type="submit" variant="danger" size="sm" disabled={!deleteConfirmChecked}>
+                회원 탈퇴
+              </Button>
+            </form>
+          </div>
+        </details>
       </section>
 
       <ConfirmDialog

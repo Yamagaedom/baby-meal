@@ -55,7 +55,12 @@ test("catalog recovery: source, portions, visible candidates and allergy blockin
       fullPage: true,
     });
     await page.goto("/recipes");
-    await expect(page.getByRole("link", { name: new RegExp(restored.name) }).first()).toBeVisible();
+    const restoredLink = page.getByRole("link", { name: new RegExp(restored.name) }).first();
+    const more = page.getByRole("button", { name: /레시피 더보기/ });
+    while (!(await restoredLink.isVisible()) && await more.isVisible()) {
+      await more.click();
+    }
+    await expect(restoredLink).toBeVisible();
     await page.screenshot({ path: testInfo.outputPath("catalog-list-mobile.png"), fullPage: true });
     const allergic = await page.request.patch(`/api/babies/${baby.id}`, {
       data: { nickname: "목록검증", ageMonth: 15, saltLevel: "NONE", allergens: ["BEEF"] },

@@ -21,7 +21,7 @@ export function RecipeNutritionWidget({
   return (
     <section
       data-testid="recipe-nutrition-section"
-      className="rounded-lg border border-[var(--color-border)] bg-white p-5 sm:p-6"
+      className="border-t border-[var(--color-border)] bg-white pt-5"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[var(--color-border)] pb-3">
         <div>
@@ -34,18 +34,18 @@ export function RecipeNutritionWidget({
           {targetServings}회분 조리 중 1회분
         </span>
       </div>
-      <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <dl className="mt-4 grid grid-cols-2 gap-x-5 gap-y-2 sm:grid-cols-4">
         {items.map(([label, value, unit, coverage]) => (
-          <div key={label} className="min-w-0 overflow-hidden rounded-md bg-[var(--color-surface-muted)] p-3">
+          <div key={label} className="min-w-0 border-b border-[var(--color-border)] py-2">
             <dt className="text-xs text-[var(--color-text-secondary)]">{label}</dt>
-            <dd className="mt-1 break-words font-semibold">
+            <dd className="mt-1 font-semibold break-words">
               <span>{value === null ? "미확인" : value + " " + unit}</span>
 
-            {value !== null && coverage < 1 && (
-              <span className="mt-1 block text-xs font-normal text-[var(--color-text-secondary)]">
-                확인된 재료의 부분 합계
-              </span>
-            )}
+              {value !== null && coverage < 1 && (
+                <span className="mt-1 block text-xs font-normal text-[var(--color-text-secondary)]">
+                  확인된 재료의 부분 합계
+                </span>
+              )}
             </dd>
           </div>
         ))}

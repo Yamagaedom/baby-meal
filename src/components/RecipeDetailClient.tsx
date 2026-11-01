@@ -281,12 +281,10 @@ export function RecipeDetailClient({
     recipe.ingredients.map((ing) => ing.name),
   );
 
-  const verifiedSources = recipe.sources
-    .filter(isVerifiedAuthoritativeSource)
-    .map((src) => ({
-      ...src,
-      ...sourceDisplayLabel(src),
-    }));
+  const verifiedSources = recipe.sources.filter(isVerifiedAuthoritativeSource).map((src) => ({
+    ...src,
+    ...sourceDisplayLabel(src),
+  }));
 
   const accordionItems = [
     {
@@ -390,7 +388,7 @@ export function RecipeDetailClient({
   return (
     <>
       <ScrollProgressBar />
-      <article className="mx-auto max-w-3xl w-full min-w-0 space-y-6 overflow-x-clip">
+      <article className="mx-auto w-full max-w-3xl min-w-0 space-y-6 overflow-x-clip">
         <Breadcrumb
           items={[
             { label: "홈", href: "/" },
@@ -401,606 +399,612 @@ export function RecipeDetailClient({
         />
         {/* 레시피 기본 정보 */}
         <section className="border-t border-[var(--color-border)] pt-6">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="space-y-2">
-            <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-[var(--color-text)] sm:text-[32px]">
-              {recipe.name}
-            </h1>
-            <div className="flex flex-wrap gap-1.5">
-              <Link
-                href={`/meal-plan?recipe=${recipe.id}`}
-                className="inline-flex min-h-11 items-center rounded-md border border-[var(--color-border)] px-3 text-sm font-medium"
-              >
-                식단에 담기
-              </Link>
-              {recipe.isAiGenerated && (
-                <Badge variant="primary">AI 추천 레시피</Badge>
-              )}
-              <Badge variant="primary">{recipe.category === "MEAL" ? "식사" : "간식"}</Badge>
-              <Badge variant="salt">{recipe.saltLevelLabel}</Badge>
-            </div>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="space-y-2">
+              <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-[var(--color-text)] sm:text-[32px]">
+                {recipe.name}
+              </h1>
+              <div className="flex flex-wrap gap-1.5">
+                <Link
+                  href={`/meal-plan?recipe=${recipe.id}`}
+                  className="inline-flex min-h-11 items-center rounded-md border border-[var(--color-border)] px-3 text-sm font-medium"
+                >
+                  식단에 담기
+                </Link>
+                {recipe.isAiGenerated && <Badge variant="primary">AI 추천 레시피</Badge>}
+                <Badge variant="primary">{recipe.category === "MEAL" ? "식사" : "간식"}</Badge>
+                <Badge variant="salt">{recipe.saltLevelLabel}</Badge>
+              </div>
 
-            <div className="flex flex-wrap items-center gap-3 pt-1 text-sm font-medium text-[var(--color-text)]">
-              <a
-                href="#recipe-community-section"
-                className="flex items-center gap-1 text-[var(--color-text)] hover:underline"
-              >
-                <span className="text-amber-600 font-bold" aria-hidden="true">★</span>
-                <span className="font-bold text-[var(--color-text)]">
-                  {recipe.averageRating > 0 ? recipe.averageRating.toFixed(1) : "평점 없음"}
+              <div className="flex flex-wrap items-center gap-3 pt-1 text-sm font-medium text-[var(--color-text)]">
+                <a
+                  href="#recipe-community-section"
+                  className="flex items-center gap-1 text-[var(--color-text)] hover:underline"
+                >
+                  <span className="font-bold text-amber-600" aria-hidden="true">
+                    ★
+                  </span>
+                  <span className="font-bold text-[var(--color-text)]">
+                    {recipe.averageRating > 0 ? recipe.averageRating.toFixed(1) : "평점 없음"}
+                  </span>
+                  <span className="text-xs text-[var(--color-text-secondary)]">
+                    {recipe.reviewCount > 0 ? `(${recipe.reviewCount}개 후기)` : "(첫 후기 남기기)"}
+                  </span>
+                </a>
+                <span aria-hidden="true" className="text-gray-300">
+                  |
                 </span>
                 <span className="text-xs text-[var(--color-text-secondary)]">
-                  {recipe.reviewCount > 0 ? `(${recipe.reviewCount}개 후기)` : "(첫 후기 남기기)"}
+                  즐겨찾기 <strong className="text-[var(--color-text)]">{favoriteCount}</strong>명
                 </span>
-              </a>
-              <span aria-hidden="true" className="text-gray-300">|</span>
-              <span className="text-xs text-[var(--color-text-secondary)]">
-                즐겨찾기 <strong className="text-[var(--color-text)]">{favoriteCount}</strong>명
+              </div>
+
+              <p className="text-sm text-[var(--color-text-secondary)]">
+                조리 {recipe.cookMinutes}분 · 난이도:{" "}
+                {recipe.difficulty <= 1 ? "쉬움" : recipe.difficulty === 2 ? "보통" : "어려움"}
+              </p>
+              <p className="text-xs text-[var(--color-text-secondary)]">
+                {recipe.ageStageLabels.join(" · ")}
+              </p>
+              {summary && (
+                <p className="text-sm leading-relaxed text-[var(--color-text-secondary)]">
+                  {summary}
+                </p>
+              )}
+            </div>
+
+            <button
+              type="button"
+              disabled={favPending}
+              aria-pressed={isFavorite}
+              onClick={handleToggleFavorite}
+              className={`inline-flex min-h-11 items-center gap-1.5 rounded-md border px-3.5 py-2 text-sm font-semibold transition-colors ${
+                isFavorite
+                  ? "border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] text-[var(--color-warning-text)]"
+                  : "border-[var(--color-border-strong)] bg-white text-[var(--color-text)] hover:bg-[var(--color-surface-muted)]"
+              }`}
+            >
+              <Icon name="star" fill={isFavorite ? "currentColor" : "none"} />
+              <span>
+                {isFavorite ? `즐겨찾기됨 (${favoriteCount})` : `즐겨찾기 (${favoriteCount})`}
+              </span>
+            </button>
+          </div>
+
+          {/* AI 및 의료 고지 배너 — 상시 노출, 접기·숨기기 금지 (AI-08) */}
+          <div
+            role="note"
+            data-testid="ai-safety-disclaimer"
+            className="mt-5 rounded-lg border-2 border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] p-4 text-sm leading-relaxed text-[var(--color-warning-text)] sm:p-5"
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="ai">AI 생성 레시피 · 사람 미검수</Badge>
+              <span className="font-semibold text-[var(--color-warning-text)]">
+                조리 전 재료·분량·상태 확인 필수
               </span>
             </div>
-
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              조리 {recipe.cookMinutes}분 · 난이도:{" "}
-              {recipe.difficulty <= 1 ? "쉬움" : recipe.difficulty === 2 ? "보통" : "어려움"}
-            </p>
-            <p className="text-xs text-[var(--color-text-secondary)]">
-              {recipe.ageStageLabels.join(" · ")}
-            </p>
-            {summary && (
-              <p className="text-sm leading-relaxed text-[var(--color-text-secondary)]">
-                {summary}
-              </p>
-            )}
+            <p className="mt-2 font-semibold">{recipe.aiDisclaimer}</p>
+            <p className="mt-1">{recipe.medicalDisclaimer}</p>
           </div>
 
-          <button
-            type="button"
-            disabled={favPending}
-            aria-pressed={isFavorite}
-            onClick={handleToggleFavorite}
-            className={`inline-flex min-h-11 items-center gap-1.5 rounded-md border px-3.5 py-2 text-sm font-semibold transition-colors ${
-              isFavorite
-                ? "border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] text-[var(--color-warning-text)]"
-                : "border-[var(--color-border-strong)] bg-white text-[var(--color-text)] hover:bg-[var(--color-surface-muted)]"
-            }`}
-          >
-            <Icon name="star" fill={isFavorite ? "currentColor" : "none"} />
-            <span>{isFavorite ? `즐겨찾기됨 (${favoriteCount})` : `즐겨찾기 (${favoriteCount})`}</span>
-          </button>
-        </div>
-
-        {/* AI 및 의료 고지 배너 — 상시 노출, 접기·숨기기 금지 (AI-08) */}
-        <div
-          role="note"
-          data-testid="ai-safety-disclaimer"
-          className="mt-5 rounded-lg border-2 border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] p-4 text-sm leading-relaxed text-[var(--color-warning-text)] sm:p-5"
-        >
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="ai">AI 생성 레시피 · 사람 미검수</Badge>
-            <span className="font-semibold text-[var(--color-warning-text)]">
-              조리 전 재료·분량·상태 확인 필수
-            </span>
-          </div>
-          <p className="mt-2 font-semibold">{recipe.aiDisclaimer}</p>
-          <p className="mt-1">{recipe.medicalDisclaimer}</p>
-        </div>
-
-        {recipe.aboveAgeWarningMessage && (
-          <div
-            role="alert"
-            className="mt-5 rounded-lg border-2 border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] p-4 text-sm font-semibold text-[var(--color-danger-text)]"
-          >
-            <span aria-hidden="true"> 월령 주의 안내: </span>
-            {recipe.aboveAgeWarningMessage}
-          </div>
-        )}
-
-        <dl className="mt-5 grid grid-cols-1 gap-3 border-t border-[var(--color-border)] pt-4 text-xs sm:grid-cols-3">
-          <div className="rounded-md bg-[var(--color-surface-muted)] p-3">
-            <dt className="font-semibold text-[var(--color-text-secondary)]">조리 도구</dt>
-            <dd className="mt-0.5 text-sm font-semibold text-[var(--color-text)]">
-              {recipe.tools.join(", ") || "기본 조리도구"}
-            </dd>
-          </div>
-          {recipe.saltLevel !== "NONE" && (
-            <div className="rounded-md bg-[var(--color-info-soft)] p-3">
-              <dt className="font-semibold text-[var(--color-info-text)]">1회분 예상 나트륨</dt>
-              <dd className="mt-0.5 text-sm font-semibold text-[var(--color-info-text)]">
-                약 {recipe.sodiumMgPerServing}mg
-              </dd>
-            </div>
-          )}
-          <div className="rounded-md bg-[var(--color-surface-muted)] p-3">
-            <dt className="font-semibold text-[var(--color-text-secondary)]">알레르기 유발 표시</dt>
-            <dd className="mt-0.5 text-sm font-semibold text-[var(--color-text)]">
-              {recipe.allergens.length > 0
-                ? ` ${recipe.allergens.map((a) => a.label).join(", ")}`
-                : "해당 없음"}
-            </dd>
-          </div>
-        </dl>
-
-        {recipe.unsaltedFlavorGuide && (
-          <p className="mt-3.5 rounded-lg border border-[var(--color-info-border)] bg-[var(--color-info-soft)] p-3.5 text-xs font-semibold text-[var(--color-info-text)]">
-            {recipe.unsaltedFlavorGuide}
-          </p>
-        )}
-
-        {recipe.cautionIngredients.length > 0 && (
-          <div className="mt-3.5 rounded-lg border border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] p-3.5 text-sm text-[var(--color-warning-text)]">
-            <p className="font-semibold">식재료 손질·섭취 주의 안내</p>
-            <ul className="mt-1.5 list-disc space-y-1 pl-4">
-              {recipe.cautionIngredients.map((c) => (
-                <li key={c.name}>
-                  <strong>{c.name}</strong>: {c.cautionNote}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </section>
-
-      {/* 고정(Sticky) 분량 스테퍼 + 재료 체크리스트 (RCP-02, SRV-01~05) */}
-      <section className="space-y-4 border-t border-[var(--color-border)] pt-6">
-        <div className="rounded-lg bg-[var(--color-surface-muted)] p-4">
-          <div className="mb-2">
-            <h2 className="text-lg font-semibold text-[var(--color-text)]">
-              재료 안내 & 분량 조절
-            </h2>
-            <p className="text-xs text-[var(--color-text-secondary)]">{recipe.portionGuide}</p>
-          </div>
-          <Stepper value={servings} onChange={setServings} label="조리 분량 선택" />
-        </div>
-
-        {showPortionTip && recipe.storageInfo.portionTip && (
-          <div
-            data-testid="portion-storage-tip"
-            className="rounded-lg border border-[var(--color-success-border)] bg-[var(--color-success-soft)] p-3.5 text-xs font-medium text-[var(--color-secondary-text)]"
-          >
-            <strong>소분·보관 팁 ({servings}회분 조리):</strong> {recipe.storageInfo.portionTip}
-          </div>
-        )}
-
-        <ul className="divide-y divide-[var(--color-border)] text-sm">
-          {recipe.ingredients.map((ing) => {
-            const scaled = scaleIngredientAmount(
-              ing.baseAmount,
-              ing.baseUnit,
-              recipe.baseServings,
-              servings,
-            );
-            const checked = checkedIngredients.includes(ing.ingredientId);
-            return (
-              <li
-                key={ing.ingredientId}
-                className="flex flex-wrap items-center justify-between gap-2 py-2.5"
-              >
-                <label className="flex min-h-11 cursor-pointer items-center gap-2.5">
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={() => toggleCheckedIngredient(ing.ingredientId)}
-                    aria-label={`${ing.name} 손질 준비 완료 체크`}
-                    className="h-5 w-5 shrink-0 accent-[var(--color-secondary)]"
-                  />
-                  <span className={checked ? "text-[var(--color-text-muted)] line-through" : ""}>
-                    <span className="font-semibold text-[var(--color-text)]">{ing.name}</span>
-                    {ing.isOptional && (
-                      <span className="ml-1.5 rounded-sm bg-[var(--color-surface-muted)] px-2 py-0.5 text-xs font-semibold text-[var(--color-text-secondary)]">
-                        선택 재료
-                      </span>
-                    )}
-                    {ing.prepNote && (
-                      <span className="ml-2 text-xs text-[var(--color-text-secondary)]">
-                        ({ing.prepNote})
-                      </span>
-                    )}
-                    {ing.substituteName && (
-                      <span className="ml-2 text-xs font-semibold text-[var(--color-info-text)]">
-                        대체 가능: {ing.substituteName}
-                      </span>
-                    )}
-                  </span>
-                </label>
-
-                <span
-                  data-testid={`ingredient-amount-${ing.name}`}
-                  className="rounded-lg bg-[var(--color-primary-soft)] px-2.5 py-1 text-sm font-semibold text-[var(--color-primary-text)]"
-                >
-                  {scaled.displayAmount}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
-
-      {/* 1회 제공량 영양 성분 분석표 */}
-      <RecipeNutritionWidget
-        nutrition={recipe.nutrition}
-        targetServings={servings}
-      />
-
-      {/* 단계별 조리 순서 (RCP-03, RCP-07) */}
-      <section className="space-y-4 border-t border-[var(--color-border)] pt-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-[var(--color-text)]">단계별 조리 순서</h2>
-          <Button
-            variant="primary"
-            size="sm"
-            data-testid="open-cooking-mode-btn"
-            onClick={() => setCookingModeOpen(true)}
-          >
-            조리 모드 (큰 글씨 · 화면 켜짐 유지)
-          </Button>
-        </div>
-
-        <ol className="space-y-3">
-          {recipe.steps.map((step) => {
-            const remaining = timers[step.order] ?? step.timerSeconds ?? 0;
-            const running = Boolean(runningTimers[step.order]);
-            const mins = Math.floor(remaining / 60);
-            const secs = remaining % 60;
-            return (
-              <li
-                key={step.order}
-                className="rounded-lg border border-[var(--color-border)] bg-[var(--color-canvas)] p-4"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <p className="flex-1 text-base leading-relaxed text-[var(--color-text)]">
-                    <strong className="mr-2 inline-flex h-7 w-7 items-center justify-center rounded-sm bg-[var(--color-primary)] text-xs font-semibold text-white">
-                      {step.order}
-                    </strong>
-                    {step.instruction}
-                  </p>
-                  {step.timerSeconds && (
-                    <button
-                      type="button"
-                      onClick={() => toggleStepTimer(step.order, step.timerSeconds!)}
-                      className="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-md border border-[var(--color-border-strong)] bg-white px-3.5 py-2 font-mono text-xs font-semibold text-[var(--color-text)] hover:bg-[var(--color-surface-muted)]"
-                    >
-                      <Icon name="timer" width="16" height="16" /> {running ? "일시정지" : "타이머"}{" "}
-                      {mins}:{String(secs).padStart(2, "0")}
-                    </button>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-        </ol>
-      </section>
-
-      {/* 아기 맞춤 조리 팁 & 보관법 & 참고 출처 (RCP-04~06, AI-06, 아코디언 적용) */}
-      <section className="space-y-3.5 border-t border-[var(--color-border)] pt-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-[var(--color-text)]">
-            아기 맞춤 팁 & 보관 안내
-          </h2>
-          <span className="text-xs text-[var(--color-text-secondary)]">
-            탭하여 세부 내용 펼치기
-          </span>
-        </div>
-        <Accordion items={accordionItems} allowMultiple={true} />
-      </section>
-
-      {cookingModeOpen && (
-        <CookingModeModal
-          recipeName={recipe.name}
-          steps={recipe.steps}
-          onClose={() => setCookingModeOpen(false)}
-        />
-      )}
-
-      {/* ING-07: 요리 완료 시 내 냉장고 사용 재료 선택 차감 */}
-      {(Boolean(deductNotice) ||
-        recipe.ingredients.some((ing) => ownedPantrySet.includes(ing.ingredientId))) && (
-        <section
-          data-testid="pantry-deduct-section"
-          className="space-y-3.5 border-t border-[var(--color-border)] pt-6"
-        >
-          <h2 className="text-lg font-semibold text-[var(--color-text)]">
-            요리 완료 · 내 냉장고 사용 재료 차감 (선택)
-          </h2>
-          <p className="text-sm text-[var(--color-text-secondary)]">
-            다 쓴 재료를 선택해 내 냉장고 보관 목록에서 바로 비울 수 있습니다.
-          </p>
-          {deductNotice && (
-            <div
-              role="status"
-              aria-live="polite"
-              data-testid="pantry-deduct-notice"
-              className="rounded-lg border border-[var(--color-success-border)] bg-[var(--color-success-soft)] p-3 text-xs font-semibold text-[var(--color-secondary-text)]"
-            >
-              <span aria-hidden="true">✓ </span>
-              {deductNotice}
-            </div>
-          )}
-          <div className="flex flex-wrap gap-2">
-            {recipe.ingredients
-              .filter((ing) => ownedPantrySet.includes(ing.ingredientId))
-              .map((ing) => (
-                <label
-                  key={ing.ingredientId}
-                  className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-canvas)] px-3.5 py-2 text-sm font-semibold text-[var(--color-text)]"
-                >
-                  <input
-                    type="checkbox"
-                    checked={deductTargets.includes(ing.ingredientId)}
-                    onChange={() =>
-                      setDeductTargets((prev) =>
-                        prev.includes(ing.ingredientId)
-                          ? prev.filter((id) => id !== ing.ingredientId)
-                          : [...prev, ing.ingredientId],
-                      )
-                    }
-                    className="h-4 w-4 accent-[var(--color-primary)]"
-                  />
-                  <span>{ing.name}</span>
-                </label>
-              ))}
-          </div>
-          <Button
-            variant="secondary"
-            size="sm"
-            data-testid="deduct-pantry-btn"
-            disabled={deductSubmitting || deductTargets.length === 0}
-            onClick={async () => {
-              setDeductSubmitting(true);
-              try {
-                const res = await fetch("/api/pantry/deduct", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ ingredientIds: deductTargets }),
-                });
-                if (res.ok) {
-                  const data = await res.json();
-                  setOwnedPantrySet((prev) => prev.filter((id) => !deductTargets.includes(id)));
-                  setDeductTargets([]);
-                  setDeductNotice(
-                    `내 냉장고에서 사용 재료 ${data.deductedCount}개를 차감했습니다.`,
-                  );
-                  router.refresh();
-                }
-              } finally {
-                setDeductSubmitting(false);
-              }
-            }}
-          >
-            {deductSubmitting ? "차감 중..." : "선택한 재료 냉장고에서 차감"}
-          </Button>
-        </section>
-      )}
-
-      {/* 먹었어요 기록 폼 (LOG-01~04) */}
-      <section className="border-t border-[var(--color-border)] pt-6">
-        <h2 className="text-lg font-semibold text-[var(--color-text)]">먹었어요 기록 남기기</h2>
-        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-          아기의 반응을 기록하면 다음 맞춤 추천과 메뉴 카드 평가 배지에 반영됩니다.
-        </p>
-
-        <form onSubmit={handleMealLogSubmit} className="mt-4 space-y-5">
-          {logMessage && (
-            <div
-              role="status"
-              aria-live="polite"
-              data-testid="meal-log-success"
-              className="rounded-lg border border-[var(--color-success-border)] bg-[var(--color-success-soft)] p-3.5 text-sm font-semibold text-[var(--color-secondary-text)]"
-            >
-              <span aria-hidden="true">✓ </span>
-              {logMessage}
-            </div>
-          )}
-          {logError && (
+          {recipe.aboveAgeWarningMessage && (
             <div
               role="alert"
-              className="rounded-lg border border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] p-3.5 text-sm font-semibold text-[var(--color-danger-text)]"
+              className="mt-5 rounded-lg border-2 border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] p-4 text-sm font-semibold text-[var(--color-danger-text)]"
             >
-              {logError}
+              <span aria-hidden="true"> 월령 주의 안내: </span>
+              {recipe.aboveAgeWarningMessage}
             </div>
           )}
 
-          <fieldset>
-            <legend className="text-sm font-semibold text-[var(--color-text)]">
-              아기 반응 선택 (필수)
-            </legend>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {(["GOOD", "OK", "REFUSED"] as const).map((r) => {
-                const active = rating === r;
-                return (
-                  <label
-                    key={r}
-                    className={`inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-md border px-4 py-2 text-sm font-semibold transition-colors ${
-                      active
-                        ? "border-[var(--color-primary)] bg-[var(--color-primary)] text-white"
-                        : "border-[var(--color-border-strong)] bg-[var(--color-canvas)] text-[var(--color-text)] hover:bg-[var(--color-surface-muted)]"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="rating"
-                      value={r}
-                      checked={active}
-                      onChange={() => setRating(r)}
-                      className="sr-only"
-                    />
-                    {RATING_LABELS[r]}
-                  </label>
-                );
-              })}
+          <dl className="mt-5 grid grid-cols-1 gap-3 border-t border-[var(--color-border)] pt-4 text-xs sm:grid-cols-3">
+            <div className="rounded-md bg-[var(--color-surface-muted)] p-3">
+              <dt className="font-semibold text-[var(--color-text-secondary)]">조리 도구</dt>
+              <dd className="mt-0.5 text-sm font-semibold text-[var(--color-text)]">
+                {recipe.tools.join(", ") || "기본 조리도구"}
+              </dd>
             </div>
-          </fieldset>
+            {recipe.saltLevel !== "NONE" && (
+              <div className="rounded-md bg-[var(--color-info-soft)] p-3">
+                <dt className="font-semibold text-[var(--color-info-text)]">1회분 예상 나트륨</dt>
+                <dd className="mt-0.5 text-sm font-semibold text-[var(--color-info-text)]">
+                  약 {recipe.sodiumMgPerServing}mg
+                </dd>
+              </div>
+            )}
+            <div className="rounded-md bg-[var(--color-surface-muted)] p-3">
+              <dt className="font-semibold text-[var(--color-text-secondary)]">
+                알레르기 유발 표시
+              </dt>
+              <dd className="mt-0.5 text-sm font-semibold text-[var(--color-text)]">
+                {recipe.allergens.length > 0
+                  ? ` ${recipe.allergens.map((a) => a.label).join(", ")}`
+                  : "해당 없음"}
+              </dd>
+            </div>
+          </dl>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <Select
-              id="log-amount"
-              label="섭취량"
-              value={amountEaten}
-              onChange={(e) => setAmountEaten(e.target.value as "ALL" | "HALF" | "LITTLE")}
-            >
-              {(["ALL", "HALF", "LITTLE"] as const).map((amt) => (
-                <option key={amt} value={amt}>
-                  {AMOUNT_EATEN_LABELS[amt]}
-                </option>
-              ))}
-            </Select>
+          {recipe.unsaltedFlavorGuide && (
+            <p className="mt-3.5 rounded-lg border border-[var(--color-info-border)] bg-[var(--color-info-soft)] p-3.5 text-xs font-semibold text-[var(--color-info-text)]">
+              {recipe.unsaltedFlavorGuide}
+            </p>
+          )}
 
-            <Select
-              id="log-meal-time"
-              label="식사 시간대"
-              value={mealTime}
-              onChange={(e) => setMealTime(e.target.value as MealTime)}
-            >
-              {(["BREAKFAST", "LUNCH", "DINNER", "SNACK"] as const).map((mt) => (
-                <option key={mt} value={mt}>
-                  {MEAL_TIME_LABELS[mt]}
-                </option>
-              ))}
-            </Select>
+          {recipe.cautionIngredients.length > 0 && (
+            <div className="mt-3.5 rounded-lg border border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] p-3.5 text-sm text-[var(--color-warning-text)]">
+              <p className="font-semibold">식재료 손질·섭취 주의 안내</p>
+              <ul className="mt-1.5 list-disc space-y-1 pl-4">
+                {recipe.cautionIngredients.map((c) => (
+                  <li key={c.name}>
+                    <strong>{c.name}</strong>: {c.cautionNote}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
+
+        {/* 고정(Sticky) 분량 스테퍼 + 재료 체크리스트 (RCP-02, SRV-01~05) */}
+        <section className="space-y-4 border-t border-[var(--color-border)] pt-6">
+          <div className="rounded-lg bg-[var(--color-surface-muted)] p-4">
+            <div className="mb-2">
+              <h2 className="text-lg font-semibold text-[var(--color-text)]">
+                재료 안내 & 분량 조절
+              </h2>
+              <p className="text-xs text-[var(--color-text-secondary)]">{recipe.portionGuide}</p>
+            </div>
+            <Stepper value={servings} onChange={setServings} label="조리 분량 선택" />
           </div>
 
-          <fieldset>
-            <legend className="text-sm font-semibold text-[var(--color-text)]">
-              이상 반응 체크 (선택 — 체크 시 의심 식재료를 주의 목록에 바로 등록할 수 있습니다)
-            </legend>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {REACTION_OPTIONS.map((rx) => (
-                <label
-                  key={rx}
-                  className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-[var(--color-border)] bg-[var(--color-canvas)] px-3 py-1.5 text-sm font-medium text-[var(--color-text)]"
-                >
-                  <input
-                    type="checkbox"
-                    checked={reactions.includes(rx)}
-                    onChange={() => toggleReaction(rx)}
-                    className="h-4 w-4 accent-[var(--color-danger)]"
-                  />
-                  <span>{rx}</span>
-                </label>
-              ))}
+          {showPortionTip && recipe.storageInfo.portionTip && (
+            <div
+              data-testid="portion-storage-tip"
+              className="rounded-lg border border-[var(--color-success-border)] bg-[var(--color-success-soft)] p-3.5 text-xs font-medium text-[var(--color-secondary-text)]"
+            >
+              <strong>소분·보관 팁 ({servings}회분 조리):</strong> {recipe.storageInfo.portionTip}
             </div>
-          </fieldset>
+          )}
 
-          {reactions.length > 0 && (
-            <fieldset className="rounded-lg border-2 border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] p-4">
-              <legend className="px-1 text-sm font-semibold text-[var(--color-danger-text)]">
-                알레르기 의심(SUSPECTED) 식재료 등록 선택
-              </legend>
-              <p className="mt-1 text-xs text-[var(--color-danger-text)]">
-                선택한 식재료는 즉시 아기의 알레르기 주의 목록에 추가되어 향후 추천에서 제외됩니다.
-              </p>
-              <div className="mt-2.5 flex flex-wrap gap-2">
-                {recipe.ingredients.map((ing) => (
+          <ul className="divide-y divide-[var(--color-border)] text-sm">
+            {recipe.ingredients.map((ing) => {
+              const scaled = scaleIngredientAmount(
+                ing.baseAmount,
+                ing.baseUnit,
+                recipe.baseServings,
+                servings,
+              );
+              const checked = checkedIngredients.includes(ing.ingredientId);
+              return (
+                <li
+                  key={ing.ingredientId}
+                  className="flex flex-wrap items-center justify-between gap-2 py-2.5"
+                >
+                  <label className="flex min-h-11 cursor-pointer items-center gap-2.5">
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleCheckedIngredient(ing.ingredientId)}
+                      aria-label={`${ing.name} 손질 준비 완료 체크`}
+                      className="h-5 w-5 shrink-0 accent-[var(--color-secondary)]"
+                    />
+                    <span className={checked ? "text-[var(--color-text-muted)] line-through" : ""}>
+                      <span className="font-semibold text-[var(--color-text)]">{ing.name}</span>
+                      {ing.isOptional && (
+                        <span className="ml-1.5 rounded-sm bg-[var(--color-surface-muted)] px-2 py-0.5 text-xs font-semibold text-[var(--color-text-secondary)]">
+                          선택 재료
+                        </span>
+                      )}
+                      {ing.prepNote && (
+                        <span className="ml-2 text-xs text-[var(--color-text-secondary)]">
+                          ({ing.prepNote})
+                        </span>
+                      )}
+                      {ing.substituteName && (
+                        <span className="ml-2 text-xs font-semibold text-[var(--color-info-text)]">
+                          대체 가능: {ing.substituteName}
+                        </span>
+                      )}
+                    </span>
+                  </label>
+
+                  <span
+                    data-testid={`ingredient-amount-${ing.name}`}
+                    className="rounded-lg bg-[var(--color-primary-soft)] px-2.5 py-1 text-sm font-semibold text-[var(--color-primary-text)]"
+                  >
+                    {scaled.displayAmount}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+
+        {/* 1회 제공량 영양 성분 분석표 */}
+        <RecipeNutritionWidget nutrition={recipe.nutrition} targetServings={servings} />
+
+        {/* 단계별 조리 순서 (RCP-03, RCP-07) */}
+        <section className="space-y-4 border-t border-[var(--color-border)] pt-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-lg font-semibold text-[var(--color-text)]">단계별 조리 순서</h2>
+            <Button
+              variant="primary"
+              size="sm"
+              data-testid="open-cooking-mode-btn"
+              onClick={() => setCookingModeOpen(true)}
+            >
+              조리 모드 (큰 글씨 · 화면 켜짐 유지)
+            </Button>
+          </div>
+
+          <ol className="space-y-3">
+            {recipe.steps.map((step) => {
+              const remaining = timers[step.order] ?? step.timerSeconds ?? 0;
+              const running = Boolean(runningTimers[step.order]);
+              const mins = Math.floor(remaining / 60);
+              const secs = remaining % 60;
+              return (
+                <li
+                  key={step.order}
+                  className="rounded-lg border border-[var(--color-border)] bg-[var(--color-canvas)] p-4"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <p className="flex-1 text-base leading-relaxed text-[var(--color-text)]">
+                      <strong className="mr-2 inline-flex h-7 w-7 items-center justify-center rounded-sm bg-[var(--color-primary)] text-xs font-semibold text-white">
+                        {step.order}
+                      </strong>
+                      {step.instruction}
+                    </p>
+                    {step.timerSeconds && (
+                      <button
+                        type="button"
+                        onClick={() => toggleStepTimer(step.order, step.timerSeconds!)}
+                        className="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-md border border-[var(--color-border-strong)] bg-white px-3.5 py-2 font-mono text-xs font-semibold text-[var(--color-text)] hover:bg-[var(--color-surface-muted)]"
+                      >
+                        <Icon name="timer" width="16" height="16" />{" "}
+                        {running ? "일시정지" : "타이머"} {mins}:{String(secs).padStart(2, "0")}
+                      </button>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+
+        {/* 아기 맞춤 조리 팁 & 보관법 & 참고 출처 (RCP-04~06, AI-06, 아코디언 적용) */}
+        <section className="space-y-3.5 border-t border-[var(--color-border)] pt-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-[var(--color-text)]">아기 맞춤 팁 & 보관 안내</h2>
+            <span className="text-xs text-[var(--color-text-secondary)]">
+              탭하여 세부 내용 펼치기
+            </span>
+          </div>
+          <Accordion items={accordionItems} allowMultiple={true} />
+        </section>
+
+        {cookingModeOpen && (
+          <CookingModeModal
+            recipeName={recipe.name}
+            steps={recipe.steps}
+            onClose={() => setCookingModeOpen(false)}
+          />
+        )}
+
+        {/* ING-07: 요리 완료 시 내 냉장고 사용 재료 선택 차감 */}
+        {(Boolean(deductNotice) ||
+          recipe.ingredients.some((ing) => ownedPantrySet.includes(ing.ingredientId))) && (
+          <section
+            data-testid="pantry-deduct-section"
+            className="space-y-3.5 border-t border-[var(--color-border)] pt-6"
+          >
+            <h2 className="text-lg font-semibold text-[var(--color-text)]">
+              요리 완료 · 내 냉장고 사용 재료 차감 (선택)
+            </h2>
+            <p className="text-sm text-[var(--color-text-secondary)]">
+              다 쓴 재료를 선택해 내 냉장고 보관 목록에서 바로 비울 수 있습니다.
+            </p>
+            {deductNotice && (
+              <div
+                role="status"
+                aria-live="polite"
+                data-testid="pantry-deduct-notice"
+                className="rounded-lg border border-[var(--color-success-border)] bg-[var(--color-success-soft)] p-3 text-xs font-semibold text-[var(--color-secondary-text)]"
+              >
+                <span aria-hidden="true">✓ </span>
+                {deductNotice}
+              </div>
+            )}
+            <div className="flex flex-wrap gap-2">
+              {recipe.ingredients
+                .filter((ing) => ownedPantrySet.includes(ing.ingredientId))
+                .map((ing) => (
                   <label
                     key={ing.ingredientId}
-                    className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-[var(--color-danger-border)] bg-white px-3 py-1.5 text-sm font-semibold text-[var(--color-text)]"
+                    className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-canvas)] px-3.5 py-2 text-sm font-semibold text-[var(--color-text)]"
                   >
                     <input
                       type="checkbox"
-                      checked={suspectedIngredientIds.includes(ing.ingredientId)}
-                      onChange={() => toggleSuspectedIngredient(ing.ingredientId)}
-                      className="h-4 w-4 accent-[var(--color-danger)]"
+                      checked={deductTargets.includes(ing.ingredientId)}
+                      onChange={() =>
+                        setDeductTargets((prev) =>
+                          prev.includes(ing.ingredientId)
+                            ? prev.filter((id) => id !== ing.ingredientId)
+                            : [...prev, ing.ingredientId],
+                        )
+                      }
+                      className="h-4 w-4 accent-[var(--color-primary)]"
                     />
                     <span>{ing.name}</span>
                   </label>
                 ))}
-              </div>
-            </fieldset>
-          )}
-
-          <Input
-            id="log-memo"
-            label="메모 (선택)"
-            type="text"
-            maxLength={300}
-            value={memo}
-            onChange={(e) => setMemo(e.target.value)}
-            placeholder="예: 당근을 잘게 썰어주니 끝까지 다 먹었어요"
-          />
-
-          <Button type="submit" fullWidth disabled={logSubmitting}>
-            {logSubmitting ? "기록 저장 중..." : "먹었어요 저장"}
-          </Button>
-        </form>
-      </section>
-
-      {/* 레시피 신고 (AI-12) */}
-      <section className="rounded-lg border border-[var(--color-border)] bg-white p-5 shadow-none">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="text-sm text-[var(--color-text-secondary)]">
-            레시피 분량이나 재료에 문제가 있나요?
-          </span>
-          <button
-            type="button"
-            aria-expanded={reportOpen}
-            onClick={() => setReportOpen((o) => !o)}
-            className="inline-flex min-h-11 items-center px-2 text-sm font-semibold text-[var(--color-danger-text)] underline underline-offset-4"
-          >
-            레시피가 이상해요 (신고)
-          </button>
-        </div>
-
-        {reportOpen && (
-          <form
-            onSubmit={handleReportSubmit}
-            className="mt-4 space-y-4 border-t border-[var(--color-border)] pt-4"
-          >
-            {reportMessage && (
-              <div
-                role="status"
-                className="rounded-md border border-[var(--color-success-border)] bg-[var(--color-success-soft)] p-3 text-xs font-semibold text-[var(--color-secondary-text)]"
-              >
-                {reportMessage}
-              </div>
-            )}
-            {reportError && (
-              <div
-                role="alert"
-                className="rounded-md border border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] p-3 text-xs font-semibold text-[var(--color-danger-text)]"
-              >
-                {reportError}
-              </div>
-            )}
-
-            <Select
-              id="report-reason"
-              label="신고 사유"
-              value={reportReason}
-              onChange={(e) => setReportReason(e.target.value as keyof typeof REPORT_REASON_LABELS)}
+            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              data-testid="deduct-pantry-btn"
+              disabled={deductSubmitting || deductTargets.length === 0}
+              onClick={async () => {
+                setDeductSubmitting(true);
+                try {
+                  const res = await fetch("/api/pantry/deduct", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ ingredientIds: deductTargets }),
+                  });
+                  if (res.ok) {
+                    const data = await res.json();
+                    setOwnedPantrySet((prev) => prev.filter((id) => !deductTargets.includes(id)));
+                    setDeductTargets([]);
+                    setDeductNotice(
+                      `내 냉장고에서 사용 재료 ${data.deductedCount}개를 차감했습니다.`,
+                    );
+                    router.refresh();
+                  }
+                } finally {
+                  setDeductSubmitting(false);
+                }
+              }}
             >
-              {(Object.keys(REPORT_REASON_LABELS) as (keyof typeof REPORT_REASON_LABELS)[]).map(
-                (key) => (
-                  <option key={key} value={key}>
-                    {REPORT_REASON_LABELS[key]}
-                  </option>
-                ),
-              )}
-            </Select>
-
-            <Input
-              id="report-memo"
-              label="상세 내용 (선택)"
-              type="text"
-              maxLength={300}
-              value={reportMemo}
-              onChange={(e) => setReportMemo(e.target.value)}
-              placeholder="수정이 필요한 부분을 알려주세요"
-            />
-
-            <Button type="submit" variant="danger" size="sm" disabled={reportSubmitting}>
-              {reportSubmitting ? "접수 중..." : "신고 접수"}
+              {deductSubmitting ? "차감 중..." : "선택한 재료 냉장고에서 차감"}
             </Button>
-          </form>
+          </section>
         )}
-      </section>
 
-      {/* 부모님 솔직 후기 & 평점 커뮤니티 */}
-      <RecipeCommunitySection
-        recipeId={recipe.id}
-        initialAverageRating={recipe.averageRating ?? 0}
-        initialReviewCount={recipe.reviewCount ?? 0}
-        initialFavoriteCount={favoriteCount}
-      />
-    </article>
-  </>
-);
+        {/* 먹었어요 기록 폼 (LOG-01~04) */}
+        <details className="disclosure" id="meal-log-form">
+          <summary>먹었어요 기록 남기기</summary>
+          <div className="disclosure-body">
+            <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+              아기의 반응을 기록하면 다음 맞춤 추천과 메뉴 카드 평가 배지에 반영됩니다.
+            </p>
+
+            <form onSubmit={handleMealLogSubmit} className="mt-4 space-y-5">
+              {logMessage && (
+                <div
+                  role="status"
+                  aria-live="polite"
+                  data-testid="meal-log-success"
+                  className="rounded-lg border border-[var(--color-success-border)] bg-[var(--color-success-soft)] p-3.5 text-sm font-semibold text-[var(--color-secondary-text)]"
+                >
+                  <span aria-hidden="true">✓ </span>
+                  {logMessage}
+                </div>
+              )}
+              {logError && (
+                <div
+                  role="alert"
+                  className="rounded-lg border border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] p-3.5 text-sm font-semibold text-[var(--color-danger-text)]"
+                >
+                  {logError}
+                </div>
+              )}
+
+              <fieldset>
+                <legend className="text-sm font-semibold text-[var(--color-text)]">
+                  아기 반응 선택 (필수)
+                </legend>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {(["GOOD", "OK", "REFUSED"] as const).map((r) => {
+                    const active = rating === r;
+                    return (
+                      <label
+                        key={r}
+                        className={`inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-md border px-4 py-2 text-sm font-semibold transition-colors ${
+                          active
+                            ? "border-[var(--color-primary)] bg-[var(--color-primary)] text-white"
+                            : "border-[var(--color-border-strong)] bg-[var(--color-canvas)] text-[var(--color-text)] hover:bg-[var(--color-surface-muted)]"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="rating"
+                          value={r}
+                          checked={active}
+                          onChange={() => setRating(r)}
+                          className="sr-only"
+                        />
+                        {RATING_LABELS[r]}
+                      </label>
+                    );
+                  })}
+                </div>
+              </fieldset>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Select
+                  id="log-amount"
+                  label="섭취량"
+                  value={amountEaten}
+                  onChange={(e) => setAmountEaten(e.target.value as "ALL" | "HALF" | "LITTLE")}
+                >
+                  {(["ALL", "HALF", "LITTLE"] as const).map((amt) => (
+                    <option key={amt} value={amt}>
+                      {AMOUNT_EATEN_LABELS[amt]}
+                    </option>
+                  ))}
+                </Select>
+
+                <Select
+                  id="log-meal-time"
+                  label="식사 시간대"
+                  value={mealTime}
+                  onChange={(e) => setMealTime(e.target.value as MealTime)}
+                >
+                  {(["BREAKFAST", "LUNCH", "DINNER", "SNACK"] as const).map((mt) => (
+                    <option key={mt} value={mt}>
+                      {MEAL_TIME_LABELS[mt]}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+
+              <fieldset>
+                <legend className="text-sm font-semibold text-[var(--color-text)]">
+                  이상 반응 체크 (선택 — 체크 시 의심 식재료를 주의 목록에 바로 등록할 수 있습니다)
+                </legend>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {REACTION_OPTIONS.map((rx) => (
+                    <label
+                      key={rx}
+                      className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-[var(--color-border)] bg-[var(--color-canvas)] px-3 py-1.5 text-sm font-medium text-[var(--color-text)]"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={reactions.includes(rx)}
+                        onChange={() => toggleReaction(rx)}
+                        className="h-4 w-4 accent-[var(--color-danger)]"
+                      />
+                      <span>{rx}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+
+              {reactions.length > 0 && (
+                <fieldset className="rounded-lg border-2 border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] p-4">
+                  <legend className="px-1 text-sm font-semibold text-[var(--color-danger-text)]">
+                    알레르기 의심(SUSPECTED) 식재료 등록 선택
+                  </legend>
+                  <p className="mt-1 text-xs text-[var(--color-danger-text)]">
+                    선택한 식재료는 즉시 아기의 알레르기 주의 목록에 추가되어 향후 추천에서
+                    제외됩니다.
+                  </p>
+                  <div className="mt-2.5 flex flex-wrap gap-2">
+                    {recipe.ingredients.map((ing) => (
+                      <label
+                        key={ing.ingredientId}
+                        className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-[var(--color-danger-border)] bg-white px-3 py-1.5 text-sm font-semibold text-[var(--color-text)]"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={suspectedIngredientIds.includes(ing.ingredientId)}
+                          onChange={() => toggleSuspectedIngredient(ing.ingredientId)}
+                          className="h-4 w-4 accent-[var(--color-danger)]"
+                        />
+                        <span>{ing.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              )}
+
+              <Input
+                id="log-memo"
+                label="메모 (선택)"
+                type="text"
+                maxLength={300}
+                value={memo}
+                onChange={(e) => setMemo(e.target.value)}
+                placeholder="예: 당근을 잘게 썰어주니 끝까지 다 먹었어요"
+              />
+
+              <Button type="submit" fullWidth disabled={logSubmitting}>
+                {logSubmitting ? "기록 저장 중..." : "먹었어요 저장"}
+              </Button>
+            </form>
+          </div>
+        </details>
+
+        {/* 레시피 신고 (AI-12) */}
+        <section className="rounded-lg border border-[var(--color-border)] bg-white p-5 shadow-none">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-sm text-[var(--color-text-secondary)]">
+              레시피 분량이나 재료에 문제가 있나요?
+            </span>
+            <button
+              type="button"
+              aria-expanded={reportOpen}
+              onClick={() => setReportOpen((o) => !o)}
+              className="inline-flex min-h-11 items-center px-2 text-sm font-semibold text-[var(--color-danger-text)] underline underline-offset-4"
+            >
+              레시피가 이상해요 (신고)
+            </button>
+          </div>
+
+          {reportOpen && (
+            <form
+              onSubmit={handleReportSubmit}
+              className="mt-4 space-y-4 border-t border-[var(--color-border)] pt-4"
+            >
+              {reportMessage && (
+                <div
+                  role="status"
+                  className="rounded-md border border-[var(--color-success-border)] bg-[var(--color-success-soft)] p-3 text-xs font-semibold text-[var(--color-secondary-text)]"
+                >
+                  {reportMessage}
+                </div>
+              )}
+              {reportError && (
+                <div
+                  role="alert"
+                  className="rounded-md border border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] p-3 text-xs font-semibold text-[var(--color-danger-text)]"
+                >
+                  {reportError}
+                </div>
+              )}
+
+              <Select
+                id="report-reason"
+                label="신고 사유"
+                value={reportReason}
+                onChange={(e) =>
+                  setReportReason(e.target.value as keyof typeof REPORT_REASON_LABELS)
+                }
+              >
+                {(Object.keys(REPORT_REASON_LABELS) as (keyof typeof REPORT_REASON_LABELS)[]).map(
+                  (key) => (
+                    <option key={key} value={key}>
+                      {REPORT_REASON_LABELS[key]}
+                    </option>
+                  ),
+                )}
+              </Select>
+
+              <Input
+                id="report-memo"
+                label="상세 내용 (선택)"
+                type="text"
+                maxLength={300}
+                value={reportMemo}
+                onChange={(e) => setReportMemo(e.target.value)}
+                placeholder="수정이 필요한 부분을 알려주세요"
+              />
+
+              <Button type="submit" variant="danger" size="sm" disabled={reportSubmitting}>
+                {reportSubmitting ? "접수 중..." : "신고 접수"}
+              </Button>
+            </form>
+          )}
+        </section>
+
+        {/* 부모님 솔직 후기 & 평점 커뮤니티 */}
+        <RecipeCommunitySection
+          recipeId={recipe.id}
+          initialAverageRating={recipe.averageRating ?? 0}
+          initialReviewCount={recipe.reviewCount ?? 0}
+          initialFavoriteCount={favoriteCount}
+        />
+      </article>
+    </>
+  );
 }

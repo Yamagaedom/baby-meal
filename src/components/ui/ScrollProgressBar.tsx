@@ -19,7 +19,6 @@ export function ScrollProgressBar({
       const windowHeight =
         document.documentElement.scrollHeight - document.documentElement.clientHeight;
       if (windowHeight === 0) return;
-      const scroll = `${(totalScroll / windowHeight) * 100}%`;
       setScrollProgress(Math.min(100, Math.max(0, (totalScroll / windowHeight) * 100)));
     }
 
@@ -36,7 +35,7 @@ export function ScrollProgressBar({
       aria-valuenow={Math.round(scrollProgress)}
       aria-valuemin={0}
       aria-valuemax={100}
-      className="fixed top-0 right-0 left-0 z-50 overflow-hidden bg-transparent pointer-events-none"
+      className="pointer-events-none fixed top-0 right-0 left-0 z-50 overflow-hidden bg-transparent"
       style={{ height: `${heightPx}px` }}
     >
       <div

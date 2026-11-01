@@ -37,6 +37,7 @@ export function RecipesExplorerClient({
   initialItems,
 }: RecipesExplorerClientProps) {
   const [items, setItems] = useState<RecipeCardView[]>(initialItems);
+  const [visibleCount, setVisibleCount] = useState(12);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [category, setCategory] = useState("");
@@ -55,7 +56,14 @@ export function RecipesExplorerClient({
   const [offlineReaderRecipe, setOfflineReaderRecipe] = useState<RecipeDetailView | null>(null);
 
   const advancedCount = [stage, saltLevel, tool, ingredientGroup].filter(Boolean).length;
-  const totalFilterCount = [category, stage, saltLevel, maxCookMinutes, tool, ingredientGroup].filter(Boolean).length;
+  const totalFilterCount = [
+    category,
+    stage,
+    saltLevel,
+    maxCookMinutes,
+    tool,
+    ingredientGroup,
+  ].filter(Boolean).length;
 
   async function applyFilters(
     overrides?: Partial<{
@@ -105,6 +113,7 @@ export function RecipesExplorerClient({
         if (next.favoritesOnly) {
           const cached = listOfflineFavorites(babyId).map((e) => e.recipe);
           setItems(cached);
+          setVisibleCount(12);
           setOfflineFallbackMode(true);
           return;
         }
@@ -114,6 +123,7 @@ export function RecipesExplorerClient({
       const data = await res.json();
       const fetchedItems: RecipeCardView[] = data.items ?? [];
       setItems(fetchedItems);
+      setVisibleCount(12);
       if (
         next.favoritesOnly &&
         !next.category &&
@@ -133,6 +143,7 @@ export function RecipesExplorerClient({
       const cached = listOfflineFavorites(babyId).map((e) => e.recipe);
       if (next.favoritesOnly || cached.length > 0) {
         setItems(cached);
+        setVisibleCount(12);
         setOfflineFallbackMode(true);
       } else {
         setError("오프라인 상태입니다. 인터넷 연결을 확인해 주세요.");
@@ -221,7 +232,7 @@ export function RecipesExplorerClient({
                       setSourceType(tab.value);
                       void applyFilters({ sourceType: tab.value });
                     }}
-                    className={`min-h-9 rounded-full px-3.5 text-xs font-semibold transition-colors ${
+                    className={`min-h-11 rounded-sm px-3.5 text-xs font-semibold transition-colors ${
                       active
                         ? "bg-[var(--color-primary)] text-white"
                         : "bg-[var(--color-surface-muted)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
@@ -236,7 +247,8 @@ export function RecipesExplorerClient({
             <div className="w-40">
               <Select
                 id="filter-sort"
-                label=""
+                label="레시피 정렬"
+                hideLabel
                 value={sortBy}
                 onChange={(e) => {
                   const val = e.target.value as "QUALITY" | "POPULAR" | "RATING" | "LATEST";
@@ -354,7 +366,7 @@ export function RecipesExplorerClient({
                 key={chip.id}
                 type="button"
                 onClick={chip.onClick}
-                className={`inline-flex min-h-8 shrink-0 items-center rounded-full px-3.5 text-xs font-semibold transition-all ${
+                className={`inline-flex min-h-11 shrink-0 items-center rounded-sm px-3.5 text-xs font-semibold transition-all ${
                   chip.active
                     ? "bg-[var(--color-primary)] text-white shadow-xs"
                     : "border border-[var(--color-border)] bg-white text-[var(--color-text-secondary)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-text)]"
@@ -366,7 +378,7 @@ export function RecipesExplorerClient({
           </div>
 
           {/* 모바일 화면 (sm:hidden): 바텀 시트 열기 버튼 & 빠른 토글 */}
-          <div className="flex sm:hidden flex-wrap items-center justify-between gap-2 pt-1">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 sm:hidden">
             <button
               type="button"
               onClick={() => setFilterSheetOpen(true)}
@@ -375,7 +387,7 @@ export function RecipesExplorerClient({
               <Icon name="filter" width={16} height={16} />
               <span>상세 필터</span>
               {totalFilterCount > 0 && (
-                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--color-primary)] px-1.5 text-xs font-bold text-white">
+                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-sm bg-[var(--color-primary)] px-1.5 text-xs font-bold text-white">
                   {totalFilterCount}
                 </span>
               )}
@@ -400,7 +412,7 @@ export function RecipesExplorerClient({
           </div>
 
           {/* 데스크톱 화면 (hidden sm:block): 기존 인라인 필터 그리드 유지 */}
-          <div className="hidden sm:block space-y-4">
+          <div className="hidden space-y-4 sm:block">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Select
                 id="filter-category"
@@ -559,7 +571,7 @@ export function RecipesExplorerClient({
                 setFilterSheetOpen(false);
               }}
             >
-              결과 {items.length}건 보기
+              필터 적용하기
             </Button>
           </div>
         }
@@ -690,7 +702,7 @@ export function RecipesExplorerClient({
                 </Button>
                 <Link
                   href="/"
-                  className="inline-flex min-h-9 items-center rounded-md border border-[var(--color-border)] px-3.5 text-xs font-semibold text-[var(--color-text)] hover:bg-[var(--color-surface-muted)] transition-colors"
+                  className="inline-flex min-h-9 items-center rounded-md border border-[var(--color-border)] px-3.5 text-xs font-semibold text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface-muted)]"
                 >
                   AI 맞춤 추천 받기
                 </Link>
@@ -699,7 +711,7 @@ export function RecipesExplorerClient({
           />
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {items.map((recipe) =>
+            {items.slice(0, visibleCount).map((recipe) =>
               offlineFallbackMode ? (
                 <div
                   key={recipe.id}
@@ -733,15 +745,20 @@ export function RecipesExplorerClient({
                 </div>
               ) : (
                 <div key={recipe.id} className="animate-fadeInUp">
-                  <RecipeCard
-                    babyId={babyId}
-                    profileSaltLevel={babySaltLevel}
-                    recipe={recipe}
-                  />
+                  <RecipeCard babyId={babyId} profileSaltLevel={babySaltLevel} recipe={recipe} />
                 </div>
               ),
             )}
           </div>
+        )}
+        {!loading && items.length > visibleCount && (
+          <Button
+            variant="outline"
+            fullWidth
+            onClick={() => setVisibleCount((count) => count + 12)}
+          >
+            레시피 더보기 ({Math.min(visibleCount, items.length)} / {items.length})
+          </Button>
         )}
       </section>
 

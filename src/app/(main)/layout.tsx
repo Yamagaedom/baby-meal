@@ -23,7 +23,7 @@ export default async function MainLayout({
         <main
           id="main-content"
           tabIndex={-1}
-          className="mx-auto w-full max-w-[1120px] min-w-0 flex-1 px-5 pt-7 pb-24 sm:px-8 lg:px-12 lg:py-10"
+          className="mx-auto w-full max-w-[1120px] min-w-0 flex-1 px-5 pt-6 pb-28 sm:px-8 lg:px-10 lg:py-8"
         >
           {children}
         </main>

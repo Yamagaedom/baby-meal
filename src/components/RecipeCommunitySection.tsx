@@ -51,7 +51,21 @@ export function RecipeCommunitySection({
   }
 
   useEffect(() => {
-    void fetchReviews();
+    const controller = new AbortController();
+    fetch(`/api/recipes/${recipeId}/reviews`, { signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (controller.signal.aborted) return;
+        if (data) {
+          setReviews(data.reviews ?? []);
+          if (data.stats) setStats(data.stats);
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
   }, [recipeId]);
 
   async function handleSubmitReview(e: React.FormEvent) {
@@ -122,9 +136,7 @@ export function RecipeCommunitySection({
     >
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold text-[var(--color-text)]">
-            부모님 솔직 후기 & 평점
-          </h2>
+          <h2 className="text-xl font-bold text-[var(--color-text)]">부모님 솔직 후기 & 평점</h2>
           <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
             실제 아이에게 만들어 먹인 부모님들의 생생한 조리 팁과 반응을 확인해 보세요.
           </p>
@@ -161,7 +173,7 @@ export function RecipeCommunitySection({
             return (
               <div key={star} className="flex items-center gap-2 text-xs">
                 <span className="w-9 font-medium text-[var(--color-text-secondary)]">{star}점</span>
-                <div className="h-2 flex-1 min-w-0 overflow-hidden rounded-full bg-gray-200">
+                <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-gray-200">
                   <div
                     style={{ width: `${pct}%` }}
                     className="h-full bg-amber-400 transition-all"
@@ -176,66 +188,69 @@ export function RecipeCommunitySection({
         </div>
       </div>
 
-      {/* 후기 작성 폼 */}
-      <form
-        onSubmit={handleSubmitReview}
-        className="rounded-lg border border-[var(--color-border)] bg-white p-5 shadow-none sm:p-6"
-      >
-        <h3 className="text-base font-semibold text-[var(--color-text)]">
-          솔직 후기 작성하기
-        </h3>
-        <p className="mt-0.5 text-xs text-[var(--color-text-secondary)]">
-          아기의 반응, 식감/크기 조절 팁, 자연 조미 팁 등을 공유해 주세요.
-        </p>
+      <details className="disclosure">
+        <summary>솔직 후기 작성하기</summary>
+        <div className="disclosure-body">
+          {/* 후기 작성 폼 */}
+          <form
+            onSubmit={handleSubmitReview}
+            className="rounded-lg border border-[var(--color-border)] bg-white p-5 shadow-none sm:p-6"
+          >
+            <h3 className="text-base font-semibold text-[var(--color-text)]">솔직 후기 작성하기</h3>
+            <p className="mt-0.5 text-xs text-[var(--color-text-secondary)]">
+              아기의 반응, 식감/크기 조절 팁, 자연 조미 팁 등을 공유해 주세요.
+            </p>
 
-        {/* 별점 선택기 */}
-        <div className="mt-4">
-          <label className="block text-xs font-semibold text-[var(--color-text)]">
-            별점을 선택해 주세요
-          </label>
-          <div className="mt-1 flex items-center gap-1.5">
-            {[1, 2, 3, 4, 5].map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => setSelectedRating(s)}
-                className={`min-h-10 min-w-10 rounded-md text-2xl transition-transform hover:scale-110 ${
-                  s <= selectedRating ? "text-amber-400" : "text-gray-300"
-                }`}
-                aria-label={`${s}점 선택`}
-              >
-                ★
-              </button>
-            ))}
-            <span className="ml-2 text-sm font-bold text-[var(--color-text)]">
-              {selectedRating}점
-            </span>
-          </div>
-        </div>
+            {/* 별점 선택기 */}
+            <div className="mt-4">
+              <label className="block text-xs font-semibold text-[var(--color-text)]">
+                별점을 선택해 주세요
+              </label>
+              <div className="mt-1 flex items-center gap-1.5">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setSelectedRating(s)}
+                    className={`min-h-11 min-w-11 rounded-md text-2xl transition-transform hover:scale-110 ${
+                      s <= selectedRating ? "text-amber-400" : "text-gray-300"
+                    }`}
+                    aria-label={`${s}점 선택`}
+                  >
+                    ★
+                  </button>
+                ))}
+                <span className="ml-2 text-sm font-bold text-[var(--color-text)]">
+                  {selectedRating}점
+                </span>
+              </div>
+            </div>
 
-        {/* 후기 본문 입력 */}
-        <div className="mt-3.5">
-          <textarea
-            required
-            rows={3}
-            maxLength={500}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="우리 아기는 이 메뉴를 어떻게 먹었나요? (예: 당근을 5mm보다 작게 다져주니 부드럽게 잘 먹었어요!)"
-            className="w-full rounded-md border border-[var(--color-border-strong)] p-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-primary)] focus:outline-none"
-          />
-          <div className="mt-1 flex justify-between text-[11px] text-[var(--color-text-secondary)]">
-            <span>최소 5자 이상 · 개인정보는 자동으로 안전하게 보호됩니다.</span>
-            <span>{content.length} / 500자</span>
-          </div>
-        </div>
+            {/* 후기 본문 입력 */}
+            <div className="mt-3.5">
+              <textarea
+                required
+                rows={3}
+                maxLength={500}
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="우리 아기는 이 메뉴를 어떻게 먹었나요? (예: 당근을 5mm보다 작게 다져주니 부드럽게 잘 먹었어요!)"
+                className="w-full rounded-md border border-[var(--color-border-strong)] p-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-primary)] focus:outline-none"
+              />
+              <div className="mt-1 flex justify-between text-[11px] text-[var(--color-text-secondary)]">
+                <span>최소 5자 이상 · 개인정보는 자동으로 안전하게 보호됩니다.</span>
+                <span>{content.length} / 500자</span>
+              </div>
+            </div>
 
-        <div className="mt-4 flex justify-end">
-          <Button type="submit" variant="primary" disabled={submitting}>
-            {submitting ? "후기 등록 중..." : "후기 등록하기"}
-          </Button>
+            <div className="mt-4 flex justify-end">
+              <Button type="submit" variant="primary" disabled={submitting}>
+                {submitting ? "후기 등록 중..." : "후기 등록하기"}
+              </Button>
+            </div>
+          </form>
         </div>
-      </form>
+      </details>
 
       {/* 후기 피드 목록 */}
       <div className="space-y-3.5">
@@ -266,9 +281,7 @@ export function RecipeCommunitySection({
               >
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--color-border)] pb-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-[var(--color-text)]">
-                      {rev.authorName}
-                    </span>
+                    <span className="font-semibold text-[var(--color-text)]">{rev.authorName}</span>
                     {rev.babyAgeMonth && (
                       <span className="rounded bg-[var(--color-primary-soft)] px-2 py-0.5 text-xs font-semibold text-[var(--color-primary-text)]">
                         {rev.babyAgeMonth}개월 아기
@@ -301,7 +314,7 @@ export function RecipeCommunitySection({
                   </div>
                 </div>
 
-                <p className="mt-2.5 whitespace-pre-wrap leading-relaxed text-[var(--color-text)]">
+                <p className="mt-2.5 leading-relaxed whitespace-pre-wrap text-[var(--color-text)]">
                   {rev.content}
                 </p>
               </div>

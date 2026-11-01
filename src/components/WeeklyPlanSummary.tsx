@@ -20,24 +20,24 @@ export async function WeeklyPlanSummary({ userId, babyId }: { userId: string; ba
     orderBy: { updatedAt: "desc" },
   });
   return (
-    <section className="rounded-xl border border-[var(--color-border)] bg-[var(--color-primary-soft)] p-5">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <section className="rounded-xl border border-[var(--color-border)] bg-[var(--color-primary-soft)] p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold">
-            {plan ? "오늘의 계획" : "일주일 식사를 미리 정해 보세요"}
+          <h2 className="text-base font-semibold">
+            {plan ? "오늘의 계획" : "이번 주 식단"}
           </h2>
           <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
             {plan
               ? plan.entries.map((e) => `${e.served ? "✓ " : ""}${e.name}`).join(" · ") ||
                 "오늘은 집에서 준비할 식사가 없어요."
-              : "있는 재료로 식단을 짜고, 만들 양과 남은 음식까지 함께 관리해요."}
+              : "식단부터 남은 음식까지 한곳에서"}
           </p>
         </div>
         <Link
           href="/meal-plan"
           className="inline-flex min-h-11 items-center rounded-md bg-[var(--color-primary)] px-4 text-sm font-medium text-white"
         >
-          {plan ? "주간 식단 보기" : "이번 주 식단 짜기"}
+          {plan ? "주간 식단 보기" : "식단 짜기"}
         </Link>
       </div>
     </section>

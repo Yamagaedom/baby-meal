@@ -37,6 +37,7 @@ export function HomeRecommendClient({
   initialData,
   recentGoodMenus = [],
 }: HomeRecommendClientProps) {
+  const [showAllSnacks, setShowAllSnacks] = useState(false);
   const [data, setData] = useState<TodayData>(initialData);
   const [viewTab, setViewTab] = useState<"all" | "meal" | "snack">("all");
   const [loading, setLoading] = useState(false);
@@ -71,11 +72,11 @@ export function HomeRecommendClient({
   const hasAnyMeal = slotEntries.some((s) => s.recipe !== null);
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-7">
       <section className="pt-1">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-1.5">
-            <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-[var(--color-text)] sm:text-[32px]">
+            <h1 className="text-[24px] leading-tight font-semibold tracking-tight text-[var(--color-text)] sm:text-[28px]">
               {baby.displayName}의 오늘 추천 메뉴
             </h1>
             <p className="text-sm text-[var(--color-text-secondary)]">
@@ -191,7 +192,7 @@ export function HomeRecommendClient({
                 />
               ) : (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {data.snacks.map((snack) => (
+                  {data.snacks.slice(0, showAllSnacks ? undefined : 2).map((snack) => (
                     <RecipeCard
                       key={snack.id}
                       babyId={baby.id}
@@ -200,6 +201,16 @@ export function HomeRecommendClient({
                     />
                   ))}
                 </div>
+              )}
+              {data.snacks.length > 2 && (
+                <Button
+                  variant="ghost"
+                  fullWidth
+                  aria-expanded={showAllSnacks}
+                  onClick={() => setShowAllSnacks((value) => !value)}
+                >
+                  {showAllSnacks ? "간식 접기" : `간식 더보기 (${data.snacks.length - 2}개)`}
+                </Button>
               )}
             </section>
           )}
@@ -235,7 +246,7 @@ export function HomeRecommendClient({
           </p>
         ) : (
           <ul className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-            {recentGoodMenus.map((menu) => (
+            {recentGoodMenus.slice(0, 3).map((menu) => (
               <li key={menu.recipeId}>
                 <Link
                   href={`/recipes/${menu.recipeId}`}

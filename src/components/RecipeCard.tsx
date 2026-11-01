@@ -69,7 +69,7 @@ export function RecipeCard({
   return (
     <article
       data-testid={`recipe-card-${recipe.slug ?? recipe.id}`}
-      className="relative flex h-full min-w-0 flex-col rounded-lg bg-[var(--color-surface-muted)] p-5 transition-colors hover:bg-[var(--color-primary-soft)]"
+      className="relative flex h-full min-w-0 flex-col rounded-lg border border-[var(--color-border)] bg-white p-4 transition-colors hover:bg-[var(--color-primary-soft)]"
     >
       <button
         type="button"
@@ -82,7 +82,7 @@ export function RecipeCard({
       >
         <Icon name="star" fill={isFavorite ? "currentColor" : "none"} />
       </button>
-      <h3 className="pr-8 text-lg leading-snug font-semibold text-balance text-[var(--color-text)]">
+      <h3 className="pr-8 text-base leading-snug font-semibold text-balance text-[var(--color-text)]">
         <Link
           href={`/recipes/${recipe.id}`}
           className="rounded-sm underline-offset-4 hover:text-[var(--color-primary)] hover:underline"
@@ -98,12 +98,12 @@ export function RecipeCard({
       </p>
       <div className="mt-3 flex flex-wrap items-center justify-between gap-1.5">
         <div className="flex flex-wrap items-center gap-1.5" data-testid="recipe-card-badges">
-          {recipe.isAiGenerated && (
-            <Badge variant="primary">AI 추천</Badge>
-          )}
+          {recipe.isAiGenerated && <Badge variant="primary">AI 추천</Badge>}
           <Badge variant="neutral">{recipe.category === "MEAL" ? "식사" : "간식"}</Badge>
           {secondaryBadge && (
-            <Badge variant={secondaryBadge.includes("%") ? "primary" : "age"}>{secondaryBadge}</Badge>
+            <Badge variant={secondaryBadge.includes("%") ? "primary" : "age"}>
+              {secondaryBadge}
+            </Badge>
           )}
         </div>
         {(recipe.averageRating > 0 || favCount > 0) && (
@@ -126,7 +126,7 @@ export function RecipeCard({
         <p className="mt-3 text-xs font-medium text-[var(--color-text-secondary)]">{subText}</p>
       )}
       {(recipe.aboveAgeWarning || recipe.allergens.length > 0) && (
-        <div className="mt-4 space-y-2 border-t border-[var(--color-border)] pt-3 text-sm leading-relaxed">
+        <div className="mt-3 space-y-2 border-t border-[var(--color-border)] pt-3 text-sm leading-relaxed">
           {recipe.aboveAgeWarning && (
             <p className="flex items-start gap-1.5 font-semibold text-[var(--color-warning-text)]">
               <Icon name="warning" className="mt-0.5 shrink-0" width="16" height="16" />

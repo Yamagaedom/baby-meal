@@ -64,7 +64,7 @@ export function Tabs<T extends string = string>({
             tabIndex={active ? 0 : -1}
             onClick={() => onChange(opt.id)}
             onKeyDown={(e) => handleKeyDown(e, idx)}
-            className={`inline-flex min-h-11 min-w-0 flex-1 items-center justify-center border-b-2 px-2 py-3 text-center text-xs leading-snug font-semibold break-keep transition-colors sm:flex-none sm:px-5 sm:text-sm ${
+            className={`inline-flex min-h-11 min-w-0 flex-1 items-center justify-center border-b-2 px-2 py-3 text-center text-sm leading-snug font-semibold break-keep transition-colors sm:flex-none sm:px-5 sm:text-sm ${
               active
                 ? "border-[var(--color-primary)] text-[var(--color-primary-text)]"
                 : "border-transparent text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-muted)] hover:text-[var(--color-text)]"
