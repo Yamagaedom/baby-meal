@@ -260,7 +260,10 @@ for (const raw of [
     baseServings: raw.base_servings,
     ingredients,
     steps,
-    babyTips: raw.baby_tips,
+    babyTips: isNew ? {
+      ...raw.baby_tips,
+      seasoningTip: "재료표의 물로 조리하고 소금·간장·치즈를 추가하지 않습니다. 선택 재료를 넣으면 실제 영양값과 알레르기 조건을 다시 확인합니다.",
+    } : raw.baby_tips,
     storageInfo: isNew
       ? {
           fridgeDays: 1,

@@ -2,7 +2,7 @@
  * 즉석 AI 레시피 생성 통합 오케스트레이션 서비스 (PRD 3.9 AI-01~11, ING-06)
  */
 import { z } from "zod";
-import type { PrismaClient } from "@/generated/prisma/client";
+import type { Prisma, PrismaClient } from "@/generated/prisma/client";
 import { type BabyProfileView, buildBabyAllergyFilter } from "@/features/profile";
 import {
   type RecipeDetailView,
@@ -90,7 +90,7 @@ export async function persistValidatedAiRecipe(
       status: "ACTIVE",
       qualityScore: 70,
       isAiGenerated: true,
-      nutrition: nutrition as any,
+      nutrition: nutrition as unknown as Prisma.InputJsonValue,
       favoriteCount: 0,
       averageRating: 0.0,
       reviewCount: 0,

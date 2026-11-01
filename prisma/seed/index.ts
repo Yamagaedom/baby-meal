@@ -8,7 +8,7 @@ import "dotenv/config";
 import { hash } from "@node-rs/argon2";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
-import { PrismaClient } from "../../src/generated/prisma/client";
+import { PrismaClient, type Prisma } from "../../src/generated/prisma/client";
 import type { IngredientInfo } from "../../src/lib/domain/types";
 import { validateRecipeSafety } from "../../src/lib/safety";
 import { computeRecipeNutrition } from "../../src/features/nutrition";
@@ -56,6 +56,8 @@ async function main() {
     for (const saved of dbIngredients) {
       slugToDbIngredient.set(saved.slug, {
         id: saved.id,
+        slug: saved.slug,
+        nutrition: saved.nutrition,
         name: saved.name,
         synonyms: saved.synonyms,
         group: saved.group,
@@ -76,6 +78,14 @@ async function main() {
     console.log(`[seed] 샘플 레시피 ${SEED_RECIPES.length}개 안전 검증 및 적재 시작...`);
 
     for (const recipe of SEED_RECIPES) {
+      const existing = await prisma.recipe.findUnique({
+        where: { slug: recipe.slug },
+        select: { nutrition: true },
+      });
+      if (existing?.nutrition && typeof existing.nutrition === "object" && !Array.isArray(existing.nutrition) && existing.nutrition.catalogRepairVersion) {
+        console.log(`[seed] 출처·재료 보완을 마친 레시피 유지: ${recipe.slug}`);
+        continue;
+      }
       const mappedIngredients = recipe.ingredients.map((ri) => {
         const found = slugToDbIngredient.get(ri.ingredientSlug);
         if (!found) {
@@ -144,7 +154,7 @@ async function main() {
           storageInfo: recipe.storageInfo,
           status: "ACTIVE",
           isAiGenerated: false,
-          nutrition: nutrition as any,
+          nutrition: nutrition as unknown as Prisma.InputJsonValue,
           qualityScore,
         },
         create: {
@@ -166,7 +176,7 @@ async function main() {
           storageInfo: recipe.storageInfo,
           status: "ACTIVE",
           isAiGenerated: false,
-          nutrition: nutrition as any,
+          nutrition: nutrition as unknown as Prisma.InputJsonValue,
           favoriteCount: 0,
           averageRating: 0.0,
           reviewCount: 0,
