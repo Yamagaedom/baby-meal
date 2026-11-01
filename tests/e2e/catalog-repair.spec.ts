@@ -45,7 +45,9 @@ test("catalog recovery: source, portions, visible candidates and allergy blockin
     ).toBe(true);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`/recipes/${restored.newRecipeId}`);
+    await page.getByTestId("recipe-nutrition-section").locator("summary").click();
     await expect(page.getByRole("heading", { name: "영양 성분 추정", exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "참고 출처 및 신뢰 정보" }).click();
     await expect(page.getByRole("link", { name: /재료 조합 참고/ })).toBeVisible();
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
@@ -58,7 +60,7 @@ test("catalog recovery: source, portions, visible candidates and allergy blockin
     await expect(page.locator('article[data-testid^="recipe-card-"]').first()).toBeVisible();
     const restoredLink = page.getByRole("link", { name: new RegExp(restored.name) }).first();
     const more = page.getByRole("button", { name: /레시피 더보기/ });
-    while (!(await restoredLink.isVisible()) && await more.isVisible()) {
+    while (!(await restoredLink.isVisible()) && (await more.isVisible())) {
       await more.click();
     }
     await expect(restoredLink).toBeVisible();

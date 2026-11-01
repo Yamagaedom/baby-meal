@@ -6,6 +6,7 @@ export interface StepperProps {
   max?: number;
   onChange: (next: number) => void;
   label?: string;
+  compact?: boolean;
 }
 
 /**
@@ -18,6 +19,7 @@ export function Stepper({
   max = 5,
   onChange,
   label = "조리 분량 선택",
+  compact = false,
 }: StepperProps) {
   const values = Array.from({ length: max - min + 1 }, (_, idx) => min + idx);
 
@@ -35,25 +37,29 @@ export function Stepper({
             −
           </button>
 
-          {values.map((n) => {
-            const active = value === n;
-            return (
-              <button
-                key={n}
-                type="button"
-                data-testid={`serving-btn-${n}`}
-                aria-pressed={active}
-                onClick={() => onChange(n)}
-                className={`min-h-11 min-w-11 rounded-md border px-3 py-2 text-sm font-semibold transition-colors ${
-                  active
-                    ? "border-[var(--color-primary)] bg-[var(--color-primary)] text-white"
-                    : "border-[var(--color-border-strong)] bg-white text-[var(--color-text)] hover:bg-[var(--color-surface-muted)]"
-                }`}
-              >
-                {n}회분
-              </button>
-            );
-          })}
+          {compact ? (
+            <span className="min-w-14 text-center text-sm font-semibold">{value}회분</span>
+          ) : (
+            values.map((n) => {
+              const active = value === n;
+              return (
+                <button
+                  key={n}
+                  type="button"
+                  data-testid={`serving-btn-${n}`}
+                  aria-pressed={active}
+                  onClick={() => onChange(n)}
+                  className={`min-h-11 min-w-11 rounded-md border px-3 py-2 text-sm font-semibold transition-colors ${
+                    active
+                      ? "border-[var(--color-primary)] bg-[var(--color-primary)] text-white"
+                      : "border-[var(--color-border-strong)] bg-white text-[var(--color-text)] hover:bg-[var(--color-surface-muted)]"
+                  }`}
+                >
+                  {n}회분
+                </button>
+              );
+            })
+          )}
 
           <button
             type="button"
@@ -69,7 +75,7 @@ export function Stepper({
         <span
           role="status"
           aria-live="polite"
-          className="text-xs font-semibold text-[var(--color-primary-text)]"
+          className={compact ? "sr-only" : "text-xs font-semibold text-[var(--color-primary-text)]"}
         >
           현재 {value}회분 기준으로 재료 분량이 계산되었습니다
         </span>

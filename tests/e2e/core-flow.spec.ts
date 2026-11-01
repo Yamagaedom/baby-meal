@@ -62,12 +62,12 @@ test.describe("2-A 핵심 사용자 여정 E2E (ACC, PRF, REC, RCP, SRV, LOG)", 
     await expect(page.getByRole("heading", { name: chosenRecipeName })).toBeVisible();
     await expect(page.getByTestId("ai-safety-disclaimer")).toBeVisible();
 
-    await page.getByTestId("serving-btn-1").click();
+    await page.getByRole("button", { name: "조리 분량 1회분 줄이기" }).click();
     await expect(page.getByTestId("portion-storage-tip")).toHaveCount(0);
     const firstAmountLocator = page.locator('[data-testid^="ingredient-amount-"]').first();
     const oneServingText = (await firstAmountLocator.innerText()).trim();
 
-    await page.getByTestId("serving-btn-3").click();
+    await page.getByRole("button", { name: "조리 분량 1회분 늘리기" }).click({ clickCount: 2 });
     await expect(page.getByTestId("portion-storage-tip")).toContainText("3회분 조리");
     const threeServingText = (await firstAmountLocator.innerText()).trim();
     if (oneServingText !== "약간") {

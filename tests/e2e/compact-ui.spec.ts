@@ -51,6 +51,24 @@ test("compact UI: more results, disclosures, mobile and desktop", async ({ page 
     const href = await cards.first().getByRole("link").first().getAttribute("href");
     await page.screenshot({ path: testInfo.outputPath("recipes-mobile.png"), fullPage: true });
     await page.goto(href!);
+    await expect(page.getByRole("heading", { name: "재료", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "조리 순서", exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "조리 분량 1회분 늘리기" }).click();
+    await expect(page.getByRole("group", { name: "조리 분량 선택" })).toContainText("3회분");
+    await page.getByTestId("open-cooking-mode-btn").click();
+    await expect(page.getByTestId("cooking-mode-dialog")).toBeVisible();
+    await page.getByRole("button", { name: "조리 모드 닫기" }).click();
+    const nutrition = page.getByTestId("recipe-nutrition-section");
+    await expect(nutrition).not.toHaveAttribute("open", "");
+    await nutrition.locator("summary").press("Enter");
+    await expect(nutrition.getByRole("heading", { name: "영양 성분 추정" })).toBeVisible();
+    const reviews = page.getByTestId("recipe-community-section");
+    await expect(reviews).not.toHaveAttribute("open", "");
+    await page
+      .getByRole("link", { name: /평점 없음|후기/ })
+      .first()
+      .click();
+    await expect(reviews).toHaveAttribute("open", "");
     const log = page.locator("#meal-log-form");
     await expect(log.getByRole("button", { name: "먹었어요 저장" })).toBeHidden();
     await log.locator("summary").click();

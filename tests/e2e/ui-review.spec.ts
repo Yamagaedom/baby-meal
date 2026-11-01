@@ -90,7 +90,7 @@ test("UI 검토서 회귀: 카드·필터·냉장고 피드백·상세 고지·�
   expect(disclaimerBox!.y).toBeLessThan(allergenBox!.y);
   await expect(page.getByTestId("default-category-illustration")).toHaveCount(0);
   expect(await page.locator("main").innerText()).not.toMatch(/시드 샘플|유아식샘플채널/);
-  await page.getByTestId("serving-btn-3").click();
+  await page.getByRole("button", { name: "조리 분량 1회분 늘리기" }).click();
   await expect(page.getByRole("status").filter({ hasText: "현재 3회분" })).toBeVisible();
   await page.getByTestId("open-cooking-mode-btn").click();
   await expect(page.getByTestId("cooking-mode-dialog")).toBeVisible();

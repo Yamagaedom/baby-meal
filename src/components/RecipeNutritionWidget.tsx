@@ -19,56 +19,63 @@ export function RecipeNutritionWidget({
     ["식이섬유", nutrition.dietaryFiberG, "g", estimate.coverage.fiber],
   ] as const;
   return (
-    <section
-      data-testid="recipe-nutrition-section"
-      className="border-t border-[var(--color-border)] bg-white pt-5"
-    >
-      <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[var(--color-border)] pb-3">
-        <div>
-          <h2 className="text-lg font-semibold">영양 성분 추정</h2>
-          <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
-            1회분 기준 · 선택 재료 제외 · 식품 성분표로 계산한 참고값
-          </p>
-        </div>
-        <span className="text-xs text-[var(--color-text-secondary)]">
-          {targetServings}회분 조리 중 1회분
+    <details data-testid="recipe-nutrition-section" className="disclosure">
+      <summary>
+        <span>
+          영양 성분 추정{" "}
+          <span className="ml-2 text-xs font-normal text-[var(--color-text-secondary)]">
+            1회분 참고값
+          </span>
         </span>
-      </div>
-      <dl className="mt-4 grid grid-cols-2 gap-x-5 gap-y-2 sm:grid-cols-4">
-        {items.map(([label, value, unit, coverage]) => (
-          <div key={label} className="min-w-0 border-b border-[var(--color-border)] py-2">
-            <dt className="text-xs text-[var(--color-text-secondary)]">{label}</dt>
-            <dd className="mt-1 font-semibold break-words">
-              <span>{value === null ? "미확인" : value + " " + unit}</span>
-
-              {value !== null && coverage < 1 && (
-                <span className="mt-1 block text-xs font-normal text-[var(--color-text-secondary)]">
-                  확인된 재료의 부분 합계
-                </span>
-              )}
-            </dd>
+      </summary>
+      <section className="disclosure-body">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[var(--color-border)] pb-3">
+          <div>
+            <h2 className="text-lg font-semibold">영양 성분 추정</h2>
+            <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
+              1회분 기준 · 선택 재료 제외 · 식품 성분표로 계산한 참고값
+            </p>
           </div>
-        ))}
-      </dl>
-      {estimate.missing.length > 0 && (
-        <p className="mt-4 text-xs text-[var(--color-text-secondary)]">
-          자료·중량 미확인: {estimate.missing.join(", ")}. 표시 값에 이 재료의 일부 성분이 빠져
-          있습니다.
+          <span className="text-xs text-[var(--color-text-secondary)]">
+            {targetServings}회분 조리 중 1회분
+          </span>
+        </div>
+        <dl className="mt-4 grid grid-cols-2 gap-x-5 gap-y-2 sm:grid-cols-4">
+          {items.map(([label, value, unit, coverage]) => (
+            <div key={label} className="min-w-0 border-b border-[var(--color-border)] py-2">
+              <dt className="text-xs text-[var(--color-text-secondary)]">{label}</dt>
+              <dd className="mt-1 font-semibold break-words">
+                <span>{value === null ? "미확인" : value + " " + unit}</span>
+
+                {value !== null && coverage < 1 && (
+                  <span className="mt-1 block text-xs font-normal text-[var(--color-text-secondary)]">
+                    확인된 재료의 부분 합계
+                  </span>
+                )}
+              </dd>
+            </div>
+          ))}
+        </dl>
+        {estimate.missing.length > 0 && (
+          <p className="mt-4 text-xs text-[var(--color-text-secondary)]">
+            자료·중량 미확인: {estimate.missing.join(", ")}. 표시 값에 이 재료의 일부 성분이 빠져
+            있습니다.
+          </p>
+        )}
+        <p className="mt-3 text-xs text-[var(--color-text-secondary)]">
+          품종·제품·조리 손실에 따라 달라집니다. 한 메뉴의 수치만으로 하루 영양 충족을 판단하지
+          않습니다.
         </p>
-      )}
-      <p className="mt-3 text-xs text-[var(--color-text-secondary)]">
-        품종·제품·조리 손실에 따라 달라집니다. 한 메뉴의 수치만으로 하루 영양 충족을 판단하지
-        않습니다.
-      </p>
-      <ul className="mt-2 text-xs text-[var(--color-text-secondary)]">
-        {estimate.sources.map((source) => (
-          <li key={source.url}>
-            <a href={source.url} target="_blank" rel="noopener noreferrer" className="underline">
-              {source.title}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </section>
+        <ul className="mt-2 text-xs text-[var(--color-text-secondary)]">
+          {estimate.sources.map((source) => (
+            <li key={source.url}>
+              <a href={source.url} target="_blank" rel="noopener noreferrer" className="underline">
+                {source.title}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </details>
   );
 }

@@ -291,7 +291,7 @@ export function RecipeDetailClient({
       id: "tips-texture",
       title: "식감 · 입자 · 간 조절 팁",
       icon: <Icon name="timer" width={16} height={16} />,
-      defaultOpen: true,
+      defaultOpen: false,
       content: (
         <div className="space-y-2 pt-1 text-sm text-[var(--color-text-secondary)]">
           <p>
@@ -306,6 +306,7 @@ export function RecipeDetailClient({
             <strong className="text-[var(--color-text)]">간 조절 팁:</strong>{" "}
             {recipe.babyTips.seasoningTip}
           </p>
+          {recipe.unsaltedFlavorGuide && <p>{recipe.unsaltedFlavorGuide}</p>}
         </div>
       ),
     },
@@ -358,7 +359,7 @@ export function RecipeDetailClient({
       id: "tips-sources",
       title: "참고 출처 및 신뢰 정보",
       icon: <Icon name="book" width={16} height={16} />,
-      defaultOpen: true,
+      defaultOpen: false,
       content:
         verifiedSources.length === 0 ? (
           <p className="pt-1 text-sm text-[var(--color-warning-text)]">
@@ -399,91 +400,74 @@ export function RecipeDetailClient({
         />
         {/* 레시피 기본 정보 */}
         <section className="border-t border-[var(--color-border)] pt-6">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="space-y-2">
-              <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-[var(--color-text)] sm:text-[32px]">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 space-y-2">
+              <h1 className="text-[28px] leading-tight font-bold tracking-tight text-[var(--color-text)] sm:text-[32px]">
                 {recipe.name}
               </h1>
-              <div className="flex flex-wrap gap-1.5">
-                <Link
-                  href={`/meal-plan?recipe=${recipe.id}`}
-                  className="inline-flex min-h-11 items-center rounded-md border border-[var(--color-border)] px-3 text-sm font-medium"
-                >
-                  식단에 담기
-                </Link>
-                {recipe.isAiGenerated && <Badge variant="primary">AI 추천 레시피</Badge>}
-                <Badge variant="primary">{recipe.category === "MEAL" ? "식사" : "간식"}</Badge>
-                <Badge variant="salt">{recipe.saltLevelLabel}</Badge>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3 pt-1 text-sm font-medium text-[var(--color-text)]">
-                <a
-                  href="#recipe-community-section"
-                  className="flex items-center gap-1 text-[var(--color-text)] hover:underline"
-                >
-                  <span className="font-bold text-amber-600" aria-hidden="true">
-                    ★
-                  </span>
-                  <span className="font-bold text-[var(--color-text)]">
-                    {recipe.averageRating > 0 ? recipe.averageRating.toFixed(1) : "평점 없음"}
-                  </span>
-                  <span className="text-xs text-[var(--color-text-secondary)]">
-                    {recipe.reviewCount > 0 ? `(${recipe.reviewCount}개 후기)` : "(첫 후기 남기기)"}
-                  </span>
-                </a>
-                <span aria-hidden="true" className="text-gray-300">
-                  |
-                </span>
-                <span className="text-xs text-[var(--color-text-secondary)]">
-                  즐겨찾기 <strong className="text-[var(--color-text)]">{favoriteCount}</strong>명
-                </span>
-              </div>
-
               <p className="text-sm text-[var(--color-text-secondary)]">
-                조리 {recipe.cookMinutes}분 · 난이도:{" "}
-                {recipe.difficulty <= 1 ? "쉬움" : recipe.difficulty === 2 ? "보통" : "어려움"}
+                {recipe.category === "MEAL" ? "식사" : "간식"} · {recipe.cookMinutes}분 ·{" "}
+                {recipe.ageStageLabels.join(" · ")} · {recipe.saltLevelLabel}
               </p>
-              <p className="text-xs text-[var(--color-text-secondary)]">
-                {recipe.ageStageLabels.join(" · ")}
-              </p>
+              <a
+                href="#recipe-community-section"
+                onClick={() => {
+                  const section = document.getElementById("recipe-community-section");
+                  if (section instanceof HTMLDetailsElement) section.open = true;
+                }}
+                className="inline-flex min-h-11 items-center text-sm text-[var(--color-text-secondary)] underline-offset-4 hover:underline"
+              >
+                ★ {recipe.averageRating > 0 ? recipe.averageRating.toFixed(1) : "평점 없음"} · 후기{" "}
+                {recipe.reviewCount}개
+              </a>
               {summary && (
                 <p className="text-sm leading-relaxed text-[var(--color-text-secondary)]">
                   {summary}
                 </p>
               )}
             </div>
-
             <button
               type="button"
               disabled={favPending}
               aria-pressed={isFavorite}
+              aria-label={isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가"}
               onClick={handleToggleFavorite}
-              className={`inline-flex min-h-11 items-center gap-1.5 rounded-md border px-3.5 py-2 text-sm font-semibold transition-colors ${
-                isFavorite
-                  ? "border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] text-[var(--color-warning-text)]"
-                  : "border-[var(--color-border-strong)] bg-white text-[var(--color-text)] hover:bg-[var(--color-surface-muted)]"
-              }`}
+              className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-md text-[var(--color-primary)] hover:bg-[var(--color-primary-soft)]"
             >
               <Icon name="star" fill={isFavorite ? "currentColor" : "none"} />
-              <span>
-                {isFavorite ? `즐겨찾기됨 (${favoriteCount})` : `즐겨찾기 (${favoriteCount})`}
-              </span>
             </button>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Link
+              href={`/meal-plan?recipe=${recipe.id}`}
+              className="inline-flex min-h-11 flex-1 items-center justify-center rounded-md border border-[var(--color-border-strong)] px-3 text-sm font-semibold"
+            >
+              식단에 담기
+            </Link>
+            <Button
+              variant="primary"
+              size="sm"
+              className="flex-1"
+              data-testid="open-cooking-mode-btn"
+              onClick={() => setCookingModeOpen(true)}
+            >
+              조리 모드
+            </Button>
           </div>
 
           {/* AI 및 의료 고지 배너 — 상시 노출, 접기·숨기기 금지 (AI-08) */}
           <div
             role="note"
             data-testid="ai-safety-disclaimer"
-            className="mt-5 rounded-lg border-2 border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] p-4 text-sm leading-relaxed text-[var(--color-warning-text)] sm:p-5"
+            className="mt-5 border-l-4 border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] px-4 py-3 text-sm leading-relaxed text-[var(--color-warning-text)]"
           >
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="ai">AI 생성 레시피 · 사람 미검수</Badge>
+              {recipe.isAiGenerated && <Badge variant="ai">AI 생성 레시피 · 사람 미검수</Badge>}
               <span className="font-semibold text-[var(--color-warning-text)]">
                 조리 전 재료·분량·상태 확인 필수
               </span>
             </div>
-            <p className="mt-2 font-semibold">{recipe.aiDisclaimer}</p>
+            {recipe.isAiGenerated && <p className="mt-2 font-semibold">{recipe.aiDisclaimer}</p>}
             <p className="mt-1">{recipe.medicalDisclaimer}</p>
           </div>
 
@@ -497,22 +481,22 @@ export function RecipeDetailClient({
             </div>
           )}
 
-          <dl className="mt-5 grid grid-cols-1 gap-3 border-t border-[var(--color-border)] pt-4 text-xs sm:grid-cols-3">
-            <div className="rounded-md bg-[var(--color-surface-muted)] p-3">
+          <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 border-t border-[var(--color-border)] pt-3 text-xs">
+            <div className="min-w-0">
               <dt className="font-semibold text-[var(--color-text-secondary)]">조리 도구</dt>
               <dd className="mt-0.5 text-sm font-semibold text-[var(--color-text)]">
                 {recipe.tools.join(", ") || "기본 조리도구"}
               </dd>
             </div>
             {recipe.saltLevel !== "NONE" && (
-              <div className="rounded-md bg-[var(--color-info-soft)] p-3">
+              <div className="min-w-0">
                 <dt className="font-semibold text-[var(--color-info-text)]">1회분 예상 나트륨</dt>
                 <dd className="mt-0.5 text-sm font-semibold text-[var(--color-info-text)]">
                   약 {recipe.sodiumMgPerServing}mg
                 </dd>
               </div>
             )}
-            <div className="rounded-md bg-[var(--color-surface-muted)] p-3">
+            <div className="min-w-0">
               <dt className="font-semibold text-[var(--color-text-secondary)]">
                 알레르기 유발 표시
               </dt>
@@ -523,12 +507,6 @@ export function RecipeDetailClient({
               </dd>
             </div>
           </dl>
-
-          {recipe.unsaltedFlavorGuide && (
-            <p className="mt-3.5 rounded-lg border border-[var(--color-info-border)] bg-[var(--color-info-soft)] p-3.5 text-xs font-semibold text-[var(--color-info-text)]">
-              {recipe.unsaltedFlavorGuide}
-            </p>
-          )}
 
           {recipe.cautionIngredients.length > 0 && (
             <div className="mt-3.5 rounded-lg border border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] p-3.5 text-sm text-[var(--color-warning-text)]">
@@ -546,15 +524,11 @@ export function RecipeDetailClient({
 
         {/* 고정(Sticky) 분량 스테퍼 + 재료 체크리스트 (RCP-02, SRV-01~05) */}
         <section className="space-y-4 border-t border-[var(--color-border)] pt-6">
-          <div className="rounded-lg bg-[var(--color-surface-muted)] p-4">
-            <div className="mb-2">
-              <h2 className="text-lg font-semibold text-[var(--color-text)]">
-                재료 안내 & 분량 조절
-              </h2>
-              <p className="text-xs text-[var(--color-text-secondary)]">{recipe.portionGuide}</p>
-            </div>
-            <Stepper value={servings} onChange={setServings} label="조리 분량 선택" />
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-xl font-bold text-[var(--color-text)]">재료</h2>
+            <Stepper value={servings} onChange={setServings} label="조리 분량 선택" compact />
           </div>
+          <p className="text-sm text-[var(--color-text-secondary)]">{recipe.portionGuide}</p>
 
           {showPortionTip && recipe.storageInfo.portionTip && (
             <div
@@ -619,37 +593,23 @@ export function RecipeDetailClient({
           </ul>
         </section>
 
-        {/* 1회 제공량 영양 성분 분석표 */}
-        <RecipeNutritionWidget nutrition={recipe.nutrition} targetServings={servings} />
-
         {/* 단계별 조리 순서 (RCP-03, RCP-07) */}
         <section className="space-y-4 border-t border-[var(--color-border)] pt-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold text-[var(--color-text)]">단계별 조리 순서</h2>
-            <Button
-              variant="primary"
-              size="sm"
-              data-testid="open-cooking-mode-btn"
-              onClick={() => setCookingModeOpen(true)}
-            >
-              조리 모드 (큰 글씨 · 화면 켜짐 유지)
-            </Button>
+            <h2 className="text-xl font-bold text-[var(--color-text)]">조리 순서</h2>
           </div>
 
-          <ol className="space-y-3">
+          <ol className="divide-y divide-[var(--color-border)]">
             {recipe.steps.map((step) => {
               const remaining = timers[step.order] ?? step.timerSeconds ?? 0;
               const running = Boolean(runningTimers[step.order]);
               const mins = Math.floor(remaining / 60);
               const secs = remaining % 60;
               return (
-                <li
-                  key={step.order}
-                  className="rounded-lg border border-[var(--color-border)] bg-[var(--color-canvas)] p-4"
-                >
+                <li key={step.order} className="py-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <p className="flex-1 text-base leading-relaxed text-[var(--color-text)]">
-                      <strong className="mr-2 inline-flex h-7 w-7 items-center justify-center rounded-sm bg-[var(--color-primary)] text-xs font-semibold text-white">
+                      <strong className="mr-3 inline-flex min-w-7 items-center justify-center text-base font-bold text-[var(--color-primary)]">
                         {step.order}
                       </strong>
                       {step.instruction}
@@ -670,105 +630,6 @@ export function RecipeDetailClient({
             })}
           </ol>
         </section>
-
-        {/* 아기 맞춤 조리 팁 & 보관법 & 참고 출처 (RCP-04~06, AI-06, 아코디언 적용) */}
-        <section className="space-y-3.5 border-t border-[var(--color-border)] pt-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-[var(--color-text)]">아기 맞춤 팁 & 보관 안내</h2>
-            <span className="text-xs text-[var(--color-text-secondary)]">
-              탭하여 세부 내용 펼치기
-            </span>
-          </div>
-          <Accordion items={accordionItems} allowMultiple={true} />
-        </section>
-
-        {cookingModeOpen && (
-          <CookingModeModal
-            recipeName={recipe.name}
-            steps={recipe.steps}
-            onClose={() => setCookingModeOpen(false)}
-          />
-        )}
-
-        {/* ING-07: 요리 완료 시 내 냉장고 사용 재료 선택 차감 */}
-        {(Boolean(deductNotice) ||
-          recipe.ingredients.some((ing) => ownedPantrySet.includes(ing.ingredientId))) && (
-          <section
-            data-testid="pantry-deduct-section"
-            className="space-y-3.5 border-t border-[var(--color-border)] pt-6"
-          >
-            <h2 className="text-lg font-semibold text-[var(--color-text)]">
-              요리 완료 · 내 냉장고 사용 재료 차감 (선택)
-            </h2>
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              다 쓴 재료를 선택해 내 냉장고 보관 목록에서 바로 비울 수 있습니다.
-            </p>
-            {deductNotice && (
-              <div
-                role="status"
-                aria-live="polite"
-                data-testid="pantry-deduct-notice"
-                className="rounded-lg border border-[var(--color-success-border)] bg-[var(--color-success-soft)] p-3 text-xs font-semibold text-[var(--color-secondary-text)]"
-              >
-                <span aria-hidden="true">✓ </span>
-                {deductNotice}
-              </div>
-            )}
-            <div className="flex flex-wrap gap-2">
-              {recipe.ingredients
-                .filter((ing) => ownedPantrySet.includes(ing.ingredientId))
-                .map((ing) => (
-                  <label
-                    key={ing.ingredientId}
-                    className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-canvas)] px-3.5 py-2 text-sm font-semibold text-[var(--color-text)]"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={deductTargets.includes(ing.ingredientId)}
-                      onChange={() =>
-                        setDeductTargets((prev) =>
-                          prev.includes(ing.ingredientId)
-                            ? prev.filter((id) => id !== ing.ingredientId)
-                            : [...prev, ing.ingredientId],
-                        )
-                      }
-                      className="h-4 w-4 accent-[var(--color-primary)]"
-                    />
-                    <span>{ing.name}</span>
-                  </label>
-                ))}
-            </div>
-            <Button
-              variant="secondary"
-              size="sm"
-              data-testid="deduct-pantry-btn"
-              disabled={deductSubmitting || deductTargets.length === 0}
-              onClick={async () => {
-                setDeductSubmitting(true);
-                try {
-                  const res = await fetch("/api/pantry/deduct", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ ingredientIds: deductTargets }),
-                  });
-                  if (res.ok) {
-                    const data = await res.json();
-                    setOwnedPantrySet((prev) => prev.filter((id) => !deductTargets.includes(id)));
-                    setDeductTargets([]);
-                    setDeductNotice(
-                      `내 냉장고에서 사용 재료 ${data.deductedCount}개를 차감했습니다.`,
-                    );
-                    router.refresh();
-                  }
-                } finally {
-                  setDeductSubmitting(false);
-                }
-              }}
-            >
-              {deductSubmitting ? "차감 중..." : "선택한 재료 냉장고에서 차감"}
-            </Button>
-          </section>
-        )}
 
         {/* 먹었어요 기록 폼 (LOG-01~04) */}
         <details className="disclosure" id="meal-log-form">
@@ -924,6 +785,107 @@ export function RecipeDetailClient({
             </form>
           </div>
         </details>
+
+        <RecipeNutritionWidget nutrition={recipe.nutrition} targetServings={servings} />
+
+        {/* 아기 맞춤 조리 팁 & 보관법 & 참고 출처 (RCP-04~06, AI-06, 아코디언 적용) */}
+        <section className="space-y-3.5 border-t border-[var(--color-border)] pt-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-[var(--color-text)]">아기 맞춤 팁 & 보관 안내</h2>
+            <span className="text-xs text-[var(--color-text-secondary)]">
+              탭하여 세부 내용 펼치기
+            </span>
+          </div>
+          <Accordion items={accordionItems} allowMultiple={true} />
+        </section>
+
+        {cookingModeOpen && (
+          <CookingModeModal
+            recipeName={recipe.name}
+            steps={recipe.steps}
+            onClose={() => setCookingModeOpen(false)}
+          />
+        )}
+
+        {/* ING-07: 요리 완료 시 내 냉장고 사용 재료 선택 차감 */}
+        {(Boolean(deductNotice) ||
+          recipe.ingredients.some((ing) => ownedPantrySet.includes(ing.ingredientId))) && (
+          <section
+            data-testid="pantry-deduct-section"
+            className="space-y-3.5 border-t border-[var(--color-border)] pt-6"
+          >
+            <h2 className="text-lg font-semibold text-[var(--color-text)]">
+              요리 완료 · 내 냉장고 사용 재료 차감 (선택)
+            </h2>
+            <p className="text-sm text-[var(--color-text-secondary)]">
+              다 쓴 재료를 선택해 내 냉장고 보관 목록에서 바로 비울 수 있습니다.
+            </p>
+            {deductNotice && (
+              <div
+                role="status"
+                aria-live="polite"
+                data-testid="pantry-deduct-notice"
+                className="rounded-lg border border-[var(--color-success-border)] bg-[var(--color-success-soft)] p-3 text-xs font-semibold text-[var(--color-secondary-text)]"
+              >
+                <span aria-hidden="true">✓ </span>
+                {deductNotice}
+              </div>
+            )}
+            <div className="flex flex-wrap gap-2">
+              {recipe.ingredients
+                .filter((ing) => ownedPantrySet.includes(ing.ingredientId))
+                .map((ing) => (
+                  <label
+                    key={ing.ingredientId}
+                    className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-canvas)] px-3.5 py-2 text-sm font-semibold text-[var(--color-text)]"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={deductTargets.includes(ing.ingredientId)}
+                      onChange={() =>
+                        setDeductTargets((prev) =>
+                          prev.includes(ing.ingredientId)
+                            ? prev.filter((id) => id !== ing.ingredientId)
+                            : [...prev, ing.ingredientId],
+                        )
+                      }
+                      className="h-4 w-4 accent-[var(--color-primary)]"
+                    />
+                    <span>{ing.name}</span>
+                  </label>
+                ))}
+            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              data-testid="deduct-pantry-btn"
+              disabled={deductSubmitting || deductTargets.length === 0}
+              onClick={async () => {
+                setDeductSubmitting(true);
+                try {
+                  const res = await fetch("/api/pantry/deduct", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ ingredientIds: deductTargets }),
+                  });
+                  if (res.ok) {
+                    const data = await res.json();
+                    setOwnedPantrySet((prev) => prev.filter((id) => !deductTargets.includes(id)));
+                    setDeductTargets([]);
+                    setDeductNotice(
+                      `내 냉장고에서 사용 재료 ${data.deductedCount}개를 차감했습니다.`,
+                    );
+                    router.refresh();
+                  }
+                } finally {
+                  setDeductSubmitting(false);
+                }
+              }}
+            >
+              {deductSubmitting ? "차감 중..." : "선택한 재료 냉장고에서 차감"}
+            </Button>
+          </section>
+        )}
 
         {/* 레시피 신고 (AI-12) */}
         <section className="rounded-lg border border-[var(--color-border)] bg-white p-5 shadow-none">

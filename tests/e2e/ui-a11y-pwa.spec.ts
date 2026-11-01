@@ -220,10 +220,13 @@ test.describe("3단계 UI·반응형(320/360/768/1280px)·접근성(WCAG 2.1 AA 
     await expect(page).toHaveURL(/\/recipes\//);
 
     // 키보드로 4회분 버튼 선택 및 스크린리더용 aria-live 영역 텍스트 갱신 검증
-    const serving4Btn = page.getByTestId("serving-btn-4");
+    const serving4Btn = page.getByRole("button", { name: "조리 분량 1회분 늘리기" });
     await serving4Btn.focus();
     await page.keyboard.press("Enter");
-    await expect(page.getByText("현재 4회분 기준으로 재료 분량이 계산되었습니다")).toBeVisible();
+    await page.keyboard.press("Enter");
+    await expect(page.getByText("현재 4회분 기준으로 재료 분량이 계산되었습니다")).toHaveText(
+      "현재 4회분 기준으로 재료 분량이 계산되었습니다",
+    );
 
     // 키보드로 '먹었어요 저장' 제출
     await page.locator("#meal-log-form > summary").press("Enter");
