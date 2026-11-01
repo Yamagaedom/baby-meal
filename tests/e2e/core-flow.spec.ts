@@ -75,6 +75,7 @@ test.describe("2-A 핵심 사용자 여정 E2E (ACC, PRF, REC, RCP, SRV, LOG)", 
     }
 
     // 6. 먹었어요 기록 저장 및 기록 탭 확인 (LOG-01~06)
+    await page.locator("#meal-log-form > summary").press("Enter");
     await page.getByRole("radio", { name: "잘 먹었어요", exact: true }).check();
     await page.getByLabel(/메모/).fill("완밥 성공!");
     await page.getByRole("button", { name: "먹었어요 저장" }).click();

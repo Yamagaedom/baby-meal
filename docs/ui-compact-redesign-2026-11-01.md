@@ -31,4 +31,8 @@
 - lint, TypeScript 검사, 프로덕션 빌드 통과.
 - 로컬 Chromium: 6개 주요 화면 가로 넘침 없음, Axe serious/critical 0건, 12개씩 더보기 및 양식 접기/펼치기 통과.
 - 기존 주간 식단 생성→확정→조리→재고 차감 테스트 통과.
-- 운영 배포 후 최종 확인 예정.
+- 운영 배포 READY: 1fd87ac6cd7c3511034b124b749ec7334efbc8ba / dpl_EpQWgaHcky3enGWdPUkEaeN5wAVE.
+- https://baby-meal-tau.vercel.app 에서 compact-ui, weekly-plan, catalog-repair 모두 통과.
+- 운영 목록 121개 / 1단계 55개, 출처 표시·알레르기 차단·1회분 영양값 유지 확인.
+- 목록 검증의 로딩 대기 누락을 수정하고 재검증함. 테스트 임시 계정 삭제 완료.
+- 후기가 없는 레시피는 평점 차트 생략, 후기 있는 경우 상세 분포 접기.

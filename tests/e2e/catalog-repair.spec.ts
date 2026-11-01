@@ -55,6 +55,7 @@ test("catalog recovery: source, portions, visible candidates and allergy blockin
       fullPage: true,
     });
     await page.goto("/recipes");
+    await expect(page.locator('article[data-testid^="recipe-card-"]').first()).toBeVisible();
     const restoredLink = page.getByRole("link", { name: new RegExp(restored.name) }).first();
     const more = page.getByRole("button", { name: /레시피 더보기/ });
     while (!(await restoredLink.isVisible()) && await more.isVisible()) {

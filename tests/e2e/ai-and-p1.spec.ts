@@ -213,6 +213,7 @@ test.describe("2-B 즉석 AI 레시피 생성 및 P1 기능 E2E (ING-06/07, AI-0
     await expect(page.getByTestId("pantry-deduct-notice")).toContainText("차감했습니다.");
 
     // 5. 먹었어요 기록 저장 후 기록 탭 '입맛 리포트' 확인 (LOG-07)
+    await page.locator("#meal-log-form > summary").press("Enter");
     await page.getByRole("button", { name: "먹었어요 저장" }).click();
     await expect(page.getByTestId("meal-log-success")).toBeVisible();
 

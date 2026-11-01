@@ -226,6 +226,7 @@ test.describe("3단계 UI·반응형(320/360/768/1280px)·접근성(WCAG 2.1 AA 
     await expect(page.getByText("현재 4회분 기준으로 재료 분량이 계산되었습니다")).toBeVisible();
 
     // 키보드로 '먹었어요 저장' 제출
+    await page.locator("#meal-log-form > summary").press("Enter");
     const saveLogBtn = page.getByRole("button", { name: "먹었어요 저장" });
     await saveLogBtn.focus();
     await page.keyboard.press("Enter");
