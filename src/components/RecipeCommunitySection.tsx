@@ -148,7 +148,7 @@ export function RecipeCommunitySection({
             ))}
           </div>
           <span className="mt-1 block text-xs text-[var(--color-text-secondary)]">
-            총 {stats.totalReviews}개 후기
+            {stats.totalReviews > 0 ? `총 ${stats.totalReviews}개 후기` : "등록된 후기 없음"}
           </span>
         </div>
 

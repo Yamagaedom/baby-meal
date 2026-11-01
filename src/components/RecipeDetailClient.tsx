@@ -302,10 +302,10 @@ export function RecipeDetailClient({
               >
                 <span className="text-amber-500">★</span>
                 <span className="font-bold">
-                  {recipe.averageRating > 0 ? recipe.averageRating.toFixed(1) : "평가 0"}
+                  {recipe.averageRating > 0 ? recipe.averageRating.toFixed(1) : "평점 없음"}
                 </span>
                 <span className="text-xs text-[var(--color-text-secondary)]">
-                  ({recipe.reviewCount}개 후기)
+                  {recipe.reviewCount > 0 ? `(${recipe.reviewCount}개 후기)` : "(첫 후기 남기기)"}
                 </span>
               </a>
               <span aria-hidden="true" className="text-gray-300">|</span>

@@ -122,9 +122,6 @@ async function main() {
 
       const nutrition = computeRecipeNutrition(mappedIngredients, dictById, recipe.baseServings);
       const hashVal = Math.abs(recipe.slug.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0));
-      const favoriteCount = 35 + (hashVal % 95);
-      const averageRating = Math.round((4.7 + (hashVal % 3) * 0.1) * 10) / 10;
-      const reviewCount = 8 + (hashVal % 25);
       const qualityScore = 88 + (hashVal % 8);
 
       const upserted = await prisma.recipe.upsert({
@@ -148,9 +145,6 @@ async function main() {
           status: "ACTIVE",
           isAiGenerated: false,
           nutrition: nutrition as any,
-          favoriteCount,
-          averageRating,
-          reviewCount,
           qualityScore,
         },
         create: {
@@ -173,9 +167,9 @@ async function main() {
           status: "ACTIVE",
           isAiGenerated: false,
           nutrition: nutrition as any,
-          favoriteCount,
-          averageRating,
-          reviewCount,
+          favoriteCount: 0,
+          averageRating: 0.0,
+          reviewCount: 0,
           qualityScore,
         },
       });
