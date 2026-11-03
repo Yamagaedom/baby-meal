@@ -182,3 +182,12 @@ DB 확충 기준:
 - 실제 운영에서 새 식단 생성→확정→조리→복수 메뉴 한 끼 기록→부분 재고 차감 검증 통과.
 - 기존 카드·상세·출처·알레르기 차단과 주간 식단 검증 통과.
 - 소수 재고 차감은 수량 반올림과 버전 확인으로 잔여 수량 오차를 방지.
+
+
+### 최종 배포 확인
+
+- 운영 배포: `ead2a4513bc7747d39df06bca14bc894cc3c6a7e` / `dpl_FHQpRAaESH2C1LYTgSC2wDzDvj4n`, READY.
+- 주소: https://baby-meal-tau.vercel.app
+- 운영 E2E 4개 전체 통과: catalog-repair / compact-ui / review-improvements / weekly-plan.
+- 새 재료 요청 저장 및 테스트 계정 삭제, 유형별 식단 설정 재사용, 부분 회분 차감까지 확인.
+- 운영 기본 무염 탐색 후보 130개, 1단계 후보 56개를 확인했으며 알레르기 차단을 유지.
