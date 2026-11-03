@@ -947,9 +947,12 @@ export async function changePlan(
           if (reserved.reduce((sum, r) => sum + r.servings, 0) < servingEntry.servings)
             throw new AppError(400, "COOK_FIRST", "먼저 조리 완료로 음식 재고를 등록해 주세요.");
           for (const r of reserved) {
+            const batch = await tx.foodBatch.findUniqueOrThrow({ where: { id: r.batchId } });
+            const nextRemaining = amount(batch.remaining - r.servings);
+            if (nextRemaining < 0) throw conflict();
             const moved = await tx.foodBatch.updateMany({
-              where: { id: r.batchId, remaining: { gte: r.servings - 0.000001 } },
-              data: { remaining: { decrement: r.servings }, version: { increment: 1 } },
+              where: { id: r.batchId, version: batch.version },
+              data: { remaining: nextRemaining, version: { increment: 1 } },
             });
             if (!moved.count) throw conflict();
             await tx.foodMovement.create({

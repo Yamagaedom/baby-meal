@@ -34,6 +34,7 @@ test("review flow: full ingredient browse, precise match, 3-day meals with sides
     const soft = ingredients.find((i: { name: string }) => i.name === "순두부");
     expect(tofu).toBeTruthy();
     expect(soft).toBeTruthy();
+    expect((await page.request.post('/api/ingredient-requests',{data:{name:'검증용 재료 요청'}})).status()).toBe(200);
     const strict = await page.request.post("/api/recommend/by-ingredients", {
       data: { ingredientIds: [tofu.id], scope: "ON_HAND", assumeBasicPantry: true, maxMissing: 0 },
     });
