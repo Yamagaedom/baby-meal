@@ -11,7 +11,7 @@ export function checkSignupRateLimit(
   nowMs: number = Date.now(),
   maxAttempts: number = SIGNUP_RATE_MAX_ATTEMPTS,
 ): void {
-  if (process.env.NODE_ENV === "test" || process.env.AI_E2E_MOCK_MODE === "1") {
+  if (process.env.NODE_ENV !== "test" && process.env.AI_E2E_MOCK_MODE === "1") {
     return;
   }
   const windowStart = nowMs - SIGNUP_RATE_WINDOW_MS;

@@ -39,8 +39,22 @@ export function IngredientSearchClient({
 }: IngredientSearchClientProps) {
   const [selected, setSelected] = useState<IngredientOptionView[]>(initialPantryItems);
   const [assumeBasicPantry, setAssumeBasicPantry] = useState(true);
+  const [scope, setScope] = useState<"ON_HAND" | "SHOPPING" | "EXPLORE">("SHOPPING");
+  const [maxMissing, setMaxMissing] = useState(3);
+  const [browse, setBrowse] = useState(false);
+  const [ingredientCount, setIngredientCount] = useState(40);
+  const [diagnostics, setDiagnostics] = useState<{
+    active: number;
+    ageAndSalt: number;
+    safe: number;
+    matching: number;
+  } | null>(null);
+  const [requestNotice, setRequestNotice] = useState("");
+  const [dishType, setDishType] = useState("ANY");
+  const [fresh, setFresh] = useState(false);
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<IngredientOptionView[]>([]);
+  const [visibleCount, setVisibleCount] = useState(12);
   const [items, setItems] = useState<IngredientMatchedRecipeView[]>([]);
   const [showAiSlot, setShowAiSlot] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -68,9 +82,6 @@ export function IngredientSearchClient({
 
   useEffect(() => {
     const trimmed = query.trim();
-    if (!trimmed) {
-      return;
-    }
     let cancelled = false;
     fetch(`/api/ingredients?babyId=${encodeURIComponent(babyId)}&q=${encodeURIComponent(trimmed)}`)
       .then((res) => (res.ok ? res.json() : { results: [] }))
@@ -94,8 +105,12 @@ export function IngredientSearchClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function runRecommend(nextSelected: IngredientOptionView[], nextPantry: boolean) {
-    if (nextSelected.length === 0) {
+  async function runRecommend(
+    nextSelected: IngredientOptionView[],
+    nextPantry: boolean,
+    nextScope = scope,
+  ) {
+    if (nextSelected.length === 0 && nextScope !== "EXPLORE") {
       setItems([]);
       setShowAiSlot(false);
       setHasSearched(false);
@@ -112,6 +127,8 @@ export function IngredientSearchClient({
           babyId,
           ingredientIds: nextSelected.map((i) => i.id),
           assumeBasicPantry: nextPantry,
+          scope: nextScope,
+          maxMissing,
         }),
       });
       const data = await res.json();
@@ -120,6 +137,8 @@ export function IngredientSearchClient({
         return;
       }
       setItems(data.items ?? []);
+      setVisibleCount(12);
+      setDiagnostics(data.diagnostics ?? null);
       setShowAiSlot(Boolean(data.showAiGenerationSlot));
       setHasSearched(true);
     } catch {
@@ -189,13 +208,13 @@ export function IngredientSearchClient({
   }
 
   async function handleAiGenerate() {
-    if (selected.length === 0) return;
+    if (selected.length === 0 && scope !== "EXPLORE") return;
     setAiGenerating(true);
     setAiError(null);
     setAiGeneratedResult(null);
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 20_500);
+    const timeoutId = setTimeout(() => controller.abort(), 40_000);
 
     try {
       const res = await fetch("/api/ai/generate-recipe", {
@@ -205,6 +224,11 @@ export function IngredientSearchClient({
           babyId,
           ingredientIds: selected.map((s) => s.id),
           category: aiCategory,
+          scope,
+          maxMissing,
+          dishType,
+          fresh,
+          assumeBasicPantry,
         }),
         signal: controller.signal,
       });
@@ -229,7 +253,7 @@ export function IngredientSearchClient({
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {
         setAiError(
-          "AI 레시피 생성 시간이 20초를 초과해 중단되었습니다. 잠시 후 다시 시도해 주세요. (생성 횟수는 차감되지 않았습니다)",
+          "AI 레시피 생성 시간이 40초를 초과해 중단되었습니다. 잠시 후 다시 시도해 주세요. (생성 횟수는 차감되지 않았습니다)",
         );
       } else {
         setAiError("네트워크 오류가 발생했습니다. (생성 횟수는 차감되지 않았습니다)");
@@ -242,7 +266,10 @@ export function IngredientSearchClient({
   }
 
   const aiDisabled =
-    aiGenerating || selected.length === 0 || quota.remainingToday <= 0 || quota.globalLimitReached;
+    aiGenerating ||
+    (selected.length === 0 && scope !== "EXPLORE") ||
+    quota.remainingToday <= 0 ||
+    quota.globalLimitReached;
 
   return (
     <div className="space-y-6">
@@ -299,9 +326,19 @@ export function IngredientSearchClient({
             placeholder="식재료 이름 입력 (예: 애호박, 소고기, 바나나)"
           />
 
-          {suggestions.length > 0 && (
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setBrowse((v) => !v);
+              setIngredientCount(40);
+            }}
+            aria-expanded={browse}
+          >
+            전체 재료 찾아보기
+          </Button>
+          {(query.trim() || browse) && suggestions.length > 0 && (
             <ul className="mt-1.5 max-h-52 overflow-auto rounded-lg border border-[var(--color-border-strong)] bg-white p-1 text-sm shadow-md">
-              {suggestions.map((s) => (
+              {suggestions.slice(0, ingredientCount).map((s) => (
                 <li key={s.id}>
                   <button
                     type="button"
@@ -316,6 +353,46 @@ export function IngredientSearchClient({
             </ul>
           )}
         </div>
+
+        {(query.trim() || browse) && suggestions.length > ingredientCount && (
+          <Button variant="outline" fullWidth onClick={() => setIngredientCount((n) => n + 40)}>
+            재료 더보기 ({ingredientCount}/{suggestions.length})
+          </Button>
+        )}
+        {(query.trim() || browse) && (
+          <p className="text-xs text-[var(--color-text-secondary)]">
+            전체 검색 결과 {suggestions.length}개 · 선택한 재료는 계속 유지돼요.
+          </p>
+        )}
+        {query.trim() && suggestions.length === 0 && (
+          <div className="space-y-2">
+            <p className="text-sm">등록되지 않은 재료인가요?</p>
+            <Button
+              variant="outline"
+              onClick={async () => {
+                try {
+                  const res = await fetch("/api/ingredient-requests", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name: query }),
+                  });
+                  setRequestNotice(
+                    res.ok
+                      ? "재료 요청을 저장했어요. 검토 후 등록됩니다."
+                      : "요청을 저장하지 못했어요.",
+                  );
+                } catch {
+                  setRequestNotice("연결을 확인해 주세요.");
+                }
+              }}
+            >
+              이 재료 등록 요청
+            </Button>
+            <p role="status" className="text-sm">
+              {requestNotice}
+            </p>
+          </div>
+        )}
 
         <div>
           <p className="text-sm font-semibold text-[var(--color-text)]">자주 쓰는 재료 빠른 선택</p>
@@ -406,13 +483,60 @@ export function IngredientSearchClient({
           <span>기본 양념·상비 재료(물, 식용유, 참기름, 참깨가루, 채수 등) 보유로 간주</span>
         </label>
 
+        <fieldset className="space-y-2">
+          <legend className="text-sm font-semibold">어디까지 찾아볼까요?</legend>
+          <div className="flex flex-wrap gap-2">
+            {(
+              [
+                ["ON_HAND", "있는 재료로 만들기"],
+                ["SHOPPING", "조금 더 사도 좋아요"],
+                ["EXPLORE", "새 메뉴 찾아보기"],
+              ] as const
+            ).map(([value, label]) => (
+              <Button
+                key={value}
+                variant={scope === value ? "primary" : "outline"}
+                size="sm"
+                aria-pressed={scope === value}
+                onClick={() => {
+                  setScope(value);
+                  void runRecommend(selected, assumeBasicPantry, value);
+                }}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+          {scope === "SHOPPING" && (
+            <label className="block text-sm">
+              추가 필수 재료{" "}
+              <select
+                aria-label="추가 필수 재료 수"
+                value={maxMissing}
+                onChange={(e) => setMaxMissing(Number(e.target.value))}
+                className="min-h-11 rounded-md border px-3"
+              >
+                {[1, 2, 3, 5, 10].map((n) => (
+                  <option key={n} value={n}>
+                    {n}개까지
+                  </option>
+                ))}
+              </select>{" "}
+              · 변경 후 찾기를 눌러 주세요.
+            </label>
+          )}
+          <p className="text-xs text-[var(--color-text-secondary)]">
+            저장된 레시피를 검색합니다. 새 메뉴 생성은 아래 AI 기능에서 별도로 요청해요.
+          </p>
+        </fieldset>
+
         <Button
           variant="primary"
           fullWidth
-          disabled={selected.length === 0 || loading}
+          disabled={(selected.length === 0 && scope !== "EXPLORE") || loading}
           onClick={() => void runRecommend(selected, assumeBasicPantry)}
         >
-          {loading ? "매칭 계산 중..." : "추천 메뉴 찾기"}
+          {loading ? "매칭 계산 중..." : "저장된 레시피에서 찾기"}
         </Button>
 
         {error && (
@@ -433,6 +557,16 @@ export function IngredientSearchClient({
             </h2>
           </div>
 
+          {diagnostics && (
+            <details className="disclosure">
+              <summary>왜 이만큼 나오나요?</summary>
+              <p className="disclosure-body text-sm">
+                저장된 활성 메뉴 {diagnostics.active}개 → 월령·간 기준 {diagnostics.ageAndSalt}개 →
+                알레르기 제외 후 {diagnostics.safe}개 → 현재 재료 조건 {diagnostics.matching}개.
+                안전 기준을 유지하며 검색 범위와 추가 재료 수를 조절할 수 있어요.
+              </p>
+            </details>
+          )}
           {items.length === 0 ? (
             <EmptyState
               title="선택한 재료가 포함된 레시피가 아직 없어요"
@@ -440,7 +574,7 @@ export function IngredientSearchClient({
             />
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {items.map((item) => (
+              {items.slice(0, visibleCount).map((item) => (
                 <RecipeCard
                   key={item.id}
                   babyId={babyId}
@@ -453,8 +587,13 @@ export function IngredientSearchClient({
             </div>
           )}
 
+          {items.length > visibleCount && (
+            <Button variant="outline" fullWidth onClick={() => setVisibleCount((n) => n + 12)}>
+              추천 더보기 ({visibleCount}/{items.length})
+            </Button>
+          )}
           {/* ING-06, AI-10, AI-11: 매칭률 80% 이상 결과가 3개 미만일 때 즉석 AI 생성 활성화 */}
-          {showAiSlot && (
+          {(showAiSlot || hasSearched) && (
             <div
               data-testid="ai-generation-slot"
               className="space-y-4 rounded-lg border border-[var(--color-border)] bg-white p-5"
@@ -465,8 +604,9 @@ export function IngredientSearchClient({
                     맞춤 AI 새 레시피 만들기
                   </p>
                   <p className="text-xs leading-relaxed text-[var(--color-text-secondary)]">
-                    보유 재료와 80% 이상 일치하는 레시피가 3개 미만입니다. 공공·유아식 참고 자료를
-                    검색해 자동 안전 검증을 통과한 새 레시피를 생성할 수 있어요.
+                    {showAiSlot ? "보유 재료와 잘 맞는 메뉴가 적어요. " : "다른 메뉴가 필요하다면 "}
+                    현재 검색 범위로 새 레시피를 요청할 수 있어요. AI 결과는 사람이 검수하지
+                    않았으니 재료와 조리법을 확인해 주세요.
                   </p>
                 </div>
 
@@ -572,6 +712,34 @@ export function IngredientSearchClient({
                 </div>
               )}
 
+              <label className="block text-sm">
+                원하는 요리 유형{" "}
+                <select
+                  aria-label="AI 요리 유형"
+                  className="min-h-11 rounded-md border px-3"
+                  value={dishType}
+                  onChange={(e) => setDishType(e.target.value)}
+                >
+                  {[
+                    ["ANY", "자유롭게"],
+                    ["SOUP", "스프류"],
+                    ["ONE_BOWL", "한그릇 음식"],
+                    ["SIDE", "반찬"],
+                  ].map(([v, l]) => (
+                    <option key={v} value={v}>
+                      {l}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex min-h-11 items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={fresh}
+                  onChange={(e) => setFresh(e.target.checked)}
+                />
+                같은 조건의 저장 결과 대신 다른 메뉴 생성 (생성 한도 적용)
+              </label>
               <Button
                 variant="primary"
                 fullWidth

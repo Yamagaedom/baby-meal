@@ -14,7 +14,7 @@
     "db:dev": "prisma dev -d -n baby-meal -P 54329",
     "db:generate": "prisma generate --config prisma.config.ts",
     "db:migrate": "prisma migrate dev",
-    "db:deploy": "tsx scripts/deploy-database.ts && tsx scripts/bootstrap-weekly.ts",
+    "db:deploy": "tsx scripts/deploy-database.ts && tsx scripts/bootstrap-weekly.ts && tsx scripts/bootstrap-meal-styles.ts",
     "db:seed": "prisma db seed",
     "generate:batch": "tsx scripts/generate-batch-recipes.ts",
     "catalog:prepare": "tsx scripts/prepare-catalog-repair.ts",

@@ -4,6 +4,14 @@ import { isValidCalendarDateString } from "@/lib/validation";
 export const calendarDate = z
   .string()
   .refine(isValidCalendarDateString, "올바른 날짜를 선택해 주세요.");
+export const MEAL_STYLES = {
+  AUTO: "자유 추천",
+  SOUP: "스프류",
+  ONE_BOWL: "한그릇 음식",
+  RICE_SIDES: "밥 + 반찬",
+} as const;
+export const mealStyle = z.enum(["AUTO", "SOUP", "ONE_BOWL", "RICE_SIDES"]);
+export type MealStyle = z.infer<typeof mealStyle>;
 export const preferencesSchema = z.object({
   startDate: calendarDate,
   schedule: z.enum(["ALL", "WORKDAY", "CUSTOM"]).default("ALL"),
@@ -16,6 +24,20 @@ export const preferencesSchema = z.object({
   allowShopping: z.boolean().default(true),
   useStock: z.boolean().default(true),
   cookingMode: z.enum(["DAILY", "BATCH", "ANY"]).default("DAILY"),
+  cookingInterval: z.number().int().min(1).max(3).default(1),
+  cookingAnchor: calendarDate.optional(),
+  repeatMeals: z.boolean().default(false),
+  mealStyles: z
+    .object({
+      BREAKFAST: mealStyle.default("AUTO"),
+      LUNCH: mealStyle.default("AUTO"),
+      DINNER: mealStyle.default("AUTO"),
+    })
+    .default({ BREAKFAST: "AUTO", LUNCH: "AUTO", DINNER: "AUTO" }),
+  sideCount: z.number().int().min(3).max(4).default(3),
+  requireMeat: z.boolean().default(true),
+  sidePortion: z.number().min(0.1).max(1).default(0.5),
+  staplePortion: z.number().min(0.1).max(2).default(1),
   cookingDays: z.array(z.number().int().min(0).max(6)).min(1).max(7).default([0, 3]),
   priorities: z
     .array(z.enum(["PANTRY", "EASY", "FAVORITE", "VARIETY"]))
@@ -48,6 +70,9 @@ export interface RecipeSnapshot {
   name: string;
   category: "MEAL" | "SNACK";
   role?: string;
+  dishType?: "SOUP" | "ONE_BOWL" | "SIDE" | "STAPLE" | "SNACK" | "UNKNOWN";
+  storage?: { fridgeDays: number | null; freezerDays: number | null };
+  basicIds?: string[];
   ageStages?: number[];
   tools?: string[];
   manualBatchId?: string;
@@ -122,6 +147,7 @@ export interface StockView {
   version: number;
 }
 export interface PlannerData {
+  savedPreferences?: PlanPreferences;
   plans: PlanView[];
   stock: StockView[];
   recipes: RecipeSnapshot[];

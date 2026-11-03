@@ -1,3 +1,4 @@
+import profiles from "@/data/recipe-meal-profiles.json";
 import { z } from "zod";
 import { createHash } from "node:crypto";
 import type { Prisma, PrismaClient } from "@/generated/prisma/client";
@@ -25,6 +26,7 @@ import {
 
 type Tx = Prisma.TransactionClient;
 const json = (value: unknown): Prisma.InputJsonValue => JSON.parse(JSON.stringify(value));
+const amount = (n: number) => Math.round(n * 10000) / 10000;
 const day = (value: Date) => value.toISOString().slice(0, 10);
 const date = (value: string) => new Date(`${value}T00:00:00Z`);
 const conflict = () =>
@@ -71,6 +73,10 @@ export async function loadRecipeCatalog(
       name: r.name,
       category: r.category,
       role: r.mealRole,
+      dishType: ((profiles as Record<string, string>)[r.slug ?? r.id] ??
+        "UNKNOWN") as RecipeSnapshot["dishType"],
+      storage: r.storageInfo as RecipeSnapshot["storage"],
+      basicIds: r.ingredients.filter((i) => i.ingredient.isPantryBasic).map((i) => i.ingredientId),
       ageStages: r.ageStages,
       tools: r.tools,
       baseServings: r.baseServings,
@@ -128,7 +134,7 @@ async function stockViews(
       current.contentVersion === snapshot.contentVersion &&
       !!b.expiresDate &&
       day(b.expiresDate) >= today;
-    const reserved = b.reservations.reduce((sum, r) => sum + r.servings, 0);
+    const reserved = amount(b.reservations.reduce((sum, r) => sum + r.servings, 0));
     return {
       id: b.id,
       recipeId: b.recipeId,
@@ -137,9 +143,9 @@ async function stockViews(
       location: b.location,
       preparedDate: day(b.preparedDate),
       expiresDate: b.expiresDate ? day(b.expiresDate) : null,
-      remaining: b.remaining,
+      remaining: amount(b.remaining),
       reserved,
-      available: usable ? Math.max(0, b.remaining - reserved) : 0,
+      available: usable ? Math.max(0, amount(b.remaining - reserved)) : 0,
       usable,
       version: b.version,
     };
@@ -152,7 +158,7 @@ export async function getPlannerData(
   prisma = getPrisma(),
 ): Promise<PlannerData> {
   const recipes = await loadRecipeCatalog(baby, prisma);
-  const [stock, plans, pantry, ingredients] = await Promise.all([
+  const [stock, plans, pantry, ingredients, saved] = await Promise.all([
     stockViews(userId, recipes, prisma),
     prisma.mealPlan.findMany({
       where: { userId, babyId: baby.id, status: { not: "ARCHIVED" } },
@@ -176,6 +182,11 @@ export async function getPlannerData(
       where: { minAgeMonth: { lte: baby.currentAgeMonth } },
       select: { id: true, name: true, group: true },
       orderBy: { name: "asc" },
+    }),
+    prisma.mealPlan.findFirst({
+      where: { userId, babyId: baby.id },
+      orderBy: { createdAt: "desc" },
+      select: { preferences: true },
     }),
   ]);
   const safeIds = new Set(recipes.map((r) => r.id));
@@ -232,20 +243,22 @@ export async function getPlannerData(
           date: day(t.date),
           servings: t.servings,
           completed: t.completed,
-          needed: Math.min(
-            5,
-            Math.max(
-              0,
-              related.reduce((sum, e) => sum + e.servings - e.reserved, 0) -
-                5 *
-                  p.tasks
-                    .slice(0, taskIndex)
-                    .filter(
-                      (other) =>
-                        !other.completed &&
-                        other.recipeId === t.recipeId &&
-                        day(other.date) === day(t.date),
-                    ).length,
+          needed: amount(
+            Math.min(
+              5,
+              Math.max(
+                0,
+                related.reduce((sum, e) => sum + e.servings - e.reserved, 0) -
+                  5 *
+                    p.tasks
+                      .slice(0, taskIndex)
+                      .filter(
+                        (other) =>
+                          !other.completed &&
+                          other.recipeId === t.recipeId &&
+                          day(other.date) === day(t.date),
+                      ).length,
+              ),
             ),
           ),
           requiredThrough:
@@ -270,6 +283,7 @@ export async function getPlannerData(
     recipes,
     ingredients: safeIngredients,
     pantryIds: pantry.map((p) => p.ingredientId),
+    savedPreferences: saved ? preferencesSchema.parse(saved.preferences) : undefined,
   };
 }
 
@@ -305,14 +319,14 @@ async function rebuildTasks(
       needed: 0,
       snapshot: e.snapshot,
     };
-    value.needed += count;
+    value.needed = amount(value.needed + count);
     buckets.set(key, value);
   }
   for (const b of buckets.values()) {
     const old = previous
       .filter((t) => t.recipeId === b.recipeId && day(t.date) === b.date)
       .reduce((sum, t) => sum + t.servings, 0);
-    let remaining = Math.max(b.needed, old);
+    let remaining = amount(Math.max(b.needed, old));
     while (remaining > 0) {
       const servings = Math.min(5, remaining);
       await tx.cookingTask.create({
@@ -324,7 +338,7 @@ async function rebuildTasks(
           snapshot: json(b.snapshot),
         },
       });
-      remaining -= servings;
+      remaining = amount(remaining - servings);
     }
   }
 }
@@ -360,7 +374,7 @@ async function allocateStock(
       await tx.foodReservation.create({ data: { batchId: b.id, entryId: entry.id, servings } });
       b.reserved += servings;
       b.available = b.usable ? Math.max(0, b.remaining - b.reserved) : 0;
-      need -= servings;
+      need = amount(need - servings);
       if (!need) break;
     }
     if (need > 0 && explicitBatch)
@@ -379,6 +393,9 @@ export async function createPlan(
   prisma = getPrisma(),
 ) {
   const prefs = preferencesSchema.parse(input);
+  if (prefs.cookingInterval > 1 && !prefs.cookingAnchor) prefs.cookingAnchor = prefs.startDate;
+  if (prefs.cookingAnchor && prefs.cookingAnchor > prefs.startDate)
+    throw new AppError(400, "ANCHOR_DATE", "조리 기준일은 시작일 이전으로 골라 주세요.");
   const today = kstDateString(new Date());
   if (prefs.startDate < today || prefs.startDate > addDays(today, 90))
     throw new AppError(400, "PLAN_DATE", "시작일은 오늘부터 90일 이내로 선택해 주세요.");
@@ -446,9 +463,11 @@ const planActionSchema = z.object({
     "ENTRY",
     "ADD",
     "REGENERATE",
+    "MEAL_REGENERATE",
     "TASK",
     "COOK",
     "SERVE",
+    "SERVE_MEAL",
     "STOCK",
   ]),
   revision: z.number().int().min(0),
@@ -460,11 +479,21 @@ const planActionSchema = z.object({
   date: calendarDate.optional(),
   mealTime: z.enum(["BREAKFAST", "LUNCH", "DINNER", "SNACK"]).optional(),
   slotIndex: z.number().int().min(0).max(1).optional(),
-  servings: z.number().int().min(1).max(5).optional(),
+  servings: z.number().min(0.1).max(5).optional(),
   locked: z.boolean().optional(),
   kind: z.enum(["HOME", "EXTERNAL", "SKIPPED"]).optional(),
   location: z.enum(["FRIDGE", "FREEZER"]).optional(),
   expiresDate: calendarDate.optional(),
+  amounts: z
+    .array(
+      z.object({
+        entryId: z.string().uuid(),
+        rating: z.enum(["GOOD", "OK", "REFUSED"]).default("OK"),
+        amountEaten: z.enum(["ALL", "HALF", "LITTLE"]).optional(),
+      }),
+    )
+    .max(8)
+    .optional(),
   rating: z.enum(["GOOD", "OK", "REFUSED"]).default("OK"),
   amountEaten: z.enum(["ALL", "HALF", "LITTLE"]).optional(),
 });
@@ -494,6 +523,16 @@ export async function changePlan(
         return { id: planId };
       if (input.action === "SERVE" && plan.entries.find((e) => e.id === input.entryId)?.served)
         return { id: planId };
+      if (input.action === "SERVE_MEAL") {
+        const group = plan.entries.filter(
+          (e) =>
+            day(e.date) === kstDateString(new Date()) &&
+            e.mealTime === input.mealTime &&
+            e.slotIndex === (input.slotIndex ?? 0) &&
+            e.kind === "HOME",
+        );
+        if (group.length && group.every((e) => e.served)) return { id: planId };
+      }
       if (plan.revision !== input.revision) throw conflict();
       const prefs = preferencesSchema.parse(plan.preferences);
       const today = kstDateString(new Date());
@@ -577,7 +616,7 @@ export async function changePlan(
           );
         await allocateStock(tx, userId, planId, catalog, prefs.useStock);
         await tx.mealPlan.update({ where: { id: planId }, data: { status: "CONFIRMED" } });
-      } else if (input.action === "REGENERATE") {
+      } else if (["REGENERATE", "MEAL_REGENERATE"].includes(input.action)) {
         assertDraft();
         const [favorites, recent, stock] = await Promise.all([
           tx.favorite.findMany({ where: { userId }, select: { recipeId: true } }),
@@ -592,16 +631,41 @@ export async function changePlan(
           catalog.filter((r) => validAtDate(r, date(addDays(prefs.startDate, 6)))),
           {
             seed: plan.revision + 1,
+            fixedEntries: plan.entries
+              .filter((e) => e.locked || e.served)
+              .map((e) => ({
+                ...e,
+                date: day(e.date),
+                kind: e.kind as EntryView["kind"],
+                snapshot: e.snapshot as unknown as RecipeSnapshot,
+              })),
+            replacing: plan.entries.map((e) => ({
+              ...e,
+              date: day(e.date),
+              kind: e.kind as EntryView["kind"],
+              snapshot: e.snapshot as unknown as RecipeSnapshot,
+            })),
             favorites: new Set(favorites.map((f) => f.recipeId)),
             recent: new Set(recent.map((f) => f.recipeId)),
             stock: stock.filter((s) => s.usable),
             ageMonth: baby.currentAgeMonth,
           },
         );
-        for (const e of plan.entries.filter((e) => !e.locked && !e.served && e.position === 0)) {
+        for (const e of plan.entries.filter(
+          (e) =>
+            !e.locked &&
+            !e.served &&
+            (input.action !== "MEAL_REGENERATE" ||
+              (day(e.date) === input.date &&
+                e.mealTime === input.mealTime &&
+                e.slotIndex === (input.slotIndex ?? 0))),
+        )) {
           const replacement = next.find(
             (n) =>
-              n.date === day(e.date) && n.mealTime === e.mealTime && n.slotIndex === e.slotIndex,
+              n.date === day(e.date) &&
+              n.mealTime === e.mealTime &&
+              n.slotIndex === e.slotIndex &&
+              n.position === e.position,
           );
           if (replacement)
             await tx.mealPlanEntry.update({
@@ -847,56 +911,80 @@ export async function changePlan(
           if (need <= 0) continue;
           const servings = Math.min(need, available);
           await tx.foodReservation.create({ data: { batchId: batch.id, entryId: e.id, servings } });
-          available -= servings;
+          available = amount(available - servings);
         }
-      } else if (input.action === "SERVE") {
-        if (
-          plan.status !== "CONFIRMED" ||
-          !entry ||
-          entry.kind !== "HOME" ||
-          !safeEntry(entry) ||
-          day(entry.date) !== today
-        )
-          throw new AppError(
-            400,
-            "SERVE_UNAVAILABLE",
-            "오늘의 확정 메뉴와 아기 조건을 확인해 주세요.",
+      } else if (["SERVE", "SERVE_MEAL"].includes(input.action)) {
+        const targets =
+          input.action === "SERVE"
+            ? entry
+              ? [entry]
+              : []
+            : plan.entries.filter(
+                (e) =>
+                  day(e.date) === today &&
+                  e.mealTime === input.mealTime &&
+                  e.slotIndex === (input.slotIndex ?? 0) &&
+                  e.kind === "HOME",
+              );
+        if (!targets.length)
+          throw new AppError(400, "SERVE_UNAVAILABLE", "오늘의 끼니를 확인해 주세요.");
+        for (const servingEntry of targets.filter((e) => !e.served)) {
+          if (
+            plan.status !== "CONFIRMED" ||
+            !servingEntry ||
+            servingEntry.kind !== "HOME" ||
+            !safeEntry(servingEntry) ||
+            day(servingEntry.date) !== today
+          )
+            throw new AppError(
+              400,
+              "SERVE_UNAVAILABLE",
+              "오늘의 확정 메뉴와 아기 조건을 확인해 주세요.",
+            );
+          const reserved = servingEntry.reservations.filter(
+            (r) => r.batch.expiresDate && day(r.batch.expiresDate) >= today,
           );
-        const reserved = entry.reservations.filter(
-          (r) => r.batch.expiresDate && day(r.batch.expiresDate) >= today,
-        );
-        if (reserved.reduce((sum, r) => sum + r.servings, 0) < entry.servings)
-          throw new AppError(400, "COOK_FIRST", "먼저 조리 완료로 음식 재고를 등록해 주세요.");
-        for (const r of reserved) {
-          const moved = await tx.foodBatch.updateMany({
-            where: { id: r.batchId, remaining: { gte: r.servings } },
-            data: { remaining: { decrement: r.servings }, version: { increment: 1 } },
-          });
-          if (!moved.count) throw conflict();
-          await tx.foodMovement.create({
-            data: {
-              batchId: r.batchId,
-              kind: "SERVE",
-              delta: -r.servings,
-              eventKey: `serve:${entry.id}:${r.batchId}`,
-            },
-          });
+          if (reserved.reduce((sum, r) => sum + r.servings, 0) < servingEntry.servings)
+            throw new AppError(400, "COOK_FIRST", "먼저 조리 완료로 음식 재고를 등록해 주세요.");
+          for (const r of reserved) {
+            const moved = await tx.foodBatch.updateMany({
+              where: { id: r.batchId, remaining: { gte: r.servings - 0.000001 } },
+              data: { remaining: { decrement: r.servings }, version: { increment: 1 } },
+            });
+            if (!moved.count) throw conflict();
+            await tx.foodMovement.create({
+              data: {
+                batchId: r.batchId,
+                kind: "SERVE",
+                delta: -r.servings,
+                eventKey: `serve:${servingEntry.id}:${r.batchId}`,
+              },
+            });
+          }
+          await tx.foodReservation.deleteMany({ where: { entryId: servingEntry.id } });
+          await tx.mealPlanEntry.update({ where: { id: servingEntry.id }, data: { served: true } });
+          if (servingEntry.recipeId)
+            await tx.mealLog.create({
+              data: {
+                babyId: baby.id,
+                recipeId: servingEntry.recipeId!,
+                mealTime: servingEntry.mealTime,
+                rating:
+                  input.amounts?.find((a) => a.entryId === servingEntry.id)?.rating ?? input.rating,
+                amountEaten:
+                  input.amounts?.find((a) => a.entryId === servingEntry.id)?.amountEaten ??
+                  input.amountEaten ??
+                  null,
+                memo: `주간 식단 · ${servingEntry.servings}회분 제공`,
+              },
+            });
         }
-        await tx.foodReservation.deleteMany({ where: { entryId: entry.id } });
-        await tx.mealPlanEntry.update({ where: { id: entry.id }, data: { served: true } });
-        if (entry.recipeId)
-          await tx.mealLog.create({
-            data: {
-              babyId: baby.id,
-              recipeId: entry.recipeId!,
-              mealTime: entry.mealTime,
-              rating: input.rating,
-              amountEaten: input.amountEaten ?? null,
-              memo: `주간 식단 · ${entry.servings}회분 제공`,
-            },
-          });
       }
-      if (["ENTRY", "ADD", "REGENERATE", "CONFIRM", "COOK", "STOCK"].includes(input.action)) {
+      if (
+        ["ENTRY", "ADD", "REGENERATE", "MEAL_REGENERATE", "CONFIRM", "COOK", "STOCK"].includes(
+          input.action,
+        )
+      ) {
         const rows = await tx.mealPlanEntry.findMany({
           where: { planId },
           include: { reservations: true },
@@ -915,7 +1003,7 @@ const stockInput = z.object({
   recipeId: z.string().uuid().optional(),
   category: z.enum(["MEAL", "SNACK"]),
   location: z.enum(["FRIDGE", "FREEZER"]),
-  servings: z.number().int().min(1).max(100),
+  servings: z.number().min(0.1).max(100),
   preparedDate: calendarDate,
   expiresDate: calendarDate.optional(),
   eventKey: z.string().uuid(),
@@ -974,7 +1062,7 @@ export async function moveStock(userId: string, raw: unknown, prisma = getPrisma
       id: z.string().uuid(),
       version: z.number().int(),
       action: z.enum(["DISCARD", "USE", "ADJUST", "MOVE"]),
-      servings: z.number().int().min(1).max(100),
+      servings: z.number().min(0.1).max(100),
       eventKey: z.string().uuid(),
       location: z.enum(["FRIDGE", "FREEZER"]).optional(),
       expiresDate: calendarDate.optional(),

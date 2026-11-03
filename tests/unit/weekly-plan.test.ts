@@ -240,15 +240,16 @@ describe("weekly planning database lifecycle", () => {
     );
     const first = await createPlan(user.id, baby, preferences, prisma);
     const next = await createPlan(user.id, second, preferences, prisma);
-    const recipe = (await getPlannerData(user.id, baby, prisma)).recipes.find(
-      (r) => r.verified && r.category === "MEAL" && r.role === "MAIN",
+    const planned = (await getPlannerData(user.id, baby, prisma)).plans.find(
+      (p) => p.id === first.id,
     )!;
+    const recipe = planned.entries.find((e) => e.date === today && e.kind === "HOME")!;
     await addStock(
       user.id,
       baby,
       {
         name: recipe.name,
-        recipeId: recipe.id,
+        recipeId: recipe.recipeId,
         category: "MEAL",
         location: "FREEZER",
         servings: 1,

@@ -27,10 +27,10 @@ export async function GET(request: NextRequest) {
               normalizeIngredientName(r.name).includes(norm) ||
               r.synonyms.some((s) => normalizeIngredientName(s).includes(norm)),
           )
-        : rows.slice(0, 25);
+        : rows;
 
       return NextResponse.json({
-        results: filtered.slice(0, 25).map((r) => ({
+        results: filtered.map((r) => ({
           id: r.id,
           slug: r.slug,
           name: r.name,

@@ -26,7 +26,7 @@ test("weekly meal planning: questionnaire → confirm → cook → serve → inv
     await page.getByRole("button", { name: "없음", exact: true }).click();
     await page.getByRole("button", { name: "다음", exact: true }).click();
     await page.getByRole("button", { name: "다음", exact: true }).click();
-    await page.getByRole("button", { name: "주 2회 모아서", exact: true }).click();
+    await page.getByRole("button", { name: "직접 날짜 선택", exact: true }).click();
     await page.getByRole("button", { name: "식단 초안 만들기", exact: true }).click();
     await expect(page.getByRole("button", { name: "식단 확정", exact: true })).toBeVisible();
     await expect(page.getByText("영양 체크", { exact: true })).toBeVisible();
@@ -54,9 +54,7 @@ test("weekly meal planning: questionnaire → confirm → cook → serve → inv
     });
     expect(cooked.status()).toBe(200);
     await page.reload();
-    const editor = page
-      .locator("details")
-      .filter({ has: page.locator("summary", { hasText: "먹은 기록 · 재고에서 꺼내기" }) });
+    const editor = page.getByText("먹은 기록 · 재고에서 꺼내기", { exact: true }).locator("..");
     await editor.locator("summary").click();
     await editor.getByLabel("먹은 양").selectOption("HALF");
     await editor.getByRole("button", { name: /차감 · 기록/ }).click();

@@ -57,19 +57,15 @@ function formatQuarterFraction(value: number, unit: string): string {
   return `${whole}${fracChar}${unit}`;
 }
 
-/** SRV-01~03: 기준 회분 대비 목표 회분(1~5회분) 재료 분량 재계산 */
+/** SRV-01~03: 기준 회분 대비 목표 회분(0.1~5회분) 재료 분량 재계산 */
 export function scaleIngredientAmount(
   baseAmount: number | null,
   unit: string,
   baseServings: number,
   targetServings: number,
 ): ScaledIngredientAmount {
-  if (
-    !Number.isInteger(targetServings) ||
-    targetServings < MIN_SERVINGS ||
-    targetServings > MAX_SERVINGS
-  ) {
-    throw new Error(`분량은 ${MIN_SERVINGS}~${MAX_SERVINGS}회분 사이여야 합니다.`);
+  if (!Number.isFinite(targetServings) || targetServings < 0.1 || targetServings > MAX_SERVINGS) {
+    throw new Error(`분량은 0.1~${MAX_SERVINGS}회분 사이여야 합니다.`);
   }
   if (!Number.isInteger(baseServings) || baseServings < MIN_SERVINGS) {
     throw new Error("레시피 기준 분량이 올바르지 않습니다.");

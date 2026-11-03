@@ -116,6 +116,12 @@ export function buildAiUserPrompt(
   referenceSources: readonly CollectedSource[],
 ): string {
   const lines: string[] = [];
+  lines.push(
+    `검색 범위: ${ctx.scope ?? "SHOPPING"}. ON_HAND는 허용 목록에 있는 보유 재료만 사용, SHOPPING은 선택 재료를 필수 주재료로 사용하고 추가 필수 재료 ${ctx.maxMissing ?? 3}개 이하, EXPLORE는 허용 사전에서 자유롭게 구성.`,
+  );
+  lines.push(
+    `요리 유형: ${ctx.dishType ?? "ANY"}. 요청이 ANY가 아니면 반드시 해당 형태의 요리를 만들고 JSON 최상위 dishType에 이 값을 넣으세요. SOUP는 스프, ONE_BOWL은 밥/면 등을 포함한 한그릇 음식, SIDE는 밥 없이 먹는 반찬입니다.`,
+  );
 
   if (ctx.topicOrMenuName) {
     lines.push(`요청 메뉴/주제: ${ctx.topicOrMenuName}`);

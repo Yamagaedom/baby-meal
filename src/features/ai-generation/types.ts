@@ -1,13 +1,7 @@
 /**
  * AI 레시피 생성 파이프라인 도메인 타입 및 프로바이더 인터페이스 (PRD 3.9 AI-01~13)
  */
-import type {
-  AgeStage,
-  Allergen,
-  MealTime,
-  RecipeCategory,
-  SaltLevel,
-} from "@/lib/domain/types";
+import type { AgeStage, Allergen, MealTime, RecipeCategory, SaltLevel } from "@/lib/domain/types";
 
 export type SourceTypeLiteral = "YOUTUBE" | "WEB" | "PUBLIC_INSTITUTION";
 
@@ -23,6 +17,9 @@ export interface CollectedSource {
 export interface AiGenerationRequestContext {
   /** 메뉴 주제 또는 재료 기반 요청 설명 */
   topicOrMenuName?: string;
+  scope?: "ON_HAND" | "SHOPPING" | "EXPLORE";
+  maxMissing?: number;
+  dishType?: string;
   category: RecipeCategory;
   ageStage: AgeStage;
   saltLevel: SaltLevel;

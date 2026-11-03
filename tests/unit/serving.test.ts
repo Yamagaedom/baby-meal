@@ -6,6 +6,9 @@ import {
 } from "@/features/serving";
 
 describe("features/serving — 분량 조절 규칙 검증 (SRV-01~05)", () => {
+  it("부분 회분의 조리 재료도 환산한다", () => {
+    expect(scaleIngredientAmount(100, "g", 2, 0.5).displayAmount).toBe("25g");
+  });
   it("SRV-03: g/ml 단위는 정수 반올림하고 1 미만 미량은 '약간'으로 표시한다", () => {
     expect(scaleIngredientAmount(90, "g", 2, 3).displayAmount).toBe("135g");
     expect(scaleIngredientAmount(150, "ml", 2, 1).displayAmount).toBe("75ml");

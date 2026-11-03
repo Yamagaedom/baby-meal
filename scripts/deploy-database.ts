@@ -68,6 +68,7 @@ async function main() {
       await protection.query("BEGIN");
       for (const table of [
         "users",
+        "ingredient_requests",
         "sessions",
         "ai_usages",
         "babies",

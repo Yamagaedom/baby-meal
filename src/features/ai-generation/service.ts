@@ -1,6 +1,7 @@
 /**
  * 즉석 AI 레시피 생성 통합 오케스트레이션 서비스 (PRD 3.9 AI-01~11, ING-06)
  */
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import type { Prisma, PrismaClient } from "@/generated/prisma/client";
 import { type BabyProfileView, buildBabyAllergyFilter } from "@/features/profile";
@@ -42,7 +43,12 @@ export const MAX_AI_RETRIES = 2; // 최초 1회 + 최대 2회 재생성 = 총 3�
 export const ON_DEMAND_TIMEOUT_MS = 25_000;
 
 export const onDemandAiGenerateInputSchema = z.object({
-  ingredientIds: z.array(z.string().uuid()).min(1, "재료를 1개 이상 선택해 주세요.").max(15),
+  ingredientIds: z.array(z.string().uuid()).max(50),
+  scope: z.enum(["ON_HAND", "SHOPPING", "EXPLORE"]).default("SHOPPING"),
+  maxMissing: z.number().int().min(0).max(10).default(3),
+  dishType: z.enum(["ANY", "SOUP", "ONE_BOWL", "SIDE"]).default("ANY"),
+  fresh: z.boolean().default(false),
+  assumeBasicPantry: z.boolean().default(true),
   category: z.enum(RECIPE_CATEGORIES).optional().default("MEAL"),
 });
 
@@ -65,8 +71,7 @@ export async function persistValidatedAiRecipe(
   const dict = dictMap ?? (await loadIngredientDictionaryMap(prisma));
   const nutrition = computeRecipeNutrition(payload.ingredients, dict, payload.baseServings);
   const slug =
-    options.slug ??
-    `ai-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
+    options.slug ?? `ai-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
 
   const created = await prisma.recipe.create({
     data: {
@@ -362,7 +367,26 @@ export async function generateOnDemandRecipeForBaby(
     }
   }
 
+  const basicRows = await prisma.ingredient.findMany({
+    where: { isPantryBasic: true },
+    select: { id: true },
+  });
+  const ownedIds = new Set([
+    ...uniqueIngredientIds,
+    ...(input.assumeBasicPantry ? basicRows.map((i) => i.id) : []),
+  ]);
+  if (!uniqueIngredientIds.length && input.scope !== "EXPLORE")
+    throw new AppError(
+      400,
+      "INGREDIENT_REQUIRED",
+      "재료를 선택하거나 새 메뉴 찾아보기를 골라 주세요.",
+    );
   const cacheKey = buildGenerationCacheKey({
+    scope: input.scope,
+    maxMissing: input.maxMissing,
+    dishType: input.dishType,
+    assumeBasicPantry: input.assumeBasicPantry,
+    freshKey: input.fresh ? randomUUID() : undefined,
     category: input.category,
     ageStage: baby.ageStage,
     saltLevel: baby.saltLevel,
@@ -404,7 +428,8 @@ export async function generateOnDemandRecipeForBaby(
     .filter(
       (item) =>
         item.minAgeMonth <= baby.currentAgeMonth &&
-        !checkAllergyConflicts([{ ingredientId: item.id }], dictMap, allergyProfile).hasConflict,
+        !checkAllergyConflicts([{ ingredientId: item.id }], dictMap, allergyProfile).hasConflict &&
+        (input.scope !== "ON_HAND" || ownedIds.has(item.id)),
     )
     .map((item) => item.name);
 
@@ -439,6 +464,9 @@ export async function generateOnDemandRecipeForBaby(
     for (let attempt = 0; attempt <= MAX_AI_RETRIES; attempt += 1) {
       const ctx: AiGenerationRequestContext = {
         category: input.category,
+        scope: input.scope,
+        maxMissing: input.maxMissing,
+        dishType: input.dishType,
         ageStage: baby.ageStage,
         saltLevel: baby.saltLevel,
         selectedIngredientNames: selectedInfos.map((i) => i.name),
@@ -473,6 +501,27 @@ export async function generateOnDemandRecipeForBaby(
       });
 
       if (validation.passed) {
+        const required = validation.payload.ingredients.filter((i) => !i.isOptional);
+        const missing = required.filter((i) => !ownedIds.has(i.ingredientId));
+        const used = required.some((i) => uniqueIngredientIds.includes(i.ingredientId));
+        const parsedType = (() => {
+          try {
+            return JSON.parse(llmResult.rawJsonText).dishType;
+          } catch {
+            return undefined;
+          }
+        })();
+        const scopeValid =
+          input.scope === "EXPLORE" ||
+          (used && missing.length <= (input.scope === "ON_HAND" ? 0 : input.maxMissing));
+        if (!scopeValid || (input.dishType !== "ANY" && parsedType !== input.dishType)) {
+          previousFailureReasons = [
+            !scopeValid
+              ? "선택 재료를 반드시 주재료로 사용하고 추가 필수 재료 수를 지켜 주세요."
+              : `dishType을 ${input.dishType}으로 작성하고 해당 조리 형태를 만들어 주세요.`,
+          ];
+          continue;
+        }
         validatedPayload = validation.payload;
         break;
       }

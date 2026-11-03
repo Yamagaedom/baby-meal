@@ -41,42 +41,9 @@ export const POPULAR_CHIP_SLUGS = [
   "white-rice-cooked",
 ] as const;
 
-/**
- * 대표 원재료 패밀리 매핑:
- * 부모가 "소고기"를 선택했을 때 "소고기다짐육"·"소고기양지" 레시피도 자연스럽게 매칭되도록 묶는다.
- */
-const INGREDIENT_FAMILY_GROUPS: readonly (readonly string[])[] = [
-  ["소고기", "소고기다짐육", "소고기안심", "소고기양지"],
-  ["닭가슴살", "닭안심", "닭다리살", "닭고기다짐육"],
-  ["돼지고기앞다리살", "돼지고기안심", "돼지고기등심", "돼지고기다짐육"],
-  ["쌀밥", "백미"],
-  ["두부", "순두부"],
-];
-
-function expandOwnedIngredientIds(
-  selectedIds: readonly string[],
-  dictMap: ReadonlyMap<string, IngredientInfo>,
-): Set<string> {
-  const expanded = new Set<string>(selectedIds);
-  const nameToId = new Map<string, string>();
-  for (const info of dictMap.values()) {
-    nameToId.set(info.name, info.id);
-  }
-
-  for (const id of selectedIds) {
-    const info = dictMap.get(id);
-    if (!info) continue;
-    for (const family of INGREDIENT_FAMILY_GROUPS) {
-      if (family.includes(info.name)) {
-        for (const siblingName of family) {
-          const siblingId = nameToId.get(siblingName);
-          if (siblingId) expanded.add(siblingId);
-        }
-      }
-    }
-  }
-
-  return expanded;
+// Distinct forms and cuts are not interchangeable inventory. Aliases resolve to the same ID during search.
+function expandOwnedIngredientIds(selectedIds: readonly string[]): Set<string> {
+  return new Set(selectedIds);
 }
 
 export interface IngredientMatchResult {
@@ -98,7 +65,7 @@ export function calculateIngredientMatch(
   pantryBasicIds: ReadonlySet<string>,
   assumeBasicPantry: boolean,
 ): IngredientMatchResult {
-  const ownedSet = expandOwnedIngredientIds(selectedIngredientIds, dictMap);
+  const ownedSet = expandOwnedIngredientIds(selectedIngredientIds);
   if (assumeBasicPantry) {
     for (const id of pantryBasicIds) {
       ownedSet.add(id);
@@ -208,10 +175,10 @@ export async function searchIngredientsForBaby(
         if (normalizeIngredientName(r.name).includes(normalizedQuery)) return true;
         return r.synonyms.some((syn) => normalizeIngredientName(syn).includes(normalizedQuery));
       })
-    : safeRows.slice(0, 30);
+    : safeRows;
 
   return {
-    results: matched.slice(0, 25).map((r) => ({
+    results: matched.map((r) => ({
       id: r.id,
       slug: r.slug,
       name: r.name,
@@ -223,8 +190,10 @@ export async function searchIngredientsForBaby(
 }
 
 export const ingredientRecommendInputSchema = z.object({
-  ingredientIds: z.array(z.string().uuid()).min(1, "재료를 1개 이상 선택해 주세요.").max(30),
+  ingredientIds: z.array(z.string().uuid()).max(50),
   assumeBasicPantry: z.boolean().optional().default(true),
+  scope: z.enum(["ON_HAND", "SHOPPING", "EXPLORE"]).default("SHOPPING"),
+  maxMissing: z.number().int().min(0).max(10).default(3),
 });
 
 export interface IngredientMatchedRecipeView extends RecipeCardView {
@@ -244,6 +213,7 @@ export async function recommendRecipesByIngredients(
 ): Promise<{
   items: IngredientMatchedRecipeView[];
   showAiGenerationSlot: boolean;
+  diagnostics: { active: number; ageAndSalt: number; safe: number; matching: number };
 }> {
   const input = ingredientRecommendInputSchema.parse(rawInput);
   const allowedSalts = allowedSaltLevelsForBaby(baby.saltLevel);
@@ -254,8 +224,6 @@ export async function recommendRecipesByIngredients(
       prisma.recipe.findMany({
         where: {
           status: "ACTIVE",
-          ageStages: { has: baby.ageStage },
-          saltLevel: { in: allowedSalts },
         },
         include: {
           ingredients: { select: { ingredientId: true, isOptional: true } },
@@ -292,15 +260,20 @@ export async function recommendRecipesByIngredients(
   const favSet = new Set(favorites.map((f) => f.recipeId));
 
   // 사용자가 입력한 재료(기본 양념 제외) 중 최소 1개라도 포함된 안전 레시피를 매칭
-  const userOwnedOnly = expandOwnedIngredientIds(input.ingredientIds, dictMap);
+  const userOwnedOnly = expandOwnedIngredientIds(input.ingredientIds);
 
   const personalScoreById = new Map<string, number>();
   const items: IngredientMatchedRecipeView[] = [];
+  let ageAndSalt = 0,
+    safe = 0;
   for (const row of recipeRows) {
+    if (!row.ageStages.includes(baby.ageStage) || !allowedSalts.includes(row.saltLevel)) continue;
+    ageAndSalt++;
     if (!isRecipeSafeForBaby(row.ingredients, dictMap, baby)) continue;
 
+    safe++;
     const hitsUserSelection = row.ingredients.some((ri) => userOwnedOnly.has(ri.ingredientId));
-    if (!hitsUserSelection) continue;
+    if (input.scope !== "EXPLORE" && !hitsUserSelection) continue;
 
     const match = calculateIngredientMatch(
       row.ingredients,
@@ -310,6 +283,8 @@ export async function recommendRecipesByIngredients(
       input.assumeBasicPantry,
     );
 
+    if (input.scope === "ON_HAND" && match.missingIngredients.length) continue;
+    if (input.scope === "SHOPPING" && match.missingIngredients.length > input.maxMissing) continue;
     const pScore = computeRecipeRecommendationScore(
       {
         id: row.id,
@@ -343,5 +318,6 @@ export async function recommendRecipesByIngredients(
   return {
     items,
     showAiGenerationSlot: highMatchCount < 3,
+    diagnostics: { active: recipeRows.length, ageAndSalt, safe, matching: items.length },
   };
 }

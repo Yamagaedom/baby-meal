@@ -1,0 +1,157 @@
+[
+  {
+    "slug": "review-soup-potato-carrot",
+    "name": "감자당근수프",
+    "referenceSlug": "batch-snack-006-potato-milk-mash",
+    "dishType": "SOUP",
+    "ageStages": [
+      2,
+      3,
+      4
+    ],
+    "ingredients": {
+      "potato": 80,
+      "carrot": 50,
+      "water": 160
+    },
+    "sourceScope": "원문의 재료 조합 참고. 밥·면을 제외하거나 수분·비율·조리 형태를 조정한 별도 응용이며 원문 레시피와 동일하지 않습니다."
+  },
+  {
+    "slug": "review-soup-pumpkin-cabbage",
+    "name": "단호박양배추두유수프",
+    "referenceSlug": "batch-meal-043-tofu-pumpkin-cabbage",
+    "dishType": "SOUP",
+    "ageStages": [
+      3,
+      4
+    ],
+    "ingredients": {
+      "sweet-pumpkin": 80,
+      "cabbage": 40,
+      "soy-milk-unsweetened": 80,
+      "water": 80
+    },
+    "sourceScope": "원문의 재료 조합 참고. 밥·면을 제외하거나 수분·비율·조리 형태를 조정한 별도 응용이며 원문 레시피와 동일하지 않습니다."
+  },
+  {
+    "slug": "review-soup-tofu-broccoli",
+    "name": "두부브로콜리수프",
+    "referenceSlug": "batch-meal-042-tofu-broccoli-onion",
+    "dishType": "SOUP",
+    "ageStages": [
+      2,
+      3,
+      4
+    ],
+    "ingredients": {
+      "tofu": 100,
+      "broccoli": 60,
+      "onion": 30,
+      "water": 160
+    },
+    "sourceScope": "원문의 재료 조합 참고. 밥·면을 제외하거나 수분·비율·조리 형태를 조정한 별도 응용이며 원문 레시피와 동일하지 않습니다."
+  },
+  {
+    "slug": "review-side-chicken-broccoli",
+    "name": "닭안심브로콜리부드러운찜",
+    "referenceSlug": "batch-meal-022-chicken-broccoli-onion",
+    "dishType": "SIDE",
+    "ageStages": [
+      2,
+      3,
+      4
+    ],
+    "ingredients": {
+      "chicken-tenderloin": 50,
+      "broccoli": 50,
+      "onion": 20,
+      "water": 60
+    },
+    "sourceScope": "원문의 재료 조합 참고. 밥·면을 제외하거나 수분·비율·조리 형태를 조정한 별도 응용이며 원문 레시피와 동일하지 않습니다."
+  },
+  {
+    "slug": "review-side-beef-cauliflower",
+    "name": "소고기당근콜리플라워찜",
+    "referenceSlug": "batch-meal-008-beef-cauliflower-carrot",
+    "dishType": "SIDE",
+    "ageStages": [
+      4
+    ],
+    "ingredients": {
+      "beef-minced": 50,
+      "cauliflower": 45,
+      "carrot": 35,
+      "water": 60
+    },
+    "sourceScope": "원문의 재료 조합 참고. 밥·면을 제외하거나 수분·비율·조리 형태를 조정한 별도 응용이며 원문 레시피와 동일하지 않습니다."
+  },
+  {
+    "slug": "review-side-potato-carrot",
+    "name": "감자당근부드러운찜",
+    "referenceSlug": "batch-snack-006-potato-milk-mash",
+    "dishType": "SIDE",
+    "ageStages": [
+      2,
+      3,
+      4
+    ],
+    "ingredients": {
+      "potato": 80,
+      "carrot": 60,
+      "water": 60
+    },
+    "sourceScope": "원문의 재료 조합 참고. 밥·면을 제외하거나 수분·비율·조리 형태를 조정한 별도 응용이며 원문 레시피와 동일하지 않습니다."
+  },
+  {
+    "slug": "review-side-zucchini-carrot",
+    "name": "애호박당근물볶음",
+    "referenceSlug": "batch-meal-041-tofu-zucchini-carrot",
+    "dishType": "SIDE",
+    "ageStages": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "ingredients": {
+      "zucchini": 80,
+      "carrot": 50,
+      "water": 50
+    },
+    "sourceScope": "원문의 재료 조합 참고. 밥·면을 제외하거나 수분·비율·조리 형태를 조정한 별도 응용이며 원문 레시피와 동일하지 않습니다."
+  },
+  {
+    "slug": "review-side-broccoli-onion",
+    "name": "브로콜리양파부드러운찜",
+    "referenceSlug": "batch-meal-042-tofu-broccoli-onion",
+    "dishType": "SIDE",
+    "ageStages": [
+      2,
+      3,
+      4
+    ],
+    "ingredients": {
+      "broccoli": 80,
+      "onion": 40,
+      "water": 50
+    },
+    "sourceScope": "원문의 재료 조합 참고. 밥·면을 제외하거나 수분·비율·조리 형태를 조정한 별도 응용이며 원문 레시피와 동일하지 않습니다."
+  },
+  {
+    "slug": "review-side-softtofu-carrot",
+    "name": "순두부당근부드러운찜",
+    "referenceSlug": "batch-meal-058-softtofu-cauliflower-carrot",
+    "dishType": "SIDE",
+    "ageStages": [
+      2,
+      3,
+      4
+    ],
+    "ingredients": {
+      "soft-tofu": 120,
+      "carrot": 40,
+      "water": 40
+    },
+    "sourceScope": "원문의 재료 조합 참고. 밥·면을 제외하거나 수분·비율·조리 형태를 조정한 별도 응용이며 원문 레시피와 동일하지 않습니다."
+  }
+]

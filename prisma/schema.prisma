@@ -104,22 +104,23 @@ enum IngredientGroup {
 
 /// 사용자 계정 (ACC-01~08: ID/PW + 복구 코드 해시만 보관, 개인정보 미수집)
 model User {
-  id               String    @id @default(uuid()) @db.Uuid
-  loginId          String    @unique @map("login_id")
-  passwordHash     String    @map("password_hash")
-  recoveryCodeHash String    @map("recovery_code_hash")
-  failedLoginCount Int       @default(0) @map("failed_login_count")
-  lockedUntil      DateTime? @map("locked_until")
-  createdAt        DateTime  @default(now()) @map("created_at")
+  ingredientRequests IngredientRequest[]
+  id                 String              @id @default(uuid()) @db.Uuid
+  loginId            String              @unique @map("login_id")
+  passwordHash       String              @map("password_hash")
+  recoveryCodeHash   String              @map("recovery_code_hash")
+  failedLoginCount   Int                 @default(0) @map("failed_login_count")
+  lockedUntil        DateTime?           @map("locked_until")
+  createdAt          DateTime            @default(now()) @map("created_at")
 
-  sessions    Session[]
-  aiUsages    AiUsage[]
-  babies      Baby[]
-  pantryItems PantryItem[]
-  favorites   Favorite[]
-  reports     Report[]
-  mealPlans   MealPlan[]
-  foodBatches FoodBatch[]
+  sessions      Session[]
+  aiUsages      AiUsage[]
+  babies        Baby[]
+  pantryItems   PantryItem[]
+  favorites     Favorite[]
+  reports       Report[]
+  mealPlans     MealPlan[]
+  foodBatches   FoodBatch[]
   recipeReviews RecipeReview[]
 
   @@map("users")
@@ -165,7 +166,7 @@ model Baby {
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   allergies Allergy[]
   mealLogs  MealLog[]
   mealPlans MealPlan[]
@@ -291,15 +292,15 @@ model RecipeIngredient {
 
 /// 레시피 참고 출처 (AI-01, AI-02, AI-06)
 model RecipeSource {
-  id            String     @id @default(uuid()) @db.Uuid
-  recipeId      String     @map("recipe_id") @db.Uuid
-  url           String
-  title         String
-  channelOrSite String     @map("channel_or_site")
-  sourceType    SourceType @map("source_type")
-  trustScore    Float      @default(0.5) @map("trust_score")
-  verificationStatus String @default("UNVERIFIED") @map("verification_status")
-  verifiedAt DateTime? @map("verified_at")
+  id                 String     @id @default(uuid()) @db.Uuid
+  recipeId           String     @map("recipe_id") @db.Uuid
+  url                String
+  title              String
+  channelOrSite      String     @map("channel_or_site")
+  sourceType         SourceType @map("source_type")
+  trustScore         Float      @default(0.5) @map("trust_score")
+  verificationStatus String     @default("UNVERIFIED") @map("verification_status")
+  verifiedAt         DateTime?  @map("verified_at")
 
   recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 
@@ -398,99 +399,116 @@ model RecipeReview {
 
 /// 주간 계획. 확정 시에만 재고를 예약한다.
 model MealPlan {
-  id String @id @default(uuid()) @db.Uuid
-  userId String @map("user_id") @db.Uuid
-  babyId String @map("baby_id") @db.Uuid
-  startDate DateTime @map("start_date") @db.Date
-  status String @default("DRAFT")
-  revision Int @default(0)
+  id          String          @id @default(uuid()) @db.Uuid
+  userId      String          @map("user_id") @db.Uuid
+  babyId      String          @map("baby_id") @db.Uuid
+  startDate   DateTime        @map("start_date") @db.Date
+  status      String          @default("DRAFT")
+  revision    Int             @default(0)
   preferences Json
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  baby Baby @relation(fields: [babyId], references: [id], onDelete: Cascade)
-  entries MealPlanEntry[]
-  tasks CookingTask[]
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  baby        Baby            @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  entries     MealPlanEntry[]
+  tasks       CookingTask[]
+
   @@index([userId, babyId, startDate])
   @@map("meal_plans")
 }
 
 /// 一 끼니는 여러 항목을 가질 수 있다. snapshot은 당시 분량·성분 근거를 보존한다.
 model MealPlanEntry {
-  id String @id @default(uuid()) @db.Uuid
-  planId String @map("plan_id") @db.Uuid
-  date DateTime @db.Date
-  mealTime MealCategory @map("meal_time")
-  slotIndex Int @default(0) @map("slot_index")
-  position Int @default(0)
-  kind String @default("HOME")
-  recipeId String? @map("recipe_id") @db.Uuid
-  name String
-  servings Int @default(1)
-  locked Boolean @default(false)
-  served Boolean @default(false)
-  snapshot Json
-  plan MealPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  id           String            @id @default(uuid()) @db.Uuid
+  planId       String            @map("plan_id") @db.Uuid
+  date         DateTime          @db.Date
+  mealTime     MealCategory      @map("meal_time")
+  slotIndex    Int               @default(0) @map("slot_index")
+  position     Int               @default(0)
+  kind         String            @default("HOME")
+  recipeId     String?           @map("recipe_id") @db.Uuid
+  name         String
+  servings     Float             @default(1)
+  locked       Boolean           @default(false)
+  served       Boolean           @default(false)
+  snapshot     Json
+  plan         MealPlan          @relation(fields: [planId], references: [id], onDelete: Cascade)
   reservations FoodReservation[]
+
   @@unique([planId, date, mealTime, slotIndex, position])
   @@index([recipeId])
   @@map("meal_plan_entries")
 }
 
 model CookingTask {
-  id String @id @default(uuid()) @db.Uuid
-  planId String @map("plan_id") @db.Uuid
-  recipeId String @map("recipe_id") @db.Uuid
-  date DateTime @db.Date
-  servings Int
-  snapshot Json
-  completed Boolean @default(false)
-  plan MealPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  id        String   @id @default(uuid()) @db.Uuid
+  planId    String   @map("plan_id") @db.Uuid
+  recipeId  String   @map("recipe_id") @db.Uuid
+  date      DateTime @db.Date
+  servings  Float
+  snapshot  Json
+  completed Boolean  @default(false)
+  plan      MealPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
   @@map("cooking_tasks")
 }
 
 /// 계정 전체에서 공유하는 조리 묶음별 완성 음식 재고
 model FoodBatch {
-  id String @id @default(uuid()) @db.Uuid
-  userId String @map("user_id") @db.Uuid
-  recipeId String? @map("recipe_id") @db.Uuid
-  taskId String? @unique @map("task_id") @db.Uuid
-  name String
-  category RecipeCategory
-  location String
-  preparedDate DateTime @map("prepared_date") @db.Date
-  expiresDate DateTime? @map("expires_date") @db.Date
-  remaining Int
-  snapshot Json
-  version Int @default(0)
-  createdAt DateTime @default(now()) @map("created_at")
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String            @id @default(uuid()) @db.Uuid
+  userId       String            @map("user_id") @db.Uuid
+  recipeId     String?           @map("recipe_id") @db.Uuid
+  taskId       String?           @unique @map("task_id") @db.Uuid
+  name         String
+  category     RecipeCategory
+  location     String
+  preparedDate DateTime          @map("prepared_date") @db.Date
+  expiresDate  DateTime?         @map("expires_date") @db.Date
+  remaining    Float
+  snapshot     Json
+  version      Int               @default(0)
+  createdAt    DateTime          @default(now()) @map("created_at")
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   reservations FoodReservation[]
-  movements FoodMovement[]
+  movements    FoodMovement[]
+
   @@index([userId, expiresDate])
   @@map("food_batches")
 }
 
 model FoodReservation {
-  id String @id @default(uuid()) @db.Uuid
-  batchId String @map("batch_id") @db.Uuid
-  entryId String @map("entry_id") @db.Uuid
-  servings Int
-  batch FoodBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
-  entry MealPlanEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  id       String        @id @default(uuid()) @db.Uuid
+  batchId  String        @map("batch_id") @db.Uuid
+  entryId  String        @map("entry_id") @db.Uuid
+  servings Float
+  batch    FoodBatch     @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  entry    MealPlanEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
   @@unique([batchId, entryId])
   @@index([entryId])
   @@map("food_reservations")
 }
 
 model FoodMovement {
-  id String @id @default(uuid()) @db.Uuid
-  batchId String @map("batch_id") @db.Uuid
-  eventKey String @unique @map("event_key")
-  kind String
-  delta Int
-  createdAt DateTime @default(now()) @map("created_at")
-  batch FoodBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  id        String    @id @default(uuid()) @db.Uuid
+  batchId   String    @map("batch_id") @db.Uuid
+  eventKey  String    @unique @map("event_key")
+  kind      String
+  delta     Float
+  createdAt DateTime  @default(now()) @map("created_at")
+  batch     FoodBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
   @@index([batchId])
   @@map("food_movements")
+}
+
+model IngredientRequest {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  name      String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, name])
+  @@map("ingredient_requests")
 }

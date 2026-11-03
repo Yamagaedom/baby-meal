@@ -4,9 +4,11 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui";
 import type { BabyProfileView } from "@/features/profile";
-import { addDays, aggregateNutrition } from "@/features/meal-plan/engine";
+import { addDays, aggregateNutrition, scheduledCookingDays } from "@/features/meal-plan/engine";
 import {
   NUTRIENTS,
+  MEAL_STYLES,
+  type MealStyle,
   preferencesSchema,
   type PlannerData,
   type PlanPreferences,
@@ -88,7 +90,10 @@ export function MealPlannerClient({
   const [wizard, setWizard] = useState(initialIngredients.length > 0 || !initialData.plans.length);
   const [step, setStep] = useState(0);
   const [prefs, setPrefs] = useState<PlanPreferences>(() => ({
-    ...preferencesSchema.parse({ ...(initialData.plans[0]?.preferences ?? {}), startDate: today }),
+    ...preferencesSchema.parse({
+      ...(initialData.savedPreferences ?? initialData.plans[0]?.preferences ?? {}),
+      startDate: today,
+    }),
     ...(initialIngredients.length
       ? {
           selectedIngredientIds: initialIngredients,
@@ -105,6 +110,7 @@ export function MealPlannerClient({
   const [editing, setEditing] = useState<string | null>(null);
   const [pendingRecipe, setPendingRecipe] = useState(initialRecipeId ?? "");
   const [search, setSearch] = useState("");
+  const [ingredientLimit, setIngredientLimit] = useState(40);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -308,6 +314,96 @@ export function MealPlannerClient({
                     </div>
                   )}
                 </fieldset>
+                <fieldset className="space-y-3">
+                  <legend className="font-medium">평소 한 끼를 어떻게 차리나요?</legend>
+                  {(["BREAKFAST", "LUNCH", "DINNER"] as const).map((t) => (
+                    <label key={t} className="flex items-center justify-between gap-3 text-sm">
+                      <span>{mealLabels[t]}</span>
+                      <select
+                        className={field}
+                        aria-label={`${mealLabels[t]} 식단 유형`}
+                        value={prefs.mealStyles[t]}
+                        onChange={(e) =>
+                          update("mealStyles", {
+                            ...prefs.mealStyles,
+                            [t]: e.target.value as MealStyle,
+                          })
+                        }
+                      >
+                        {Object.entries(MEAL_STYLES).map(([v, l]) => (
+                          <option key={v} value={v}>
+                            {l}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  ))}
+                  {Object.values(prefs.mealStyles).includes("RICE_SIDES") && (
+                    <div className="space-y-3 border-l-2 border-[var(--color-border)] pl-3">
+                      <label className="block text-sm">
+                        밥을 제외한 반찬 수{" "}
+                        <select
+                          aria-label="반찬 수"
+                          className={field}
+                          value={prefs.sideCount}
+                          onChange={(e) => update("sideCount", Number(e.target.value))}
+                        >
+                          <option value={3}>3개</option>
+                          <option value={4}>4개</option>
+                        </select>
+                      </label>
+                      <label className="flex min-h-11 items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={prefs.requireMeat}
+                          onChange={(e) => update("requireMeat", e.target.checked)}
+                        />
+                        고기 반찬 1개 이상 포함
+                      </label>
+                      <label className="block text-sm">
+                        반찬별 먹을 양 (레시피 1회분 기준)
+                        <input
+                          className={field}
+                          aria-label="반찬별 먹을 회분"
+                          type="number"
+                          min="0.1"
+                          max="1"
+                          step="0.1"
+                          value={prefs.sidePortion}
+                          onChange={(e) => update("sidePortion", Number(e.target.value))}
+                        />
+                      </label>
+                      <p className="text-xs">
+                        0.5는 해당 반찬 레시피 1회분의 절반입니다. 아기에게 맞게 조절하세요. 밥은
+                        기본 1회분이며 메뉴별 변경도 가능해요.
+                      </p>
+                    </div>
+                  )}
+                  <details className="disclosure">
+                    <summary>유형별 메뉴가 얼마나 있나요?</summary>
+                    <div className="disclosure-body space-y-1 text-sm">
+                      {(["SOUP", "ONE_BOWL", "SIDE", "STAPLE"] as const).map((type) => (
+                        <p key={type}>
+                          {
+                            { SOUP: "스프류", ONE_BOWL: "한그릇", SIDE: "반찬", STAPLE: "밥·주식" }[
+                              type
+                            ]
+                          }
+                          : {data.recipes.filter((r) => r.verified && r.dishType === type).length}개
+                        </p>
+                      ))}
+                      <p>
+                        현재 아기의 월령·간·알레르기와 출처 확인을 적용한 개수입니다.
+                        조리시간·도구·재료 조건을 추가하면 후보가 줄어들 수 있어요. 맞는 후보가
+                        없으면 다른 유형으로 자동 대체하지 않습니다.
+                      </p>
+                    </div>
+                  </details>
+                  <p className="text-xs text-[var(--color-text-secondary)]">
+                    다음 식단에도 이 설정을 사용해요. 스프만 선택해도 하루 영양 충족을 보장하지
+                    않으니 영양 체크와 다른 끼니를 함께 확인하세요.
+                  </p>
+                </fieldset>
                 <fieldset>
                   <legend className="mb-3 font-medium">간식도 넣을까요?</legend>
                   <div className="flex gap-2">
@@ -352,7 +448,10 @@ export function MealPlannerClient({
                     className={field}
                     placeholder="재료 이름 검색"
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={(e) => {
+                      setSearch(e.target.value);
+                      setIngredientLimit(40);
+                    }}
                   />
                 </label>
                 <div className="flex max-h-64 flex-wrap gap-2 overflow-y-auto">
@@ -360,7 +459,7 @@ export function MealPlannerClient({
                     .filter(
                       (i) => i.name.includes(search) || prefs.selectedIngredientIds.includes(i.id),
                     )
-                    .slice(0, search ? 80 : 40)
+                    .slice(0, ingredientLimit)
                     .map((i) => (
                       <Choice
                         key={i.id}
@@ -378,6 +477,20 @@ export function MealPlannerClient({
                       </Choice>
                     ))}
                 </div>
+                {data.ingredients.filter((i) => i.name.includes(search)).length >
+                  ingredientLimit && (
+                  <Button
+                    variant="outline"
+                    fullWidth
+                    onClick={() => setIngredientLimit((n) => n + 40)}
+                  >
+                    재료 더보기 ({ingredientLimit}/
+                    {data.ingredients.filter((i) => i.name.includes(search)).length})
+                  </Button>
+                )}
+                <p className="text-xs text-[var(--color-text-secondary)]">
+                  전체 {data.ingredients.length}개 재료 · 선택 상태는 유지돼요.
+                </p>
                 <p className="text-sm">
                   선택 {prefs.selectedIngredientIds.length}개:{" "}
                   {data.ingredients
@@ -410,26 +523,62 @@ export function MealPlannerClient({
             {step === 2 && (
               <>
                 <fieldset>
-                  <legend className="mb-3 font-medium">어떻게 준비하고 싶나요?</legend>
+                  <legend className="mb-3 font-medium">음식은 얼마나 자주 준비하나요?</legend>
                   <div className="flex flex-wrap gap-2">
-                    {(
-                      [
-                        { value: "DAILY", label: "매일 간단히" },
-                        { value: "BATCH", label: "주 2회 모아서" },
-                        { value: "ANY", label: "상관없어요" },
-                      ] as const
-                    ).map((o) => (
+                    {[1, 2, 3].map((n) => (
                       <Choice
-                        key={o.value}
-                        active={prefs.cookingMode === o.value}
-                        onClick={() => update("cookingMode", o.value)}
+                        key={n}
+                        active={
+                          prefs.cookingInterval === n && !(n === 1 && prefs.cookingMode === "BATCH")
+                        }
+                        onClick={() => {
+                          update("cookingInterval", n);
+                          update("cookingMode", n === 1 ? "DAILY" : "BATCH");
+                          if (!prefs.cookingAnchor) update("cookingAnchor", prefs.startDate);
+                        }}
                       >
-                        {o.label}
+                        {n === 1 ? "매일" : `${n}일마다`}
                       </Choice>
                     ))}
+                    <Choice
+                      active={prefs.cookingMode === "BATCH" && prefs.cookingInterval === 1}
+                      onClick={() => {
+                        update("cookingMode", "BATCH");
+                        update("cookingInterval", 1);
+                      }}
+                    >
+                      직접 날짜 선택
+                    </Choice>
                   </div>
                 </fieldset>
-                {prefs.cookingMode === "BATCH" && (
+                {prefs.cookingInterval > 1 && (
+                  <div className="space-y-2">
+                    <label className="block text-sm">
+                      반복 기준일
+                      <input
+                        aria-label="조리 반복 기준일"
+                        className={field}
+                        type="date"
+                        max={prefs.startDate}
+                        value={prefs.cookingAnchor ?? prefs.startDate}
+                        onChange={(e) => update("cookingAnchor", e.target.value)}
+                      />
+                    </label>
+                    <p className="text-sm">
+                      정기 조리일: {scheduledCookingDays(prefs).map(dateLabel).join(", ")}. 계획 첫
+                      구간에 사용할 재고가 없으면 시작일에 준비할 음식도 안내해요.
+                    </p>
+                  </div>
+                )}
+                <label className="flex min-h-11 items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={prefs.repeatMeals}
+                    onChange={(e) => update("repeatMeals", e.target.checked)}
+                  />
+                  같은 메뉴를 조리 구간 안에서 나눠 먹어도 좋아요
+                </label>
+                {prefs.cookingMode === "BATCH" && prefs.cookingInterval === 1 && (
                   <fieldset>
                     <legend className="mb-2 text-sm">조리할 날 (첫날 포함, 변경 가능)</legend>
                     <div className="flex flex-wrap gap-2">
@@ -693,190 +842,300 @@ export function MealPlannerClient({
                   {d === today ? " · 오늘" : ""}
                 </h2>
                 {["BREAKFAST", "LUNCH", "DINNER", "SNACK"]
-                  .flatMap((t) => plan.entries.filter((e) => e.date === d && e.mealTime === t))
-                  .map((e) => (
-                    <div key={e.id} className={panel}>
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <p className="text-xs font-medium text-[var(--color-text-secondary)]">
-                            {mealLabels[e.mealTime]}
-                            {e.mealTime === "SNACK" ? ` ${e.slotIndex + 1}` : ""}{" "}
-                            {e.locked ? "· 유지" : ""}
-                          </p>
-                          <p className="mt-1 font-semibold">
-                            {e.kind === "HOME"
-                              ? e.name
-                              : e.kind === "EXTERNAL"
-                                ? "외부 식사"
-                                : "계획 제외"}
-                            {e.served ? " · 제공 완료" : ""}
-                          </p>
-                          {e.kind === "HOME" && (
-                            <p className="mt-1 text-sm">
-                              먹을 양 {e.servings}회분 · 재고 예약 {e.reserved}회분
-                            </p>
-                          )}
-                          {e.recipeId && !(e.snapshot as RecipeSnapshot).verified && (
-                            <p className="mt-1 text-sm text-[var(--color-warning-text)]">
-                              레시피 출처 미확인
-                            </p>
-                          )}
-                          {e.needsAttention && (
-                            <p className="mt-1 text-sm text-[var(--color-danger)]">
-                              메뉴 확인 필요
-                            </p>
-                          )}
-                        </div>
-                        <div className="flex flex-wrap gap-1">
-                          {e.recipeId && (
-                            <Link
-                              href={`/recipes/${e.recipeId}`}
-                              className="inline-flex min-h-11 items-center px-3 text-sm underline"
-                            >
-                              레시피
-                            </Link>
-                          )}
-                          {!e.served && plan.status === "DRAFT" && (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                disabled={busy}
-                                onClick={() => act("ENTRY", { entryId: e.id, locked: !e.locked })}
-                              >
-                                {e.locked ? "유지 해제" : "유지"}
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setEditing(editing === e.id ? null : e.id)}
-                              >
-                                메뉴·일정 바꾸기
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                      {editing === e.id && plan.status === "DRAFT" && (
-                        <form
-                          className="mt-4 space-y-3 border-t border-[var(--color-border)] pt-4"
-                          onSubmit={async (ev) => {
-                            ev.preventDefault();
-                            const f = new FormData(ev.currentTarget);
-                            const result = await act("ENTRY", {
-                              entryId: e.id,
-                              ...(f.get("recipeId") ? { recipeId: f.get("recipeId") } : {}),
-                              servings: Number(f.get("servings")),
-                              date: f.get("date"),
-                              mealTime: f.get("mealTime"),
-                              kind: f.get("kind"),
-                            });
-                            if (result) setEditing(null);
-                          }}
+                  .flatMap((t) =>
+                    [0, 1].map((slot) => ({
+                      t,
+                      slot,
+                      group: plan.entries.filter(
+                        (e) => e.date === d && e.mealTime === t && e.slotIndex === slot,
+                      ),
+                    })),
+                  )
+                  .filter((m) => m.group.length)
+                  .map(({ t, slot, group }) => (
+                    <details
+                      key={`${t}:${slot}`}
+                      open={group.length === 1}
+                      className="rounded-md border border-[var(--color-border)] bg-white"
+                    >
+                      <summary className="flex min-h-14 cursor-pointer flex-wrap items-center justify-between gap-2 p-4 font-semibold">
+                        <span>
+                          {mealLabels[t as keyof typeof mealLabels]}
+                          {t === "SNACK" ? ` ${slot + 1}` : ""} ·{" "}
+                          {group.length > 1 ? `밥 + 반찬 ${group.length - 1}` : group[0].name}
+                        </span>
+                        <span className="text-xs font-normal text-[var(--color-text-secondary)]">
+                          {group.filter((e) => e.served).length}/{group.length} 제공 · 펼쳐보기
+                        </span>
+                      </summary>
+                      {plan.status === "DRAFT" && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={busy}
+                          onClick={() =>
+                            act("MEAL_REGENERATE", { date: d, mealTime: t, slotIndex: slot })
+                          }
                         >
-                          {recipeSelect("recipeId", e.recipeId ?? "", false)}
-                          <p className="text-sm text-[var(--color-text-secondary)]">
-                            직접 담은 메뉴는 현재 아기 조건으로 확인합니다. 출처 미확인 메뉴는
-                            영양·조리법을 함께 확인해 주세요.
-                          </p>
-                          <div className="grid gap-3 sm:grid-cols-2">
-                            <label className="space-y-1">
-                              <span className="text-sm">먹을 예정 회분</span>
-                              <input
-                                className={field}
-                                name="servings"
-                                type="number"
-                                min="1"
-                                max="5"
-                                defaultValue={e.servings}
-                                required
-                              />
-                            </label>
-                            <label className="space-y-1">
-                              <span className="text-sm">날짜</span>
-                              <input
-                                className={field}
-                                name="date"
-                                type="date"
-                                min={plan.startDate > today ? plan.startDate : today}
-                                max={addDays(plan.startDate, 6)}
-                                defaultValue={e.date}
-                                required
-                              />
-                            </label>
-                            <label className="space-y-1">
-                              <span className="text-sm">끼니</span>
-                              <select className={field} name="mealTime" defaultValue={e.mealTime}>
-                                {Object.entries(mealLabels).map(([k, v]) => (
-                                  <option key={k} value={k}>
-                                    {v}
-                                  </option>
-                                ))}
-                              </select>
-                            </label>
-                            <label className="space-y-1">
-                              <span className="text-sm">일정</span>
-                              <select className={field} name="kind" defaultValue={e.kind}>
-                                <option value="HOME">집에서 먹기</option>
-                                <option value="EXTERNAL">어린이집·외식</option>
-                                <option value="SKIPPED">계획 제외</option>
-                              </select>
-                            </label>
-                          </div>
-                          <Button type="submit" disabled={busy}>
-                            변경 저장
-                          </Button>
-                        </form>
+                          이 끼니 전체 변경 (유지 메뉴 제외)
+                        </Button>
                       )}
                       {plan.status === "CONFIRMED" &&
-                        e.kind === "HOME" &&
-                        !e.served &&
-                        e.date === today && (
-                          <details className="mt-3">
-                            <summary className="cursor-pointer py-3 text-sm font-medium">
-                              먹은 기록 · 재고에서 꺼내기
+                        d === today &&
+                        group.some((e) => e.kind === "HOME" && !e.served) && (
+                          <details className="m-4 border-b border-[var(--color-border)]">
+                            <summary className="min-h-11 cursor-pointer py-2 font-medium">
+                              한 끼 먹은 기록
                             </summary>
                             <form
-                              className="mt-2 flex flex-wrap items-end gap-3"
+                              className="space-y-3 pb-4"
                               onSubmit={(ev) => {
                                 ev.preventDefault();
                                 const f = new FormData(ev.currentTarget);
-                                act("SERVE", {
-                                  entryId: e.id,
-                                  rating: f.get("rating"),
-                                  ...(f.get("amountEaten")
-                                    ? { amountEaten: f.get("amountEaten") }
-                                    : {}),
+                                void act("SERVE_MEAL", {
+                                  mealTime: t,
+                                  slotIndex: slot,
+                                  amounts: group
+                                    .filter((e) => e.kind === "HOME" && !e.served)
+                                    .map((e) => ({
+                                      entryId: e.id,
+                                      rating: f.get(`rating-${e.id}`),
+                                      amountEaten: f.get(`amount-${e.id}`),
+                                    })),
                                 });
                               }}
                             >
-                              <label>
-                                <span className="mb-1 block text-sm">반응</span>
-                                <select name="rating" className={field} defaultValue="OK">
-                                  <option value="GOOD">잘 먹었어요</option>
-                                  <option value="OK">보통이에요</option>
-                                  <option value="REFUSED">안 먹었어요</option>
-                                </select>
-                              </label>
-                              <label>
-                                <span className="mb-1 block text-sm">먹은 양</span>
-                                <select name="amountEaten" className={field}>
-                                  <option value="">선택 안 함</option>
-                                  <option value="ALL">다 먹음</option>
-                                  <option value="HALF">반</option>
-                                  <option value="LITTLE">조금</option>
-                                </select>
-                              </label>
+                              {group
+                                .filter((e) => e.kind === "HOME" && !e.served)
+                                .map((e) => (
+                                  <div key={e.id} className="space-y-2">
+                                    <p className="text-sm">
+                                      {e.name} · 제공 {e.servings}회분
+                                    </p>
+                                    <div className="flex gap-2">
+                                      <select
+                                        className={field}
+                                        aria-label={`${e.name} 반응`}
+                                        name={`rating-${e.id}`}
+                                      >
+                                        <option value="OK">보통</option>
+                                        <option value="GOOD">잘 먹음</option>
+                                        <option value="REFUSED">안 먹음</option>
+                                      </select>
+                                      <select
+                                        className={field}
+                                        aria-label={`${e.name} 먹은 양`}
+                                        name={`amount-${e.id}`}
+                                      >
+                                        <option value="ALL">다 먹음</option>
+                                        <option value="HALF">반</option>
+                                        <option value="LITTLE">조금</option>
+                                      </select>
+                                    </div>
+                                  </div>
+                                ))}
                               <Button type="submit" disabled={busy}>
-                                제공한 {e.servings}회분 차감 · 기록
+                                한 끼 제공 · 재고 차감 · 기록
                               </Button>
-                              <p className="w-full text-sm text-[var(--color-text-secondary)]">
-                                남긴 양과 관계없이 꺼내 제공한 양을 차감해요.
+                              <p className="text-xs">
+                                모든 음식이 조리·재고 예약되어 있어야 저장돼요. 남긴 양은 따로
+                                기록하며 꺼내 제공한 양을 차감합니다.
                               </p>
                             </form>
                           </details>
                         )}
-                    </div>
+                      {group.map((e) => (
+                        <div key={e.id} className={panel}>
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <div>
+                              <p className="text-xs font-medium text-[var(--color-text-secondary)]">
+                                {mealLabels[e.mealTime]}
+                                {e.mealTime === "SNACK" ? ` ${e.slotIndex + 1}` : ""}{" "}
+                                {e.locked ? "· 유지" : ""}
+                              </p>
+                              <p className="mt-1 font-semibold">
+                                {e.kind === "HOME"
+                                  ? e.name
+                                  : e.kind === "EXTERNAL"
+                                    ? "외부 식사"
+                                    : "계획 제외"}
+                                {e.served ? " · 제공 완료" : ""}
+                              </p>
+                              {e.kind === "HOME" && (
+                                <p className="mt-1 text-sm">
+                                  먹을 양 {e.servings}회분 · 재고 예약 {e.reserved}회분
+                                </p>
+                              )}
+                              {e.recipeId && !(e.snapshot as RecipeSnapshot).verified && (
+                                <p className="mt-1 text-sm text-[var(--color-warning-text)]">
+                                  레시피 출처 미확인
+                                </p>
+                              )}
+                              {e.needsAttention && (
+                                <p className="mt-1 text-sm text-[var(--color-danger)]">
+                                  메뉴 확인 필요
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap gap-1">
+                              {e.recipeId && (
+                                <Link
+                                  href={`/recipes/${e.recipeId}`}
+                                  className="inline-flex min-h-11 items-center px-3 text-sm underline"
+                                >
+                                  레시피
+                                </Link>
+                              )}
+                              {!e.served && plan.status === "DRAFT" && (
+                                <>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    disabled={busy}
+                                    onClick={() =>
+                                      act("ENTRY", { entryId: e.id, locked: !e.locked })
+                                    }
+                                  >
+                                    {e.locked ? "유지 해제" : "유지"}
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setEditing(editing === e.id ? null : e.id)}
+                                  >
+                                    메뉴·일정 바꾸기
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          {editing === e.id && plan.status === "DRAFT" && (
+                            <form
+                              className="mt-4 space-y-3 border-t border-[var(--color-border)] pt-4"
+                              onSubmit={async (ev) => {
+                                ev.preventDefault();
+                                const f = new FormData(ev.currentTarget);
+                                const result = await act("ENTRY", {
+                                  entryId: e.id,
+                                  ...(f.get("recipeId") ? { recipeId: f.get("recipeId") } : {}),
+                                  servings: Number(f.get("servings")),
+                                  date: f.get("date"),
+                                  mealTime: f.get("mealTime"),
+                                  kind: f.get("kind"),
+                                });
+                                if (result) setEditing(null);
+                              }}
+                            >
+                              {recipeSelect("recipeId", e.recipeId ?? "", false)}
+                              <p className="text-sm text-[var(--color-text-secondary)]">
+                                직접 담은 메뉴는 현재 아기 조건으로 확인합니다. 출처 미확인 메뉴는
+                                영양·조리법을 함께 확인해 주세요.
+                              </p>
+                              <div className="grid gap-3 sm:grid-cols-2">
+                                <label className="space-y-1">
+                                  <span className="text-sm">먹을 예정 회분</span>
+                                  <input
+                                    className={field}
+                                    name="servings"
+                                    type="number"
+                                    min="0.1"
+                                    step="0.1"
+                                    max="5"
+                                    defaultValue={e.servings}
+                                    required
+                                  />
+                                </label>
+                                <label className="space-y-1">
+                                  <span className="text-sm">날짜</span>
+                                  <input
+                                    className={field}
+                                    name="date"
+                                    type="date"
+                                    min={plan.startDate > today ? plan.startDate : today}
+                                    max={addDays(plan.startDate, 6)}
+                                    defaultValue={e.date}
+                                    required
+                                  />
+                                </label>
+                                <label className="space-y-1">
+                                  <span className="text-sm">끼니</span>
+                                  <select
+                                    className={field}
+                                    name="mealTime"
+                                    defaultValue={e.mealTime}
+                                  >
+                                    {Object.entries(mealLabels).map(([k, v]) => (
+                                      <option key={k} value={k}>
+                                        {v}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </label>
+                                <label className="space-y-1">
+                                  <span className="text-sm">일정</span>
+                                  <select className={field} name="kind" defaultValue={e.kind}>
+                                    <option value="HOME">집에서 먹기</option>
+                                    <option value="EXTERNAL">어린이집·외식</option>
+                                    <option value="SKIPPED">계획 제외</option>
+                                  </select>
+                                </label>
+                              </div>
+                              <Button type="submit" disabled={busy}>
+                                변경 저장
+                              </Button>
+                            </form>
+                          )}
+                          {plan.status === "CONFIRMED" &&
+                            e.kind === "HOME" &&
+                            !e.served &&
+                            e.date === today && (
+                              <details className="mt-3">
+                                <summary className="cursor-pointer py-3 text-sm font-medium">
+                                  먹은 기록 · 재고에서 꺼내기
+                                </summary>
+                                <form
+                                  className="mt-2 flex flex-wrap items-end gap-3"
+                                  onSubmit={(ev) => {
+                                    ev.preventDefault();
+                                    const f = new FormData(ev.currentTarget);
+                                    act("SERVE", {
+                                      entryId: e.id,
+                                      rating: f.get("rating"),
+                                      ...(f.get("amountEaten")
+                                        ? { amountEaten: f.get("amountEaten") }
+                                        : {}),
+                                    });
+                                  }}
+                                >
+                                  <label>
+                                    <span className="mb-1 block text-sm">반응</span>
+                                    <select name="rating" className={field} defaultValue="OK">
+                                      <option value="GOOD">잘 먹었어요</option>
+                                      <option value="OK">보통이에요</option>
+                                      <option value="REFUSED">안 먹었어요</option>
+                                    </select>
+                                  </label>
+                                  <label>
+                                    <span className="mb-1 block text-sm">먹은 양</span>
+                                    <select name="amountEaten" className={field}>
+                                      <option value="">선택 안 함</option>
+                                      <option value="ALL">다 먹음</option>
+                                      <option value="HALF">반</option>
+                                      <option value="LITTLE">조금</option>
+                                    </select>
+                                  </label>
+                                  <Button type="submit" disabled={busy}>
+                                    제공한 {e.servings}회분 차감 · 기록
+                                  </Button>
+                                  <p className="w-full text-sm text-[var(--color-text-secondary)]">
+                                    남긴 양과 관계없이 꺼내 제공한 양을 차감해요.
+                                  </p>
+                                </form>
+                              </details>
+                            )}
+                        </div>
+                      ))}
+                    </details>
                   ))}
               </div>
             ))}
@@ -937,7 +1196,8 @@ export function MealPlannerClient({
                         name="servings"
                         type="number"
                         className={field}
-                        min="1"
+                        min="0.1"
+                        step="0.1"
                         max="5"
                         defaultValue="1"
                         required
@@ -1010,7 +1270,8 @@ export function MealPlannerClient({
                       className={field}
                       name="servings"
                       type="number"
-                      min="1"
+                      min="0.1"
+                      step="0.1"
                       max="5"
                       defaultValue="1"
                       required
@@ -1038,123 +1299,170 @@ export function MealPlannerClient({
             <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
               회분은 레시피의 기준 분량이에요. 만들 양과 먹을 양을 따로 관리합니다.
             </p>
+            <div className="mt-3 space-y-2">
+              {[...new Set(plan.tasks.filter((t) => !t.completed).map((t) => t.date))].map((d) => {
+                const tasks = plan.tasks.filter((t) => t.date === d && !t.completed);
+                return (
+                  <p key={d} className="text-sm">
+                    {dateLabel(d)} · {new Set(tasks.map((t) => t.recipeId)).size}가지 · 합계{" "}
+                    {Math.round(tasks.reduce((sum, t) => sum + t.servings, 0) * 10) / 10}회분 · 순차
+                    조리 약{" "}
+                    {tasks.reduce(
+                      (sum, t) =>
+                        sum + (data.recipes.find((r) => r.id === t.recipeId)?.cookMinutes ?? 0),
+                      0,
+                    )}
+                    분
+                  </p>
+                );
+              })}
+            </div>
+            <p className="mt-2 text-xs text-[var(--color-text-secondary)]">
+              조리 주기가 보관 가능 기간은 아닙니다. 완료 시 실제 보관 장소와 사용 기한을 확인해
+              주세요. 종류가 많으면 메뉴 반복을 허용해 새 식단을 구성할 수 있어요.
+            </p>
             {!plan.tasks.length && <p className="mt-4 text-sm">추가로 조리할 음식이 없어요.</p>}
             <div className="mt-4 divide-y divide-[var(--color-border)]">
-              {plan.tasks.map((t) => (
-                <div key={t.id} className="space-y-3 py-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="font-medium">
-                        {t.name} {t.completed ? "· 조리 완료" : ""}
-                      </p>
-                      <p className="mt-1 text-sm">
-                        조리일 {dateLabel(t.date)} · 만들 양 {t.servings}회분
-                        {!t.completed ? ` · 아직 준비할 양 ${t.needed}회분` : ""}
-                      </p>
-                      {!t.completed && (
-                        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-                          계획상 예상 여유 {Math.max(0, t.servings - t.needed)}회분. 실제 양은 조리
-                          완료 때 저장해요.
-                        </p>
-                      )}
-                    </div>
-                    {!t.completed && (
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          aria-label={`${t.name} 만들 양 줄이기`}
-                          disabled={busy || t.servings <= 1}
-                          onClick={() => act("TASK", { taskId: t.id, servings: t.servings - 1 })}
-                        >
-                          −
-                        </Button>
-                        <span>{t.servings}회분</span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          aria-label={`${t.name} 만들 양 늘리기`}
-                          disabled={busy || t.servings >= 5}
-                          onClick={() => act("TASK", { taskId: t.id, servings: t.servings + 1 })}
-                        >
-                          ＋
-                        </Button>
-                      </div>
-                    )}
+              {[...new Set(plan.tasks.map((t) => t.date))].map((cookDay) => (
+                <details key={cookDay} className="disclosure">
+                  <summary>
+                    {dateLabel(cookDay)} ·{" "}
+                    {
+                      new Set(plan.tasks.filter((t) => t.date === cookDay).map((t) => t.recipeId))
+                        .size
+                    }
+                    가지 준비
+                  </summary>
+                  <div className="disclosure-body">
+                    {plan.tasks
+                      .filter((t) => t.date === cookDay)
+                      .map((t) => (
+                        <div key={t.id} className="space-y-3 py-4">
+                          <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                              <p className="font-medium">
+                                {t.name} {t.completed ? "· 조리 완료" : ""}
+                              </p>
+                              <p className="mt-1 text-sm">
+                                조리일 {dateLabel(t.date)} · 만들 양 {t.servings}회분
+                                {!t.completed ? ` · 아직 준비할 양 ${t.needed}회분` : ""}
+                              </p>
+                              {!t.completed && (
+                                <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+                                  계획상 예상 여유 {Math.max(0, t.servings - t.needed)}회분. 실제
+                                  양은 조리 완료 때 저장해요.
+                                </p>
+                              )}
+                            </div>
+                            {!t.completed && (
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  aria-label={`${t.name} 만들 양 줄이기`}
+                                  disabled={busy || t.servings <= 1}
+                                  onClick={() =>
+                                    act("TASK", { taskId: t.id, servings: t.servings - 1 })
+                                  }
+                                >
+                                  −
+                                </Button>
+                                <span>{t.servings}회분</span>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  aria-label={`${t.name} 만들 양 늘리기`}
+                                  disabled={busy || t.servings >= 5}
+                                  onClick={() =>
+                                    act("TASK", { taskId: t.id, servings: t.servings + 1 })
+                                  }
+                                >
+                                  ＋
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                          {!t.completed && (
+                            <details>
+                              <summary className="cursor-pointer py-2 text-sm">
+                                재료량 · 조리 완료 등록
+                              </summary>
+                              <ul className="my-3 space-y-1 text-sm">
+                                {t.ingredients.map((i) => (
+                                  <li key={i.id}>
+                                    {i.name}{" "}
+                                    {
+                                      scaleIngredientAmount(
+                                        i.amount,
+                                        i.unit,
+                                        t.baseServings,
+                                        t.servings,
+                                      ).displayAmount
+                                    }
+                                    {i.optional ? " (선택)" : ""}
+                                  </li>
+                                ))}
+                              </ul>
+                              {plan.status === "CONFIRMED" && (
+                                <form
+                                  className="grid items-end gap-3 sm:grid-cols-2"
+                                  onSubmit={(ev) => {
+                                    ev.preventDefault();
+                                    const f = new FormData(ev.currentTarget);
+                                    act("COOK", {
+                                      taskId: t.id,
+                                      servings: Number(f.get("servings")),
+                                      location: f.get("location"),
+                                      expiresDate: f.get("expiresDate"),
+                                    });
+                                  }}
+                                >
+                                  <label className="space-y-1">
+                                    <span className="text-sm">실제로 만든 회분</span>
+                                    <input
+                                      className={field}
+                                      name="servings"
+                                      type="number"
+                                      defaultValue={t.servings}
+                                      min="0.1"
+                                      step="0.1"
+                                      max="5"
+                                      required
+                                    />
+                                  </label>
+                                  <label className="space-y-1">
+                                    <span className="text-sm">보관 장소</span>
+                                    <select name="location" className={field}>
+                                      <option value="FRIDGE">냉장</option>
+                                      <option value="FREEZER">냉동</option>
+                                    </select>
+                                  </label>
+                                  <label className="space-y-1">
+                                    <span className="text-sm">확인한 사용 기한</span>
+                                    <input
+                                      className={field}
+                                      name="expiresDate"
+                                      type="date"
+                                      min={today}
+                                      required
+                                    />
+                                  </label>
+                                  <Button type="submit" disabled={busy || t.date > today}>
+                                    조리 완료 · 음식 재고 저장
+                                  </Button>
+                                  <p className="text-sm text-[var(--color-text-secondary)] sm:col-span-2">
+                                    이 음식의 예정 식사는 {dateLabel(t.requiredThrough)}까지예요.
+                                    입력한 기한 안의 식사에만 예약하며, 보관 가능 기간을 자동으로
+                                    보장하지 않습니다.
+                                  </p>
+                                </form>
+                              )}
+                            </details>
+                          )}
+                        </div>
+                      ))}
                   </div>
-                  {!t.completed && (
-                    <details>
-                      <summary className="cursor-pointer py-2 text-sm">
-                        재료량 · 조리 완료 등록
-                      </summary>
-                      <ul className="my-3 space-y-1 text-sm">
-                        {t.ingredients.map((i) => (
-                          <li key={i.id}>
-                            {i.name}{" "}
-                            {
-                              scaleIngredientAmount(i.amount, i.unit, t.baseServings, t.servings)
-                                .displayAmount
-                            }
-                            {i.optional ? " (선택)" : ""}
-                          </li>
-                        ))}
-                      </ul>
-                      {plan.status === "CONFIRMED" && (
-                        <form
-                          className="grid items-end gap-3 sm:grid-cols-2"
-                          onSubmit={(ev) => {
-                            ev.preventDefault();
-                            const f = new FormData(ev.currentTarget);
-                            act("COOK", {
-                              taskId: t.id,
-                              servings: Number(f.get("servings")),
-                              location: f.get("location"),
-                              expiresDate: f.get("expiresDate"),
-                            });
-                          }}
-                        >
-                          <label className="space-y-1">
-                            <span className="text-sm">실제로 만든 회분</span>
-                            <input
-                              className={field}
-                              name="servings"
-                              type="number"
-                              defaultValue={t.servings}
-                              min="1"
-                              max="5"
-                              required
-                            />
-                          </label>
-                          <label className="space-y-1">
-                            <span className="text-sm">보관 장소</span>
-                            <select name="location" className={field}>
-                              <option value="FRIDGE">냉장</option>
-                              <option value="FREEZER">냉동</option>
-                            </select>
-                          </label>
-                          <label className="space-y-1">
-                            <span className="text-sm">확인한 사용 기한</span>
-                            <input
-                              className={field}
-                              name="expiresDate"
-                              type="date"
-                              min={today}
-                              required
-                            />
-                          </label>
-                          <Button type="submit" disabled={busy || t.date > today}>
-                            조리 완료 · 음식 재고 저장
-                          </Button>
-                          <p className="text-sm text-[var(--color-text-secondary)] sm:col-span-2">
-                            이 음식의 예정 식사는 {dateLabel(t.requiredThrough)}까지예요. 입력한
-                            기한 안의 식사에만 예약하며, 보관 가능 기간을 자동으로 보장하지
-                            않습니다.
-                          </p>
-                        </form>
-                      )}
-                    </details>
-                  )}
-                </div>
+                </details>
               ))}
             </div>
           </section>
@@ -1266,7 +1574,8 @@ export function MealPlannerClient({
                           className={field}
                           type="number"
                           name="servings"
-                          min="1"
+                          min="0.1"
+                          step="0.1"
                           max="100"
                           defaultValue="1"
                           required
@@ -1357,7 +1666,8 @@ export function MealPlannerClient({
                     type="number"
                     className={field}
                     defaultValue="1"
-                    min="1"
+                    min="0.1"
+                    step="0.1"
                     max="100"
                     required
                   />
@@ -1430,7 +1740,7 @@ function NutritionPanel({
   const reference = nutritionReference(age);
   return (
     <section className={panel}>
-      <details open>
+      <details>
         <summary className="cursor-pointer py-1 text-lg font-semibold">영양 체크</summary>
         <div className="mt-4 space-y-4">
           <div className="flex gap-2">

@@ -40,6 +40,11 @@ export function getKstUsageDate(now: Date = new Date()): {
  * (정렬된 재료 ID 조합 + 카테고리 + 연령 단계 + 간 단계 + 제외 알레르기·식재료 집합)
  */
 export function buildGenerationCacheKey(params: {
+  scope?: string;
+  maxMissing?: number;
+  dishType?: string;
+  freshKey?: string;
+  assumeBasicPantry?: boolean;
   category: RecipeCategory;
   ageStage: AgeStage;
   saltLevel: SaltLevel;
@@ -48,7 +53,12 @@ export function buildGenerationCacheKey(params: {
   excludedIngredientIds: readonly string[];
 }): string {
   const canonical = JSON.stringify({
-    v: 1,
+    v: 2,
+    scope: params.scope ?? "SHOPPING",
+    maxMissing: params.maxMissing ?? 3,
+    dishType: params.dishType ?? "ANY",
+    freshKey: params.freshKey,
+    assumeBasicPantry: params.assumeBasicPantry ?? true,
     category: params.category,
     ageStage: params.ageStage,
     saltLevel: params.saltLevel,

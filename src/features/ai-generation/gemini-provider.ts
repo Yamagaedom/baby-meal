@@ -35,6 +35,7 @@ const GEMINI_JSON_SCHEMA_INSTRUCTION = `
   "name": "소고기감자진밥",
   "summary": "부드러운 감자와 소고기로 영양을 채운 한그릇 유아식",
   "category": "MEAL",
+  "dishType": "ONE_BOWL",
   "mealCategories": ["LUNCH", "DINNER"],
   "ageStages": [1, 2],
   "saltLevel": "NONE",

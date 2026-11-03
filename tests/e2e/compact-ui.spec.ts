@@ -53,8 +53,10 @@ test("compact UI: more results, disclosures, mobile and desktop", async ({ page 
     await page.goto(href!);
     await expect(page.getByRole("heading", { name: "재료", exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: "조리 순서", exact: true })).toBeVisible();
+    const portions=page.getByRole("group",{name:"조리 분량 선택"});
+    const previous=Number((await portions.innerText()).match(/(\d+)회분/)![1]);
     await page.getByRole("button", { name: "조리 분량 1회분 늘리기" }).click();
-    await expect(page.getByRole("group", { name: "조리 분량 선택" })).toContainText("3회분");
+    await expect(portions).toContainText(`${previous+1}회분`);
     await page.getByTestId("open-cooking-mode-btn").click();
     await expect(page.getByTestId("cooking-mode-dialog")).toBeVisible();
     await page.getByRole("button", { name: "조리 모드 닫기" }).click();
