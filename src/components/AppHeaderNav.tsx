@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import type { BabyProfileView } from "@/features/profile";
 import { SALT_LEVEL_LABELS } from "@/features/recipe/constants-client";
@@ -23,7 +24,6 @@ export const APP_NAV_ITEMS: readonly {
   { href: "/", label: "홈", shortLabel: "홈", icon: "home" },
   { href: "/meal-plan", label: "식단", shortLabel: "식단", icon: "calendar" },
   { href: "/recipes", label: "레시피", shortLabel: "레시피", icon: "book" },
-  { href: "/ingredients", label: "재료로 찾기", shortLabel: "재료", icon: "ingredients" },
   { href: "/logs", label: "기록", shortLabel: "기록", icon: "logs" },
   { href: "/my", label: "마이", shortLabel: "마이", icon: "profile" },
 ] as const;
@@ -37,23 +37,24 @@ export const BOTTOM_NAV_ITEMS: readonly {
   { href: "/", label: "홈", shortLabel: "홈", icon: "home" },
   { href: "/meal-plan", label: "식단", shortLabel: "식단", icon: "calendar" },
   { href: "/recipes", label: "레시피", shortLabel: "레시피", icon: "book" },
-  { href: "/ingredients", label: "재료로 찾기", shortLabel: "재료", icon: "ingredients" },
   { href: "/my", label: "마이", shortLabel: "마이", icon: "profile" },
 ] as const;
 
 function isNavActive(pathname: string, href: string) {
-  if (href === "/recipes" && pathname === "/recipes") return true;
-  if (href === "/ingredients" && pathname.startsWith("/ingredients")) return true;
+  if (href === "/recipes") {
+    return pathname.startsWith("/recipes") || pathname.startsWith("/ingredients");
+  }
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
 }
 
 /**
- * 상단 헤더와 데스크톱 메뉴. 작은 화면에서는 하단 네비게이션 바(BottomNav)를 사용합니다.
+ * 1줄 컴팩트 상단 헤더와 데스크톱 메뉴. 모바일·태블릿에서는 하단 4탭(BottomNav)을 사용합니다.
  */
 export function AppHeaderNav({ babies, activeBaby }: AppHeaderNavProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [switching, setSwitching] = useState(false);
+  const [babySheetOpen, setBabySheetOpen] = useState(false);
 
   // 활성 아기 ID 동기화 및 알레르기(확정·의심·직접 식재료)와 충돌하는 오프라인 즐겨찾기 캐시 자동 정화
   useEffect(() => {
@@ -81,6 +82,10 @@ export function AppHeaderNav({ babies, activeBaby }: AppHeaderNavProps) {
   }, [activeBaby]);
 
   async function handleSwitchBaby(nextBabyId: string) {
+    if (nextBabyId === activeBaby?.id) {
+      setBabySheetOpen(false);
+      return;
+    }
     setSwitching(true);
     try {
       const res = await fetch("/api/babies/active", {
@@ -89,6 +94,7 @@ export function AppHeaderNav({ babies, activeBaby }: AppHeaderNavProps) {
         body: JSON.stringify({ babyId: nextBabyId }),
       });
       if (res.ok) {
+        setBabySheetOpen(false);
         router.refresh();
       }
     } finally {
@@ -96,17 +102,38 @@ export function AppHeaderNav({ babies, activeBaby }: AppHeaderNavProps) {
     }
   }
 
+  const logsActive = pathname.startsWith("/logs");
+
   return (
     <header className="sticky top-0 z-30 border-b border-[var(--color-border)] bg-white/95 backdrop-blur-md">
-      <div className="mx-auto flex max-w-[1120px] min-w-0 flex-wrap items-center gap-x-6 gap-y-1 px-5 py-2 sm:px-8 lg:px-12">
+      <div className="mx-auto flex max-w-[1120px] min-w-0 items-center justify-between gap-2 px-4 py-1.5 sm:px-8 lg:px-12">
+        {/* 모바일: 아기 프로필 칩 (없으면 브랜드 링크) / 데스크톱: 브랜드 링크 */}
         <Link
           href="/"
-          className="inline-flex min-h-11 min-w-0 items-center text-base font-bold tracking-tight text-[var(--color-text)] hover:opacity-90"
+          className={`${
+            activeBaby ? "hidden lg:inline-flex" : "inline-flex"
+          } min-h-11 min-w-0 shrink-0 items-center text-base font-bold tracking-tight text-[var(--color-text)] hover:opacity-90`}
         >
           <span className="mr-2 text-sm font-black text-[var(--color-primary)]">●</span>
-          <span>오늘 뭐 먹지, 아가?</span>
+          <span className="truncate">오늘 뭐 먹지, 아가?</span>
         </Link>
-        <nav aria-label="주 메뉴" className="hidden flex-1 lg:block">
+
+        {activeBaby && (
+          <button
+            type="button"
+            disabled={switching}
+            onClick={() => setBabySheetOpen(true)}
+            className="inline-flex min-h-11 min-w-0 items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-muted)] px-3.5 py-1.5 text-xs font-semibold text-[var(--color-text)] transition-colors hover:border-[var(--color-border-strong)] lg:hidden"
+          >
+            <span className="h-2 w-2 shrink-0 rounded-full bg-[var(--color-primary)]" />
+            <span className="truncate">
+              {activeBaby.displayName} · {activeBaby.currentAgeMonth}개월
+            </span>
+            <Icon name="chevronDown" width={14} height={14} className="shrink-0" />
+          </button>
+        )}
+
+        <nav aria-label="주 메뉴" className="hidden flex-1 lg:block lg:px-4">
           <ul className="flex flex-wrap items-center gap-1">
             {APP_NAV_ITEMS.map((item) => {
               const active = isNavActive(pathname, item.href);
@@ -115,7 +142,7 @@ export function AppHeaderNav({ babies, activeBaby }: AppHeaderNavProps) {
                   <Link
                     href={item.href}
                     aria-current={active ? "page" : undefined}
-                    className={`inline-flex min-h-11 items-center rounded-lg px-3.5 text-sm font-semibold transition-all ${
+                    className={`inline-flex min-h-11 items-center rounded-md px-3.5 text-sm font-semibold transition-colors ${
                       active
                         ? "bg-[var(--color-primary-soft)] text-[var(--color-primary)]"
                         : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-muted)] hover:text-[var(--color-text)]"
@@ -128,29 +155,40 @@ export function AppHeaderNav({ babies, activeBaby }: AppHeaderNavProps) {
             })}
           </ul>
         </nav>
-        {babies.length > 0 && activeBaby && (
-          <div className="ml-auto max-w-full min-w-0">
-            <label htmlFor="active-baby-select" className="sr-only">
-              현재 아기 프로필 선택
-            </label>
-            <select
-              id="active-baby-select"
-              aria-label="현재 아기 프로필 선택"
+
+        <div className="ml-auto flex shrink-0 items-center gap-1.5">
+          {/* 모바일 상단 우측 기록 바로가기 (4탭 유지하면서도 기록 1탭 접근 보장) */}
+          <Link
+            href="/logs"
+            aria-current={logsActive ? "page" : undefined}
+            className={`inline-flex min-h-11 items-center gap-1.5 rounded-md px-2.5 text-xs font-semibold transition-colors lg:hidden ${
+              logsActive
+                ? "bg-[var(--color-primary-soft)] text-[var(--color-primary)]"
+                : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-muted)] hover:text-[var(--color-text)]"
+            }`}
+          >
+            <Icon name="logs" width={17} height={17} />
+            <span>기록</span>
+          </Link>
+
+          {/* 데스크톱 아기 전환 칩 */}
+          {babies.length > 0 && activeBaby && (
+            <button
+              type="button"
               disabled={switching}
-              value={activeBaby.id}
-              onChange={(e) => void handleSwitchBaby(e.target.value)}
-              className="min-h-11 max-w-full rounded-lg border border-[var(--color-border)] bg-white px-3 text-xs font-semibold text-[var(--color-text)] shadow-xs transition-colors hover:border-[var(--color-border-strong)] focus:border-[var(--color-primary)] focus:outline-none"
+              onClick={() => setBabySheetOpen(true)}
+              className="hidden min-h-11 max-w-xs items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-muted)] px-3.5 text-xs font-semibold text-[var(--color-text)] transition-colors hover:border-[var(--color-border-strong)] lg:inline-flex"
             >
-              {babies.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.displayName} ({b.currentAgeMonth}개월 · {b.ageStageLabel} ·{" "}
-                  {SALT_LEVEL_LABELS[b.saltLevel]})
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+              <span className="truncate">
+                {activeBaby.displayName} · {activeBaby.currentAgeMonth}개월 ·{" "}
+                {SALT_LEVEL_LABELS[activeBaby.saltLevel]}
+              </span>
+              <Icon name="chevronDown" width={14} height={14} className="shrink-0" />
+            </button>
+          )}
+        </div>
       </div>
+
       {activeBaby?.isOverMaxAge && activeBaby.overMaxAgeNotice && (
         <div
           role="status"
@@ -159,13 +197,63 @@ export function AppHeaderNav({ babies, activeBaby }: AppHeaderNavProps) {
           {activeBaby.overMaxAgeNotice}
         </div>
       )}
+
+      <BottomSheet
+        open={babySheetOpen}
+        onClose={() => setBabySheetOpen(false)}
+        title="아기 프로필 선택"
+        footer={
+          <Link
+            href="/my"
+            onClick={() => setBabySheetOpen(false)}
+            className="inline-flex min-h-11 w-full items-center justify-center rounded-md border border-[var(--color-border-strong)] bg-white px-4 text-sm font-semibold text-[var(--color-text)] hover:bg-[var(--color-surface-muted)]"
+          >
+            프로필 수정 · 추가하기
+          </Link>
+        }
+      >
+        <ul className="space-y-2">
+          {babies.map((b) => {
+            const selected = b.id === activeBaby?.id;
+            return (
+              <li key={b.id}>
+                <button
+                  type="button"
+                  disabled={switching}
+                  onClick={() => void handleSwitchBaby(b.id)}
+                  className={`flex min-h-12 w-full items-center justify-between gap-3 rounded-lg border px-4 py-3 text-left transition-colors ${
+                    selected
+                      ? "border-[var(--color-primary)] bg-[var(--color-primary-soft)] text-[var(--color-primary-text)]"
+                      : "border-[var(--color-border)] bg-white text-[var(--color-text)] hover:bg-[var(--color-surface-muted)]"
+                  }`}
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-bold">{b.displayName}</p>
+                    <p className="mt-0.5 text-xs text-[var(--color-text-secondary)]">
+                      {b.currentAgeMonth}개월 · {b.ageStageLabel} · {SALT_LEVEL_LABELS[b.saltLevel]}
+                    </p>
+                  </div>
+                  {selected && (
+                    <Icon
+                      name="check"
+                      width={18}
+                      height={18}
+                      className="shrink-0 text-[var(--color-primary)]"
+                    />
+                  )}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </BottomSheet>
     </header>
   );
 }
 
 /**
- * 모바일·태블릿 한 손 조작 하단 고정 5탭 내비게이션 바 (< 1024px)
- * 노션 UI 레퍼런스: Bottom Navigation / Tab Bar (하단 탭바)
+ * 모바일·태블릿 한 손 조작 하단 고정 4탭 내비게이션 바 (< 1024px)
+ * 홈 · 식단 · 레시피(메뉴/재료 통합) · 마이
  */
 export function BottomNav() {
   const pathname = usePathname();
@@ -175,7 +263,7 @@ export function BottomNav() {
       aria-label="하단 주 메뉴"
       className="fixed right-0 bottom-0 left-0 z-40 border-t border-[var(--color-border)] bg-white/95 px-2 pt-1.5 pb-[max(env(safe-area-inset-bottom),10px)] shadow-[0_-4px_16px_rgba(0,0,0,0.04)] backdrop-blur-md lg:hidden"
     >
-      <ul className="mx-auto grid max-w-lg grid-cols-5 gap-1">
+      <ul className="mx-auto grid max-w-lg grid-cols-4 gap-1">
         {BOTTOM_NAV_ITEMS.map((item) => {
           const active = isNavActive(pathname, item.href);
           return (
@@ -183,7 +271,7 @@ export function BottomNav() {
               <Link
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                aria-label={item.href === "/ingredients" ? "재료 (재료로 찾기)" : item.label}
+                aria-label={item.label}
                 className={`group flex min-h-[52px] w-full min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-1 transition-all ${
                   active
                     ? "text-[var(--color-primary)]"
@@ -200,7 +288,7 @@ export function BottomNav() {
                   <Icon name={item.icon} width={20} height={20} />
                 </div>
                 <span
-                  className={`text-xs leading-tight transition-colors ${
+                  className={`truncate text-xs leading-tight transition-colors ${
                     active ? "font-bold text-[var(--color-primary)]" : "font-medium"
                   }`}
                 >

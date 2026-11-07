@@ -32,16 +32,9 @@ test("compact UI: more results, disclosures, mobile and desktop", async ({ page 
     const first = cards.first();
     await expect(first.getByText("주요 재료:", { exact: false })).toBeVisible();
     await expect(first.getByText(/현재 아기 월령보다 높은/)).toHaveCount(0);
-    const allergenCandidate = cards
-      .filter({ has: page.getByRole("button", { name: "알레르기 보기" }) })
-      .first();
-    if (await allergenCandidate.count()) {
-      const allergenCard = page.getByTestId((await allergenCandidate.getAttribute("data-testid"))!);
-      await expect(allergenCard.getByText(/알레르기 유발 성분:/)).toHaveCount(0);
-      await allergenCard.getByRole("button", { name: "알레르기 보기" }).click();
-      await expect(allergenCard.getByText(/알레르기 유발 성분:/)).toBeVisible();
-      await allergenCard.getByRole("button", { name: "알레르기 접기" }).click();
-      await expect(allergenCard.getByText(/알레르기 유발 성분:/)).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "알레르기 보기" })).toHaveCount(0);
+    if (items.some((item: { allergens?: string[] }) => (item.allergens?.length ?? 0) > 0)) {
+      await expect(cards.filter({ hasText: "포함:" }).first()).toBeVisible();
     }
     expect(
       items.some(
@@ -53,10 +46,10 @@ test("compact UI: more results, disclosures, mobile and desktop", async ({ page 
     await page.goto(href!);
     await expect(page.getByRole("heading", { name: "재료", exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: "조리 순서", exact: true })).toBeVisible();
-    const portions=page.getByRole("group",{name:"조리 분량 선택"});
-    const previous=Number((await portions.innerText()).match(/(\d+)회분/)![1]);
+    const portions = page.getByRole("group", { name: "조리 분량 선택" });
+    const previous = Number((await portions.innerText()).match(/(\d+)회분/)![1]);
     await page.getByRole("button", { name: "조리 분량 1회분 늘리기" }).click();
-    await expect(portions).toContainText(`${previous+1}회분`);
+    await expect(portions).toContainText(`${previous + 1}회분`);
     await page.getByTestId("open-cooking-mode-btn").click();
     await expect(page.getByTestId("cooking-mode-dialog")).toBeVisible();
     await page.getByRole("button", { name: "조리 모드 닫기" }).click();
@@ -66,17 +59,15 @@ test("compact UI: more results, disclosures, mobile and desktop", async ({ page 
     await expect(nutrition.getByRole("heading", { name: "영양 성분 추정" })).toBeVisible();
     const reviews = page.getByTestId("recipe-community-section");
     await expect(reviews).not.toHaveAttribute("open", "");
+    await expect(reviews.getByRole("button", { name: "먹었어요 저장" })).toBeHidden();
     await page
       .getByRole("link", { name: /평점 없음|후기/ })
       .first()
       .click();
     await expect(reviews).toHaveAttribute("open", "");
-    const log = page.locator("#meal-log-form");
-    await expect(log.getByRole("button", { name: "먹었어요 저장" })).toBeHidden();
-    await log.locator("summary").click();
-    await expect(log.getByRole("button", { name: "먹었어요 저장" })).toBeVisible();
-    await log.locator("summary").press("Enter");
-    await expect(log.getByRole("button", { name: "먹었어요 저장" })).toBeHidden();
+    await expect(reviews.getByRole("button", { name: "먹었어요 저장" })).toBeVisible();
+    await reviews.locator("summary").press("Enter");
+    await expect(reviews.getByRole("button", { name: "먹었어요 저장" })).toBeHidden();
     await page.screenshot({ path: testInfo.outputPath("detail-mobile.png"), fullPage: true });
     for (const route of ["/", "/recipes", "/ingredients", "/meal-plan", "/logs", "/my"]) {
       await page.goto(route);

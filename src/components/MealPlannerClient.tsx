@@ -259,17 +259,6 @@ export function MealPlannerClient({
           <div className="mt-5 space-y-6">
             {step === 0 && (
               <>
-                <label className="block space-y-2">
-                  <span>시작일</span>
-                  <input
-                    className={field}
-                    type="date"
-                    value={prefs.startDate}
-                    min={today}
-                    max={addDays(today, 90)}
-                    onChange={(e) => update("startDate", e.target.value)}
-                  />
-                </label>
                 <fieldset>
                   <legend className="mb-3 font-medium">어떤 끼니를 준비할까요?</legend>
                   <div className="flex flex-wrap gap-2">
@@ -313,114 +302,140 @@ export function MealPlannerClient({
                       ))}
                     </div>
                   )}
+                  <p className="mt-2.5 text-xs text-[var(--color-text-secondary)]">
+                    기본 적용: {dateLabel(prefs.startDate)} 시작 · 간식{" "}
+                    {prefs.snackCount ? `하루 ${prefs.snackCount}번` : "없음"}
+                  </p>
                 </fieldset>
-                <fieldset className="space-y-3">
-                  <legend className="font-medium">평소 한 끼를 어떻게 차리나요?</legend>
-                  {(["BREAKFAST", "LUNCH", "DINNER"] as const).map((t) => (
-                    <label key={t} className="flex items-center justify-between gap-3 text-sm">
-                      <span>{mealLabels[t]}</span>
-                      <select
+
+                <details className="disclosure" data-testid="wizard-step1-details">
+                  <summary>끼니 유형 · 간식 · 시작일 세부 설정</summary>
+                  <div className="disclosure-body space-y-5">
+                    <label className="block space-y-2">
+                      <span>시작일</span>
+                      <input
                         className={field}
-                        aria-label={`${mealLabels[t]} 식단 유형`}
-                        value={prefs.mealStyles[t]}
-                        onChange={(e) =>
-                          update("mealStyles", {
-                            ...prefs.mealStyles,
-                            [t]: e.target.value as MealStyle,
-                          })
-                        }
-                      >
-                        {Object.entries(MEAL_STYLES).map(([v, l]) => (
-                          <option key={v} value={v}>
-                            {l}
-                          </option>
-                        ))}
-                      </select>
+                        type="date"
+                        value={prefs.startDate}
+                        min={today}
+                        max={addDays(today, 90)}
+                        onChange={(e) => update("startDate", e.target.value)}
+                      />
                     </label>
-                  ))}
-                  {Object.values(prefs.mealStyles).includes("RICE_SIDES") && (
-                    <div className="space-y-3 border-l-2 border-[var(--color-border)] pl-3">
-                      <label className="block text-sm">
-                        밥을 제외한 반찬 수{" "}
-                        <select
-                          aria-label="반찬 수"
-                          className={field}
-                          value={prefs.sideCount}
-                          onChange={(e) => update("sideCount", Number(e.target.value))}
-                        >
-                          <option value={3}>3개</option>
-                          <option value={4}>4개</option>
-                        </select>
-                      </label>
-                      <label className="flex min-h-11 items-center gap-2 text-sm">
-                        <input
-                          type="checkbox"
-                          checked={prefs.requireMeat}
-                          onChange={(e) => update("requireMeat", e.target.checked)}
-                        />
-                        고기 반찬 1개 이상 포함
-                      </label>
-                      <label className="block text-sm">
-                        반찬별 먹을 양 (레시피 1회분 기준)
-                        <input
-                          className={field}
-                          aria-label="반찬별 먹을 회분"
-                          type="number"
-                          min="0.1"
-                          max="1"
-                          step="0.1"
-                          value={prefs.sidePortion}
-                          onChange={(e) => update("sidePortion", Number(e.target.value))}
-                        />
-                      </label>
-                      <p className="text-xs">
-                        0.5는 해당 반찬 레시피 1회분의 절반입니다. 아기에게 맞게 조절하세요. 밥은
-                        기본 1회분이며 메뉴별 변경도 가능해요.
-                      </p>
-                    </div>
-                  )}
-                  <details className="disclosure">
-                    <summary>유형별 메뉴가 얼마나 있나요?</summary>
-                    <div className="disclosure-body space-y-1 text-sm">
-                      {(["SOUP", "ONE_BOWL", "SIDE", "STAPLE"] as const).map((type) => (
-                        <p key={type}>
-                          {
-                            { SOUP: "스프류", ONE_BOWL: "한그릇", SIDE: "반찬", STAPLE: "밥·주식" }[
-                              type
-                            ]
-                          }
-                          : {data.recipes.filter((r) => r.verified && r.dishType === type).length}개
-                        </p>
+                    <fieldset className="space-y-3">
+                      <legend className="font-medium">평소 한 끼를 어떻게 차리나요?</legend>
+                      {(["BREAKFAST", "LUNCH", "DINNER"] as const).map((t) => (
+                        <label key={t} className="flex items-center justify-between gap-3 text-sm">
+                          <span>{mealLabels[t]}</span>
+                          <select
+                            className={field}
+                            aria-label={`${mealLabels[t]} 식단 유형`}
+                            value={prefs.mealStyles[t]}
+                            onChange={(e) =>
+                              update("mealStyles", {
+                                ...prefs.mealStyles,
+                                [t]: e.target.value as MealStyle,
+                              })
+                            }
+                          >
+                            {Object.entries(MEAL_STYLES).map(([v, l]) => (
+                              <option key={v} value={v}>
+                                {l}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
                       ))}
-                      <p>
-                        현재 아기의 월령·간·알레르기와 출처 확인을 적용한 개수입니다.
-                        조리시간·도구·재료 조건을 추가하면 후보가 줄어들 수 있어요. 맞는 후보가
-                        없으면 다른 유형으로 자동 대체하지 않습니다.
+                      {Object.values(prefs.mealStyles).includes("RICE_SIDES") && (
+                        <div className="space-y-3 border-l-2 border-[var(--color-border)] pl-3">
+                          <label className="block text-sm">
+                            밥을 제외한 반찬 수{" "}
+                            <select
+                              aria-label="반찬 수"
+                              className={field}
+                              value={prefs.sideCount}
+                              onChange={(e) => update("sideCount", Number(e.target.value))}
+                            >
+                              <option value={3}>3개</option>
+                              <option value={4}>4개</option>
+                            </select>
+                          </label>
+                          <label className="flex min-h-11 items-center gap-2 text-sm">
+                            <input
+                              type="checkbox"
+                              checked={prefs.requireMeat}
+                              onChange={(e) => update("requireMeat", e.target.checked)}
+                            />
+                            고기 반찬 1개 이상 포함
+                          </label>
+                          <label className="block text-sm">
+                            반찬별 먹을 양 (레시피 1회분 기준)
+                            <input
+                              className={field}
+                              aria-label="반찬별 먹을 회분"
+                              type="number"
+                              min="0.1"
+                              max="1"
+                              step="0.1"
+                              value={prefs.sidePortion}
+                              onChange={(e) => update("sidePortion", Number(e.target.value))}
+                            />
+                          </label>
+                          <p className="text-xs">
+                            0.5는 해당 반찬 레시피 1회분의 절반입니다. 아기에게 맞게 조절하세요.
+                            밥은 기본 1회분이며 메뉴별 변경도 가능해요.
+                          </p>
+                        </div>
+                      )}
+                      <details className="disclosure">
+                        <summary>유형별 메뉴가 얼마나 있나요?</summary>
+                        <div className="disclosure-body space-y-1 text-sm">
+                          {(["SOUP", "ONE_BOWL", "SIDE", "STAPLE"] as const).map((type) => (
+                            <p key={type}>
+                              {
+                                {
+                                  SOUP: "스프류",
+                                  ONE_BOWL: "한그릇",
+                                  SIDE: "반찬",
+                                  STAPLE: "밥·주식",
+                                }[type]
+                              }
+                              :{" "}
+                              {data.recipes.filter((r) => r.verified && r.dishType === type).length}
+                              개
+                            </p>
+                          ))}
+                          <p>
+                            현재 아기의 월령·간·알레르기와 출처 확인을 적용한 개수입니다.
+                            조리시간·도구·재료 조건을 추가하면 후보가 줄어들 수 있어요. 맞는 후보가
+                            없으면 다른 유형으로 자동 대체하지 않습니다.
+                          </p>
+                        </div>
+                      </details>
+                      <p className="text-xs text-[var(--color-text-secondary)]">
+                        다음 식단에도 이 설정을 사용해요. 스프만 선택해도 하루 영양 충족을 보장하지
+                        않으니 영양 체크와 다른 끼니를 함께 확인하세요.
                       </p>
-                    </div>
-                  </details>
-                  <p className="text-xs text-[var(--color-text-secondary)]">
-                    다음 식단에도 이 설정을 사용해요. 스프만 선택해도 하루 영양 충족을 보장하지
-                    않으니 영양 체크와 다른 끼니를 함께 확인하세요.
-                  </p>
-                </fieldset>
-                <fieldset>
-                  <legend className="mb-3 font-medium">간식도 넣을까요?</legend>
-                  <div className="flex gap-2">
-                    {[0, 1, 2].map((n) => (
-                      <Choice
-                        key={n}
-                        active={prefs.snackCount === n}
-                        onClick={() => update("snackCount", n)}
-                      >
-                        {n ? `하루 ${n}번` : "없음"}
-                      </Choice>
-                    ))}
+                    </fieldset>
+                    <fieldset>
+                      <legend className="mb-3 font-medium">간식도 넣을까요?</legend>
+                      <div className="flex gap-2">
+                        {[0, 1, 2].map((n) => (
+                          <Choice
+                            key={n}
+                            active={prefs.snackCount === n}
+                            onClick={() => update("snackCount", n)}
+                          >
+                            {n ? `하루 ${n}번` : "없음"}
+                          </Choice>
+                        ))}
+                      </div>
+                      <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+                        횟수는 준비할 일정에 맞춰 선택해 주세요.
+                      </p>
+                    </fieldset>
                   </div>
-                  <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-                    횟수는 준비할 일정에 맞춰 선택해 주세요.
-                  </p>
-                </fieldset>
+                </details>
               </>
             )}
             {step === 1 && (
@@ -694,7 +709,7 @@ export function MealPlannerClient({
                 </details>
               </>
             )}
-            <div className="flex flex-wrap justify-between gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <Button
                 variant="ghost"
                 disabled={busy}
@@ -702,25 +717,43 @@ export function MealPlannerClient({
               >
                 {step ? "이전" : "닫기"}
               </Button>
-              {step < 2 ? (
-                <Button onClick={() => setStep(step + 1)} disabled={!prefs.startDate}>
-                  다음
-                </Button>
-              ) : (
-                <Button
-                  disabled={busy}
-                  onClick={() =>
-                    run(
-                      "/api/meal-plans",
-                      "POST",
-                      { preferences: prefs },
-                      "7일 식단 초안을 만들었습니다. 빈 메뉴와 영양 정보를 확인해 주세요.",
-                    )
-                  }
-                >
-                  식단 초안 만들기
-                </Button>
-              )}
+              <div className="flex flex-wrap items-center gap-2">
+                {step === 0 && (
+                  <Button
+                    variant="outline"
+                    disabled={busy || !prefs.startDate}
+                    onClick={() =>
+                      run(
+                        "/api/meal-plans",
+                        "POST",
+                        { preferences: prefs },
+                        "기본 설정으로 7일 식단 초안을 만들었습니다. 메뉴와 영양 정보를 확인해 주세요.",
+                      )
+                    }
+                  >
+                    바로 식단 만들기
+                  </Button>
+                )}
+                {step < 2 ? (
+                  <Button onClick={() => setStep(step + 1)} disabled={!prefs.startDate}>
+                    다음
+                  </Button>
+                ) : (
+                  <Button
+                    disabled={busy}
+                    onClick={() =>
+                      run(
+                        "/api/meal-plans",
+                        "POST",
+                        { preferences: prefs },
+                        "7일 식단 초안을 만들었습니다. 빈 메뉴와 영양 정보를 확인해 주세요.",
+                      )
+                    }
+                  >
+                    식단 초안 만들기
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </section>

@@ -10,13 +10,7 @@ export interface BottomSheetProps {
   footer?: ReactNode;
 }
 
-export function BottomSheet({
-  open,
-  onClose,
-  title,
-  children,
-  footer,
-}: BottomSheetProps) {
+export function BottomSheet({ open, onClose, title, children, footer }: BottomSheetProps) {
   useEffect(() => {
     if (!open) return;
 
@@ -42,7 +36,7 @@ export function BottomSheet({
     <div className="fixed inset-0 z-50 flex flex-col justify-end">
       {/* 백드롭 오버레이 (딤) */}
       <div
-        className="fixed inset-0 bg-black/45 backdrop-blur-[2px] transition-opacity animate-fadeIn"
+        className="animate-fadeIn fixed inset-0 bg-black/45 backdrop-blur-[2px] transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -52,7 +46,7 @@ export function BottomSheet({
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? "bottom-sheet-title" : undefined}
-        className="relative z-10 flex max-h-[85vh] w-full flex-col rounded-t-2xl border-t border-[var(--color-border)] bg-white shadow-2xl transition-transform animate-slideUp"
+        className="animate-slideUp relative z-10 flex max-h-[85vh] w-full flex-col rounded-t-2xl border-t border-[var(--color-border)] bg-white shadow-2xl transition-transform"
       >
         {/* 드래그 핸들 바 */}
         <div className="flex w-full justify-center pt-3 pb-1" onClick={onClose}>
@@ -72,9 +66,18 @@ export function BottomSheet({
             type="button"
             onClick={onClose}
             aria-label="닫기"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-muted)] hover:text-[var(--color-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-muted)] hover:text-[var(--color-text)] focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:outline-none"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -82,9 +85,7 @@ export function BottomSheet({
         </div>
 
         {/* 본문 스크롤 영역 */}
-        <div className="flex-1 overflow-y-auto px-5 py-4">
-          {children}
-        </div>
+        <div className="flex-1 overflow-y-auto px-5 py-4">{children}</div>
 
         {/* 푸터 영역 (액션 버튼) */}
         {footer && (

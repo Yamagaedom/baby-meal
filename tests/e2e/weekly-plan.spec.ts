@@ -23,6 +23,7 @@ test("weekly meal planning: questionnaire → confirm → cook → serve → inv
     await page.getByRole("button", { name: "직접 선택", exact: true }).click();
     await page.getByRole("button", { name: "아침", exact: true }).click();
     await page.getByRole("button", { name: "점심", exact: true }).click();
+    await page.getByTestId("wizard-step1-details").locator(":scope > summary").click();
     await page.getByRole("button", { name: "없음", exact: true }).click();
     await page.getByRole("button", { name: "다음", exact: true }).click();
     await page.getByRole("button", { name: "다음", exact: true }).click();

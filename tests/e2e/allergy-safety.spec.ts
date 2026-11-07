@@ -67,7 +67,7 @@ test.describe("알레르기 절대 차단 안전 정책 E2E (REC-02, PRF-03, ING
       expect(eggRecipeNames.has(title.trim())).toBe(false);
     }
 
-    await page.getByLabel("즐겨찾기만 보기").check();
+    await page.getByRole("button", { name: "즐겨찾기", exact: true }).click();
     await expect(page.getByRole("link", { name: targetEggRecipe.name })).toHaveCount(0);
 
     const favBlockedRes = await page.request.post("/api/favorites", {
@@ -76,10 +76,7 @@ test.describe("알레르기 절대 차단 안전 정책 E2E (REC-02, PRF-03, ING
     expect(favBlockedRes.status()).toBe(403);
 
     // 5. 재료로 찾기에서 인기 칩에 '달걀'이 제외되고, 두부 등 다른 재료 검색 결과에도 달걀 포함 레시피가 전혀 나오지 않음
-    await page
-      .getByRole("navigation", { name: "주 메뉴" })
-      .getByRole("link", { name: "재료로 찾기", exact: true })
-      .click();
+    await page.getByRole("link", { name: "재료로 찾기", exact: true }).first().click();
     await expect(page).toHaveURL(/\/ingredients$/);
     await expect(page.getByRole("button", { name: "달걀", exact: true })).toHaveCount(0);
 

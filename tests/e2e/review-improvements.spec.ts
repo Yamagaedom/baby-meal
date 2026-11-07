@@ -34,7 +34,11 @@ test("review flow: full ingredient browse, precise match, 3-day meals with sides
     const soft = ingredients.find((i: { name: string }) => i.name === "순두부");
     expect(tofu).toBeTruthy();
     expect(soft).toBeTruthy();
-    expect((await page.request.post('/api/ingredient-requests',{data:{name:'검증용 재료 요청'}})).status()).toBe(200);
+    expect(
+      (
+        await page.request.post("/api/ingredient-requests", { data: { name: "검증용 재료 요청" } })
+      ).status(),
+    ).toBe(200);
     const strict = await page.request.post("/api/recommend/by-ingredients", {
       data: { ingredientIds: [tofu.id], scope: "ON_HAND", assumeBasicPantry: true, maxMissing: 0 },
     });
@@ -47,6 +51,7 @@ test("review flow: full ingredient browse, precise match, 3-day meals with sides
     expect(broad.items.length).toBeGreaterThan((await strict.json()).items.length);
     expect(broad.diagnostics.safe).toBeGreaterThan(0);
     await page.goto("/meal-plan");
+    await page.getByTestId("wizard-step1-details").locator(":scope > summary").click();
     await page.getByLabel("아침 식단 유형").selectOption("SOUP");
     await page.getByLabel("점심 식단 유형").selectOption("ONE_BOWL");
     await page.getByLabel("저녁 식단 유형").selectOption("RICE_SIDES");
@@ -139,6 +144,7 @@ test("review flow: full ingredient browse, precise match, 3-day meals with sides
     ).toBe(true);
     await page.reload();
     await page.getByRole("button", { name: "새 식단 짜기", exact: true }).click();
+    await page.getByTestId("wizard-step1-details").locator(":scope > summary").click();
     await expect(page.getByLabel("저녁 식단 유형")).toHaveValue("RICE_SIDES");
     expect(errors).toEqual([]);
   } finally {

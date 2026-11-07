@@ -41,8 +41,17 @@ test("UI 검토서 회귀: 카드·필터·냉장고 피드백·상세 고지·�
   }
   expect(await cards.first().evaluate((el) => getComputedStyle(el).borderRadius)).toBe("12px");
   const favorite = cards.first().getByRole("button", { name: /즐겨찾기 추가/ });
-  const recipeHref = await cards.first().locator("h3 a").getAttribute("href");
-  const recipeName = await cards.first().locator("h3").innerText();
+  let recipeHref: string | null = null;
+  let recipeName = "";
+  if ((await cards.filter({ hasText: "AI 추천" }).count()) > 0) {
+    const aiCard = cards.filter({ hasText: "AI 추천" }).first();
+    recipeHref = await aiCard.locator("h3 a").getAttribute("href");
+    recipeName = await aiCard.locator("h3").innerText();
+  } else {
+    const aiList = (await (await page.request.get("/api/recipes?sourceType=AI")).json()).items;
+    recipeHref = `/recipes/${aiList[0].id}`;
+    recipeName = aiList[0].name;
+  }
   await favorite.click();
   await expect(cards.first().getByRole("button", { name: /즐겨찾기 해제/ })).toHaveAttribute(
     "aria-pressed",
@@ -60,14 +69,17 @@ test("UI 검토서 회귀: 카드·필터·냉장고 피드백·상세 고지·�
 
   await page.goto("/recipes");
   await expect(page.getByLabel("연령 단계", { exact: true })).toBeHidden();
-  await page.getByRole("button", { name: "필터 더보기", exact: true }).click();
+  await page.getByRole("button", { name: /^필터/ }).click();
   await page.getByLabel("연령 단계", { exact: true }).selectOption("2");
-  await page.getByRole("button", { name: /추가 필터 접기/ }).click();
-  await expect(page.getByRole("button", { name: "필터 더보기 (1개 적용)" })).toBeVisible();
+  await page.getByRole("button", { name: "필터 적용" }).click();
+  await expect(page.getByRole("button", { name: /필터.*1/ })).toBeVisible();
   await page.getByLabel("레시피 이름 검색").fill("주먹밥");
-  await page.getByRole("button", { name: "검색", exact: true }).click();
-  await expect(cards.first()).toBeVisible();
-  for (const name of await cards.locator("h3").allTextContents()) expect(name).toContain("주먹밥");
+  await expect
+    .poll(async () => {
+      const titles = await cards.locator("h3").allTextContents();
+      return titles.length > 0 && titles.every((t) => t.includes("주먹밥"));
+    })
+    .toBe(true);
 
   await page.goto("/ingredients");
   await page.getByRole("button", { name: "감자", exact: true }).click();
@@ -130,7 +142,8 @@ test("UI 검토서 회귀: 카드·필터·냉장고 피드백·상세 고지·�
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "도담의 오늘 추천 메뉴" })).toBeVisible();
   const nav = page.getByRole("navigation", { name: "하단 주 메뉴" });
-  await expect(nav.getByRole("link", { name: "재료로 찾기" })).toHaveText("재료");
+  await expect(nav.getByRole("link")).toHaveCount(4);
+  await expect(nav.getByRole("link", { name: "레시피" })).toHaveText("레시피");
   for (const link of await nav.getByRole("link").all()) {
     expect(await link.locator("svg").count()).toBe(1);
     expect(await link.evaluate((el) => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(

@@ -1,22 +1,44 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button, useToast } from "@/components/ui";
-import type { RecipeReviewView, RecipeReviewStats } from "@/features/reviews";
+import { useRouter } from "next/navigation";
+import { Button, Input, Select, useToast } from "@/components/ui";
+import {
+  AMOUNT_EATEN_LABELS,
+  MEAL_TIME_LABELS,
+  RATING_LABELS,
+  REACTION_OPTIONS,
+} from "@/features/recipe/constants-client";
+import type { RecipeDetailView } from "@/features/recipe";
+import type { RecipeReviewStats, RecipeReviewView } from "@/features/reviews";
+import type { MealTime } from "@/lib/domain/types";
+import { removeOfflineFavoriteSnapshot } from "@/lib/offline-favorites";
 
 interface RecipeCommunitySectionProps {
+  babyId: string;
   recipeId: string;
+  recipeCategory: "MEAL" | "SNACK";
+  ingredients: RecipeDetailView["ingredients"];
   initialAverageRating: number;
   initialReviewCount: number;
   initialFavoriteCount: number;
+  onReviewStatsChange?: (stats: RecipeReviewStats) => void;
 }
 
+/**
+ * 개인 '먹었어요 기록'(반응·섭취량·이상반응)과 공개 '별점·후기'를 하나의 흐름으로 통합한 섹션.
+ */
 export function RecipeCommunitySection({
+  babyId,
   recipeId,
+  recipeCategory,
+  ingredients,
   initialAverageRating,
   initialReviewCount,
   initialFavoriteCount,
+  onReviewStatsChange,
 }: RecipeCommunitySectionProps) {
+  const router = useRouter();
   const { showToast } = useToast();
   const [reviews, setReviews] = useState<RecipeReviewView[]>([]);
   const [stats, setStats] = useState<RecipeReviewStats>({
@@ -25,12 +47,23 @@ export function RecipeCommunitySection({
     ratingCounts: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
   });
   const [loading, setLoading] = useState(true);
-
-  // 작성 폼 상태
-  const [selectedRating, setSelectedRating] = useState<number>(5);
-  const [content, setContent] = useState("");
-  const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // 통합 기록·후기 폼 상태
+  const [rating, setRating] = useState<"GOOD" | "OK" | "REFUSED">("GOOD");
+  const [amountEaten, setAmountEaten] = useState<"ALL" | "HALF" | "LITTLE">("ALL");
+  const [mealTime, setMealTime] = useState<MealTime>(
+    recipeCategory === "SNACK" ? "SNACK" : "LUNCH",
+  );
+  const [memo, setMemo] = useState("");
+  const [sharePublicReview, setSharePublicReview] = useState(false);
+  const [selectedStar, setSelectedStar] = useState<number>(5);
+  const [showReactionOptions, setShowReactionOptions] = useState(false);
+  const [reactions, setReactions] = useState<string[]>([]);
+  const [suspectedIngredientIds, setSuspectedIngredientIds] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [logMessage, setLogMessage] = useState<string | null>(null);
+  const [logError, setLogError] = useState<string | null>(null);
 
   async function fetchReviews() {
     try {
@@ -40,10 +73,11 @@ export function RecipeCommunitySection({
         setReviews(data.reviews ?? []);
         if (data.stats) {
           setStats(data.stats);
+          onReviewStatsChange?.(data.stats);
         }
       }
     } catch {
-      // 오프라인이거나 네트워크 오류 시 기존 props 통계 유지
+      // 오프라인 등 오류 시 초기 통계 유지
     } finally {
       setLoading(false);
     }
@@ -57,7 +91,10 @@ export function RecipeCommunitySection({
         if (controller.signal.aborted) return;
         if (data) {
           setReviews(data.reviews ?? []);
-          if (data.stats) setStats(data.stats);
+          if (data.stats) {
+            setStats(data.stats);
+            onReviewStatsChange?.(data.stats);
+          }
         }
         setLoading(false);
       })
@@ -65,40 +102,101 @@ export function RecipeCommunitySection({
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recipeId]);
 
-  async function handleSubmitReview(e: React.FormEvent) {
+  function toggleReaction(label: string) {
+    setReactions((prev) => {
+      const next = prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label];
+      if (next.length === 0) {
+        setSuspectedIngredientIds([]);
+      }
+      return next;
+    });
+  }
+
+  function toggleSuspectedIngredient(ingredientId: string) {
+    setSuspectedIngredientIds((prev) =>
+      prev.includes(ingredientId)
+        ? prev.filter((id) => id !== ingredientId)
+        : [...prev, ingredientId],
+    );
+  }
+
+  async function handleUnifiedSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (content.trim().length < 5) {
-      showToast("후기 내용은 5자 이상 작성해 주세요.", "error");
+    setLogError(null);
+    setLogMessage(null);
+
+    const trimmedMemo = memo.trim();
+    if (sharePublicReview && trimmedMemo.length < 5) {
+      setLogError("공개 후기를 함께 남기려면 메모·후기를 5자 이상 입력해 주세요.");
       return;
     }
 
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/recipes/${recipeId}/reviews`, {
+      const logRes = await fetch("/api/meal-logs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          rating: selectedRating,
-          content: content.trim(),
+          babyId,
+          recipeId,
+          rating,
+          amountEaten,
+          mealTime,
+          memo: trimmedMemo || undefined,
+          reactions,
+          suspectedIngredientIds: reactions.length > 0 ? suspectedIngredientIds : [],
         }),
       });
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => null);
-        showToast(
-          errData?.message || "후기를 저장하지 못했어요. 로그인 상태를 확인해 주세요.",
-          "error",
-        );
+      const logData = await logRes.json();
+      if (!logRes.ok) {
+        setLogError(logData?.error?.message ?? "먹은 기록 저장에 실패했습니다.");
         return;
       }
 
-      showToast("소중한 후기와 별점이 등록되었어요!", "success");
-      setContent("");
-      await fetchReviews();
+      let reviewSaved = false;
+      if (sharePublicReview) {
+        const revRes = await fetch(`/api/recipes/${recipeId}/reviews`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            rating: selectedStar,
+            content: trimmedMemo,
+          }),
+        });
+        if (revRes.ok) {
+          reviewSaved = true;
+          await fetchReviews();
+        } else {
+          const revErr = await revRes.json().catch(() => null);
+          showToast(
+            revErr?.message || "먹은 기록은 저장되었으나 공개 후기 등록에 실패했어요.",
+            "warning",
+          );
+        }
+      }
+
+      if (logData.addedSuspectedCount > 0) {
+        removeOfflineFavoriteSnapshot(babyId, recipeId);
+        setLogMessage(
+          `먹은 기록이 저장되었으며, 의심 식재료 ${logData.addedSuspectedCount}건이 주의 목록에 반영되었습니다.`,
+        );
+      } else if (reviewSaved) {
+        setLogMessage("먹은 기록과 공개 후기·별점이 함께 저장되었습니다!");
+      } else {
+        setLogMessage("먹은 기록이 저장되었습니다!");
+      }
+
+      setMemo("");
+      setSharePublicReview(false);
+      setReactions([]);
+      setSuspectedIngredientIds([]);
+      setShowReactionOptions(false);
+      router.refresh();
     } catch {
-      showToast("네트워크 연결을 확인한 뒤 다시 시도해 주세요.", "error");
+      setLogError("네트워크 오류가 발생했습니다.");
     } finally {
       setSubmitting(false);
     }
@@ -128,199 +226,267 @@ export function RecipeCommunitySection({
   }
 
   return (
-    <details
-      id="recipe-community-section"
-      data-testid="recipe-community-section"
-      className="disclosure"
-    >
-      <summary>후기 · {stats.totalReviews}개</summary>
-      <section className="disclosure-body space-y-5">
-        <p className="text-sm text-[var(--color-text-secondary)]">
-          즐겨찾기 {initialFavoriteCount}명 · 조리 경험과 팁을 확인해 보세요.
-        </p>
+    <details id="meal-log-form" data-testid="recipe-community-section" className="disclosure">
+      <summary>
+        먹었어요 기록 · 후기 {stats.totalReviews > 0 ? `(${stats.totalReviews}개)` : ""}
+      </summary>
 
-        {stats.totalReviews > 0 && (
-          <details className="disclosure">
-            <summary>
-              평점 상세 · {stats.averageRating.toFixed(1)}점 · 후기 {stats.totalReviews}개
-            </summary>
-            {/* 평점 종합 요약 대시보드 */}
-            <div className="grid grid-cols-1 items-center gap-6 rounded-lg bg-[var(--color-surface-muted)] p-5 sm:grid-cols-3">
-              <div className="text-center sm:border-r sm:border-[var(--color-border)] sm:pr-6">
-                <span className="block text-4xl font-extrabold text-[var(--color-text)]">
-                  {stats.averageRating > 0 ? stats.averageRating.toFixed(1) : "0.0"}
-                </span>
-                <div className="mt-1.5 flex justify-center gap-0.5 text-amber-400">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <span key={star} className="text-lg">
-                      {star <= Math.round(stats.averageRating) ? "★" : "☆"}
-                    </span>
-                  ))}
-                </div>
-                <span className="mt-1 block text-xs text-[var(--color-text-secondary)]">
-                  {stats.totalReviews > 0 ? `총 ${stats.totalReviews}개 후기` : "등록된 후기 없음"}
-                </span>
-              </div>
-
-              {/* 별점별 비율 분포 바 */}
-              <div className="space-y-1.5 sm:col-span-2">
-                {[5, 4, 3, 2, 1].map((star) => {
-                  const count = stats.ratingCounts[star as 1 | 2 | 3 | 4 | 5] ?? 0;
-                  const pct =
-                    stats.totalReviews > 0 ? Math.round((count / stats.totalReviews) * 100) : 0;
-                  return (
-                    <div key={star} className="flex items-center gap-2 text-xs">
-                      <span className="w-9 font-medium text-[var(--color-text-secondary)]">
-                        {star}점
-                      </span>
-                      <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-gray-200">
-                        <div
-                          style={{ width: `${pct}%` }}
-                          className="h-full bg-amber-400 transition-all"
-                        />
-                      </div>
-                      <span className="w-8 text-right text-[11px] text-[var(--color-text-secondary)]">
-                        {count}개
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </details>
-        )}
-
-        <details className="disclosure">
-          <summary>솔직 후기 작성하기</summary>
-          <div className="disclosure-body">
-            {/* 후기 작성 폼 */}
-            <form
-              onSubmit={handleSubmitReview}
-              className="rounded-lg border border-[var(--color-border)] bg-white p-5 shadow-none sm:p-6"
+      <div className="disclosure-body space-y-6">
+        <form
+          onSubmit={handleUnifiedSubmit}
+          className="space-y-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-muted)]/60 p-4"
+        >
+          {logMessage && (
+            <div
+              role="status"
+              aria-live="polite"
+              data-testid="meal-log-success"
+              className="rounded-lg border border-[var(--color-success-border)] bg-[var(--color-success-soft)] p-3 text-sm font-semibold text-[var(--color-secondary-text)]"
             >
-              <h3 className="text-base font-semibold text-[var(--color-text)]">
-                솔직 후기 작성하기
-              </h3>
-              <p className="mt-0.5 text-xs text-[var(--color-text-secondary)]">
-                아기의 반응, 식감/크기 조절 팁, 자연 조미 팁 등을 공유해 주세요.
-              </p>
+              <span aria-hidden="true">✓ </span>
+              {logMessage}
+            </div>
+          )}
+          {logError && (
+            <div
+              role="alert"
+              className="rounded-lg border border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] p-3 text-sm font-semibold text-[var(--color-danger-text)]"
+            >
+              {logError}
+            </div>
+          )}
 
-              {/* 별점 선택기 */}
-              <div className="mt-4">
-                <label className="block text-xs font-semibold text-[var(--color-text)]">
-                  별점을 선택해 주세요
-                </label>
-                <div className="mt-1 flex items-center gap-1.5">
+          <fieldset>
+            <legend className="text-xs font-semibold text-[var(--color-text)]">아기 반응</legend>
+            <div className="mt-1.5 grid grid-cols-3 gap-1.5">
+              {(["GOOD", "OK", "REFUSED"] as const).map((r) => {
+                const active = rating === r;
+                return (
+                  <label
+                    key={r}
+                    className={`inline-flex min-h-11 cursor-pointer items-center justify-center rounded-md border px-2 text-xs font-semibold transition-colors sm:text-sm ${
+                      active
+                        ? "border-[var(--color-primary)] bg-[var(--color-primary)] text-white"
+                        : "border-[var(--color-border-strong)] bg-white text-[var(--color-text)] hover:bg-[var(--color-surface-muted)]"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="rating"
+                      value={r}
+                      checked={active}
+                      onChange={() => setRating(r)}
+                      className="sr-only"
+                    />
+                    {RATING_LABELS[r]}
+                  </label>
+                );
+              })}
+            </div>
+          </fieldset>
+
+          <div className="grid grid-cols-2 gap-2.5">
+            <Select
+              id="log-amount"
+              label="섭취량"
+              value={amountEaten}
+              onChange={(e) => setAmountEaten(e.target.value as "ALL" | "HALF" | "LITTLE")}
+            >
+              {(["ALL", "HALF", "LITTLE"] as const).map((amt) => (
+                <option key={amt} value={amt}>
+                  {AMOUNT_EATEN_LABELS[amt]}
+                </option>
+              ))}
+            </Select>
+
+            <Select
+              id="log-meal-time"
+              label="식사 시간대"
+              value={mealTime}
+              onChange={(e) => setMealTime(e.target.value as MealTime)}
+            >
+              {(["BREAKFAST", "LUNCH", "DINNER", "SNACK"] as const).map((mt) => (
+                <option key={mt} value={mt}>
+                  {MEAL_TIME_LABELS[mt]}
+                </option>
+              ))}
+            </Select>
+          </div>
+
+          <Input
+            id="log-memo"
+            label="메모 · 한 줄 후기 (선택)"
+            type="text"
+            maxLength={500}
+            value={memo}
+            onChange={(e) => setMemo(e.target.value)}
+            placeholder="예: 당근을 잘게 썰어주니 끝까지 다 먹었어요"
+          />
+
+          <div className="space-y-2.5 rounded-md border border-[var(--color-border)] bg-white p-3">
+            <label className="flex min-h-9 cursor-pointer items-center gap-2 text-xs font-semibold text-[var(--color-text)] sm:text-sm">
+              <input
+                type="checkbox"
+                checked={sharePublicReview}
+                onChange={(e) => setSharePublicReview(e.target.checked)}
+                className="h-4 w-4 accent-[var(--color-primary)]"
+              />
+              <span>다른 부모님께 별점·공개 후기도 함께 남기기</span>
+            </label>
+
+            {sharePublicReview && (
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--color-border)] pt-2">
+                <div className="flex items-center gap-1" role="group" aria-label="별점 선택">
                   {[1, 2, 3, 4, 5].map((s) => (
                     <button
                       key={s}
                       type="button"
-                      onClick={() => setSelectedRating(s)}
-                      className={`min-h-11 min-w-11 rounded-md text-2xl transition-transform hover:scale-110 ${
-                        s <= selectedRating ? "text-amber-400" : "text-gray-300"
-                      }`}
+                      onClick={() => setSelectedStar(s)}
                       aria-label={`${s}점 선택`}
+                      className={`min-h-11 min-w-11 rounded-md text-xl transition-colors ${
+                        s <= selectedStar ? "text-amber-500" : "text-gray-300"
+                      }`}
                     >
-                      ★
+                      <span aria-hidden="true">★</span>
                     </button>
                   ))}
-                  <span className="ml-2 text-sm font-bold text-[var(--color-text)]">
-                    {selectedRating}점
-                  </span>
                 </div>
+                <span className="text-xs font-semibold text-[var(--color-text-secondary)]">
+                  {selectedStar}점 · 5자 이상 작성
+                </span>
               </div>
-
-              {/* 후기 본문 입력 */}
-              <div className="mt-3.5">
-                <textarea
-                  required
-                  rows={3}
-                  maxLength={500}
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder="우리 아기는 이 메뉴를 어떻게 먹었나요? (예: 당근을 5mm보다 작게 다져주니 부드럽게 잘 먹었어요!)"
-                  className="w-full rounded-md border border-[var(--color-border-strong)] p-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-primary)] focus:outline-none"
-                />
-                <div className="mt-1 flex justify-between text-[11px] text-[var(--color-text-secondary)]">
-                  <span>최소 5자 이상 · 개인정보는 자동으로 안전하게 보호됩니다.</span>
-                  <span>{content.length} / 500자</span>
-                </div>
-              </div>
-
-              <div className="mt-4 flex justify-end">
-                <Button type="submit" variant="primary" disabled={submitting}>
-                  {submitting ? "후기 등록 중..." : "후기 등록하기"}
-                </Button>
-              </div>
-            </form>
+            )}
           </div>
-        </details>
 
-        {/* 후기 피드 목록 */}
-        <div className="space-y-3.5">
-          <h3 className="text-base font-semibold text-[var(--color-text)]">
-            부모님들의 생생 조리 후기 ({reviews.length})
-          </h3>
+          <div>
+            <button
+              type="button"
+              aria-expanded={showReactionOptions || reactions.length > 0}
+              onClick={() => setShowReactionOptions((v) => !v)}
+              className="inline-flex min-h-11 items-center text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-danger-text)]"
+            >
+              {showReactionOptions || reactions.length > 0
+                ? "이상 반응 체크 접기"
+                : "+ 이상 반응이 있었나요? (발진·구토 등 주의 식재료 등록)"}
+            </button>
+
+            {(showReactionOptions || reactions.length > 0) && (
+              <div className="mt-2 space-y-3">
+                <fieldset>
+                  <legend className="sr-only">이상 반응 체크</legend>
+                  <div className="flex flex-wrap gap-2">
+                    {REACTION_OPTIONS.map((rx) => (
+                      <label
+                        key={rx}
+                        className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-[var(--color-border)] bg-white px-3 py-1.5 text-xs font-medium text-[var(--color-text)]"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={reactions.includes(rx)}
+                          onChange={() => toggleReaction(rx)}
+                          className="h-4 w-4 accent-[var(--color-danger)]"
+                        />
+                        <span>{rx}</span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+
+                {reactions.length > 0 && (
+                  <fieldset className="rounded-lg border border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] p-3.5">
+                    <legend className="px-1 text-xs font-semibold text-[var(--color-danger-text)]">
+                      알레르기 의심 식재료 주의 목록 등록
+                    </legend>
+                    <p className="mt-0.5 text-xs text-[var(--color-danger-text)]">
+                      선택한 식재료는 즉시 주의 목록에 추가되어 이후 추천에서 제외됩니다.
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {ingredients.map((ing) => (
+                        <label
+                          key={ing.ingredientId}
+                          className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-[var(--color-danger-border)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--color-text)]"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={suspectedIngredientIds.includes(ing.ingredientId)}
+                            onChange={() => toggleSuspectedIngredient(ing.ingredientId)}
+                            className="h-4 w-4 accent-[var(--color-danger)]"
+                          />
+                          <span>{ing.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+                )}
+              </div>
+            )}
+          </div>
+
+          <Button type="submit" fullWidth disabled={submitting}>
+            {submitting ? "저장 중..." : "먹었어요 저장"}
+          </Button>
+        </form>
+
+        {/* 공개 후기 목록 */}
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold text-[var(--color-text)]">
+              부모님 후기 ({reviews.length})
+            </h3>
+            <span className="text-xs text-[var(--color-text-secondary)]">
+              {stats.totalReviews > 0
+                ? `평균 ★ ${stats.averageRating.toFixed(1)} · 즐겨찾기 ${initialFavoriteCount}명`
+                : `즐겨찾기 ${initialFavoriteCount}명`}
+            </span>
+          </div>
 
           {loading ? (
-            <div className="py-6 text-center text-sm text-[var(--color-text-secondary)]">
+            <p className="py-4 text-center text-xs text-[var(--color-text-secondary)]">
               후기 불러오는 중...
-            </div>
+            </p>
           ) : reviews.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-[var(--color-border)] py-10 text-center">
-              <p className="text-sm font-medium text-[var(--color-text-secondary)]">
-                아직 등록된 후기가 없습니다.
-              </p>
-              <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-                첫 번째 조리 경험과 팁을 공유해 다른 부모님들에게 도움을 주세요!
-              </p>
-            </div>
+            <p className="rounded-lg bg-[var(--color-surface-muted)] px-4 py-4 text-center text-xs text-[var(--color-text-secondary)]">
+              아직 등록된 공개 후기가 없어요. 첫 번째 조리 팁을 공유해 보세요.
+            </p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {reviews.map((rev) => (
                 <div
                   key={rev.id}
                   data-testid={`review-card-${rev.id}`}
-                  className="rounded-lg border border-[var(--color-border)] bg-white p-4.5 text-sm"
+                  className="rounded-lg border border-[var(--color-border)] bg-white p-3.5 text-sm"
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--color-border)] pb-2.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-[var(--color-text)]">
                         {rev.authorName}
                       </span>
                       {rev.babyAgeMonth && (
-                        <span className="rounded bg-[var(--color-primary-soft)] px-2 py-0.5 text-xs font-semibold text-[var(--color-primary-text)]">
-                          {rev.babyAgeMonth}개월 아기
+                        <span className="rounded bg-[var(--color-primary-soft)] px-1.5 py-0.5 font-semibold text-[var(--color-primary-text)]">
+                          {rev.babyAgeMonth}개월
                         </span>
                       )}
-                      <span className="text-amber-400">
-                        {"★".repeat(rev.rating)}
-                        <span className="text-gray-200">{"★".repeat(5 - rev.rating)}</span>
-                      </span>
+                      <span className="text-amber-500">{"★".repeat(rev.rating)}</span>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      <time className="text-xs text-[var(--color-text-secondary)]">
-                        {new Date(rev.createdAt).toLocaleDateString("ko-KR", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
+                    <div className="flex items-center gap-2">
+                      <time className="text-[var(--color-text-secondary)]">
+                        {new Date(rev.createdAt).toLocaleDateString("ko-KR")}
                       </time>
                       {rev.isMyReview && (
                         <button
                           type="button"
                           disabled={deletingId === rev.id}
                           onClick={() => handleDeleteReview(rev.id)}
-                          className="text-xs font-medium text-rose-500 hover:underline disabled:opacity-50"
+                          className="min-h-11 px-1 font-medium text-[var(--color-danger-text)] hover:underline disabled:opacity-50"
                         >
-                          {deletingId === rev.id ? "삭제 중..." : "삭제"}
+                          {deletingId === rev.id ? "삭제 중" : "삭제"}
                         </button>
                       )}
                     </div>
                   </div>
 
-                  <p className="mt-2.5 leading-relaxed whitespace-pre-wrap text-[var(--color-text)]">
+                  <p className="mt-2 leading-relaxed whitespace-pre-wrap text-[var(--color-text)]">
                     {rev.content}
                   </p>
                 </div>
@@ -328,7 +494,7 @@ export function RecipeCommunitySection({
             </div>
           )}
         </div>
-      </section>
+      </div>
     </details>
   );
 }

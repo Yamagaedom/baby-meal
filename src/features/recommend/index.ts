@@ -100,9 +100,12 @@ export async function getTodayRecommendations(
   const favSet = new Set(favorites.map((f) => f.recipeId));
   const jitterWeight = isManualRefresh ? 8 : 0.99;
 
-  // 알레르기 서버 이중 검증 (REC-02 절대 노출 금지) + 개인화/최근 3일 하향 정렬
+  // 알레르기 서버 이중 검증 (REC-02 절대 노출 금지) + 식단 구성용 단순 음식 제외 + 개인화/최근 3일 하향 정렬
   const safeScored = rows
-    .filter((r) => isRecipeSafeForBaby(r.ingredients, dictMap, baby))
+    .filter(
+      (r) =>
+        !r.slug?.startsWith("weekly-plain-") && isRecipeSafeForBaby(r.ingredients, dictMap, baby),
+    )
     .map((r) => {
       const primaryIngredientIds = r.ingredients
         .filter((ri) => !ri.isOptional)

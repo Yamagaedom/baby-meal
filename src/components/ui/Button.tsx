@@ -16,7 +16,7 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary:
     "bg-[var(--color-primary)] text-white border border-transparent hover:bg-[var(--color-primary-hover)] active:bg-[var(--color-primary-text)]",
   secondary:
-    "bg-[var(--color-secondary)] text-white border border-transparent hover:bg-[var(--color-secondary-hover)] active:bg-[var(--color-secondary-active)]",
+    "bg-[var(--color-primary-soft)] text-[var(--color-primary-text)] border border-[var(--color-primary-border)] hover:bg-[var(--color-pressed)] active:bg-[var(--color-pressed)]",
   outline:
     "bg-white text-[var(--color-text)] border border-[var(--color-border-strong)] hover:bg-[var(--color-surface-muted)] active:bg-[var(--color-pressed)]",
   ghost:

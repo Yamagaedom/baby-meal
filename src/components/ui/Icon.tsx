@@ -12,7 +12,11 @@ export type IconName =
   | "warning"
   | "timer"
   | "filter"
-  | "sparkles";
+  | "sparkles"
+  | "search"
+  | "refresh"
+  | "chevronDown"
+  | "check";
 
 const paths: Record<IconName, ReactNode> = {
   home: (
@@ -79,6 +83,20 @@ const paths: Record<IconName, ReactNode> = {
       <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z" />
     </>
   ),
+  search: (
+    <>
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.5-3.5" />
+    </>
+  ),
+  refresh: (
+    <>
+      <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+      <polyline points="21 3 21 9 15 9" />
+    </>
+  ),
+  chevronDown: <polyline points="6 9 12 15 18 9" />,
+  check: <polyline points="20 6 9 17 4 12" />,
 };
 
 /** 단색 선 아이콘은 조작, 경고, 모바일 내비게이션에만 사용합니다. */

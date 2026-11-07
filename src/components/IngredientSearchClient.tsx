@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { RecipeCard } from "@/components/RecipeCard";
+import { RecipeModeTabs } from "@/components/RecipeModeTabs";
 import {
   Badge,
   Button,
@@ -109,6 +110,7 @@ export function IngredientSearchClient({
     nextSelected: IngredientOptionView[],
     nextPantry: boolean,
     nextScope = scope,
+    nextMaxMissing = maxMissing,
   ) {
     if (nextSelected.length === 0 && nextScope !== "EXPLORE") {
       setItems([]);
@@ -128,7 +130,7 @@ export function IngredientSearchClient({
           ingredientIds: nextSelected.map((i) => i.id),
           assumeBasicPantry: nextPantry,
           scope: nextScope,
-          maxMissing,
+          maxMissing: nextMaxMissing,
         }),
       });
       const data = await res.json();
@@ -272,30 +274,17 @@ export function IngredientSearchClient({
     quota.globalLimitReached;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap gap-4 text-sm">
-        <Link href="/recipes" className="inline-flex min-h-11 items-center underline">
-          전체 레시피
-        </Link>
-        <span className="inline-flex min-h-11 items-center font-semibold" aria-current="page">
-          재료로 찾기
-        </span>
-        <Link
-          href={`/meal-plan?ingredients=${selected.map((i) => i.id).join(",")}`}
-          className="inline-flex min-h-11 items-center font-medium text-[var(--color-primary)] underline"
-        >
-          이 재료로 일주일 구성
-        </Link>
-      </div>
-      <section className="space-y-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
+    <div className="space-y-5">
+      <RecipeModeTabs active="ingredients" />
+
+      <section className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-[var(--color-text)] sm:text-[32px]">
-              냉장고 재료로 추천받기
+            <h1 className="text-2xl leading-tight font-semibold tracking-tight text-[var(--color-text)] sm:text-[28px]">
+              냉장고 재료로 찾기
             </h1>
-            <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-              집에 있는 식재료를 선택하면 {babyName}의 월령·간 단계·알레르기 기준에 맞는 레시피를
-              재료 일치율 순으로 찾아드립니다.
+            <p className="mt-0.5 text-sm text-[var(--color-text-secondary)]">
+              식재료를 고르면 {babyName} 맞춤 메뉴를 일치율 순으로 바로 찾아드려요.
             </p>
           </div>
 
@@ -303,19 +292,16 @@ export function IngredientSearchClient({
             role="status"
             aria-live="polite"
             data-testid="ai-quota-badge"
-            className="inline-flex min-h-9 items-center gap-1.5 rounded-sm border border-[var(--color-ai-border)] bg-[var(--color-ai-soft)] px-3.5 py-1.5 text-xs font-semibold text-[var(--color-ai-text)]"
+            className="inline-flex min-h-8 items-center gap-1 rounded-sm border border-[var(--color-ai-border)] bg-[var(--color-ai-soft)] px-3 py-1 text-xs font-semibold text-[var(--color-ai-text)]"
           >
-            <span>
-              오늘 AI 생성 남은 횟수 {quota.remainingToday}/{quota.dailyLimit}
-            </span>
+            AI 생성 {quota.remainingToday}/{quota.dailyLimit}
           </span>
         </div>
 
-        <div>
+        <div className="space-y-1.5">
           <Input
             id="pantry-search"
             label="식재료 검색 추가"
-            hint="동의어(예: 계란→달걀, 쇠고기→소고기)도 자동으로 찾아줍니다."
             type="text"
             value={query}
             onChange={(e) => {
@@ -323,21 +309,27 @@ export function IngredientSearchClient({
               setQuery(val);
               if (!val.trim()) setSuggestions([]);
             }}
-            placeholder="식재료 이름 입력 (예: 애호박, 소고기, 바나나)"
+            placeholder="식재료 이름 입력 (예: 애호박, 소고기, 계란)"
           />
 
-          <Button
-            variant="ghost"
-            onClick={() => {
-              setBrowse((v) => !v);
-              setIngredientCount(40);
-            }}
-            aria-expanded={browse}
-          >
-            전체 재료 찾아보기
-          </Button>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs text-[var(--color-text-secondary)]">
+              동의어(계란→달걀, 쇠고기→소고기) 자동 인식
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setBrowse((v) => !v);
+                setIngredientCount(40);
+              }}
+              aria-expanded={browse}
+            >
+              전체 재료 찾아보기
+            </Button>
+          </div>
           {(query.trim() || browse) && suggestions.length > 0 && (
-            <ul className="mt-1.5 max-h-52 overflow-auto rounded-lg border border-[var(--color-border-strong)] bg-white p-1 text-sm shadow-md">
+            <ul className="mt-1 max-h-52 overflow-auto rounded-lg border border-[var(--color-border-strong)] bg-white p-1 text-sm shadow-md">
               {suggestions.slice(0, ingredientCount).map((s) => (
                 <li key={s.id}>
                   <button
@@ -418,20 +410,30 @@ export function IngredientSearchClient({
           </div>
         </div>
 
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-4">
+        <div className="space-y-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-3.5">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-sm font-semibold text-[var(--color-text)]">
               선택한 보유 재료 ({selected.length})
             </p>
-            <Button
-              variant="outline"
-              size="sm"
-              data-testid="save-pantry-btn"
-              disabled={pantrySaving}
-              onClick={() => void handleSaveToPantry()}
-            >
-              <span>{pantrySaving ? "저장 중..." : "내 냉장고에 현재 재료 저장"}</span>
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              {selected.length > 0 && (
+                <Link
+                  href={`/meal-plan?ingredients=${selected.map((i) => i.id).join(",")}`}
+                  className="inline-flex min-h-9 items-center text-xs font-semibold text-[var(--color-primary-text)] underline underline-offset-4"
+                >
+                  일주일 식단 짜기 →
+                </Link>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                data-testid="save-pantry-btn"
+                disabled={pantrySaving}
+                onClick={() => void handleSaveToPantry()}
+              >
+                <span>{pantrySaving ? "저장 중..." : "냉장고 저장"}</span>
+              </Button>
+            </div>
           </div>
 
           {pantryNotice && (
@@ -439,7 +441,7 @@ export function IngredientSearchClient({
               role="status"
               aria-live="polite"
               data-testid="pantry-save-notice"
-              className="rounded-lg border border-[var(--color-success-border)] bg-[var(--color-success-soft)] px-4 py-3 text-xs font-semibold text-[var(--color-secondary-text)]"
+              className="rounded-lg border border-[var(--color-success-border)] bg-[var(--color-success-soft)] px-3.5 py-2.5 text-xs font-semibold text-[var(--color-secondary-text)]"
             >
               <span aria-hidden="true">✓ </span>
               {pantryNotice}
@@ -448,18 +450,18 @@ export function IngredientSearchClient({
           {pantryError && (
             <p
               role="alert"
-              className="rounded-md border border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] px-4 py-3 text-sm text-[var(--color-danger-text)]"
+              className="rounded-md border border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] px-3.5 py-2.5 text-sm text-[var(--color-danger-text)]"
             >
               {pantryError}
             </p>
           )}
 
           {selected.length === 0 ? (
-            <p className="mt-2 text-xs text-[var(--color-text-secondary)]">
-              위 빠른 칩을 누르거나 검색창에서 식재료를 선택해 보세요.
+            <p className="text-xs text-[var(--color-text-secondary)]">
+              위 빠른 칩을 누르거나 검색창에서 식재료를 선택하면 바로 매칭됩니다.
             </p>
           ) : (
-            <div className="mt-2.5 flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2">
               {selected.map((item) => (
                 <Chip
                   key={item.id}
@@ -473,71 +475,80 @@ export function IngredientSearchClient({
           )}
         </div>
 
-        <label className="flex min-h-11 cursor-pointer items-center gap-2.5 text-sm font-medium text-[var(--color-text)]">
-          <input
-            type="checkbox"
-            checked={assumeBasicPantry}
-            onChange={(e) => handlePantryToggle(e.target.checked)}
-            className="h-5 w-5 shrink-0 accent-[var(--color-primary)]"
-          />
-          <span>기본 양념·상비 재료(물, 식용유, 참기름, 참깨가루, 채수 등) 보유로 간주</span>
-        </label>
+        <div className="space-y-2">
+          <label className="flex min-h-11 cursor-pointer items-center gap-2.5 text-sm font-medium text-[var(--color-text)]">
+            <input
+              type="checkbox"
+              checked={scope !== "ON_HAND"}
+              onChange={(e) => {
+                const nextScope = e.target.checked ? "SHOPPING" : "ON_HAND";
+                setScope(nextScope);
+                if (selected.length > 0) {
+                  void runRecommend(selected, assumeBasicPantry, nextScope, maxMissing);
+                }
+              }}
+              className="h-5 w-5 shrink-0 accent-[var(--color-primary)]"
+            />
+            <span>추가 재료 {maxMissing}개까지 필요한 메뉴도 함께 보기</span>
+          </label>
 
-        <fieldset className="space-y-2">
-          <legend className="text-sm font-semibold">어디까지 찾아볼까요?</legend>
-          <div className="flex flex-wrap gap-2">
-            {(
-              [
-                ["ON_HAND", "있는 재료로 만들기"],
-                ["SHOPPING", "조금 더 사도 좋아요"],
-                ["EXPLORE", "새 메뉴 찾아보기"],
-              ] as const
-            ).map(([value, label]) => (
-              <Button
-                key={value}
-                variant={scope === value ? "primary" : "outline"}
-                size="sm"
-                aria-pressed={scope === value}
-                onClick={() => {
-                  setScope(value);
-                  void runRecommend(selected, assumeBasicPantry, value);
-                }}
-              >
-                {label}
-              </Button>
-            ))}
-          </div>
-          {scope === "SHOPPING" && (
-            <label className="block text-sm">
-              추가 필수 재료{" "}
-              <select
-                aria-label="추가 필수 재료 수"
-                value={maxMissing}
-                onChange={(e) => setMaxMissing(Number(e.target.value))}
-                className="min-h-11 rounded-md border px-3"
-              >
-                {[1, 2, 3, 5, 10].map((n) => (
-                  <option key={n} value={n}>
-                    {n}개까지
-                  </option>
-                ))}
-              </select>{" "}
-              · 변경 후 찾기를 눌러 주세요.
-            </label>
-          )}
-          <p className="text-xs text-[var(--color-text-secondary)]">
-            저장된 레시피를 검색합니다. 새 메뉴 생성은 아래 AI 기능에서 별도로 요청해요.
-          </p>
-        </fieldset>
+          <details className="disclosure">
+            <summary>상세 검색 조건</summary>
+            <div className="disclosure-body space-y-3 text-sm">
+              <label className="flex min-h-11 cursor-pointer items-center gap-2.5 text-[var(--color-text)]">
+                <input
+                  type="checkbox"
+                  checked={assumeBasicPantry}
+                  onChange={(e) => handlePantryToggle(e.target.checked)}
+                  className="h-5 w-5 shrink-0 accent-[var(--color-primary)]"
+                />
+                <span>기본 양념·상비 재료(물, 식용유, 참기름, 채수 등) 보유로 간주</span>
+              </label>
 
-        <Button
-          variant="primary"
-          fullWidth
-          disabled={(selected.length === 0 && scope !== "EXPLORE") || loading}
-          onClick={() => void runRecommend(selected, assumeBasicPantry)}
-        >
-          {loading ? "매칭 계산 중..." : "저장된 레시피에서 찾기"}
-        </Button>
+              {scope !== "ON_HAND" && (
+                <label className="flex items-center justify-between gap-2">
+                  <span>허용할 추가 필수 재료 수</span>
+                  <select
+                    aria-label="추가 필수 재료 수"
+                    value={maxMissing}
+                    onChange={(e) => {
+                      const nextMax = Number(e.target.value);
+                      setMaxMissing(nextMax);
+                      if (selected.length > 0 || scope === "EXPLORE") {
+                        void runRecommend(selected, assumeBasicPantry, scope, nextMax);
+                      }
+                    }}
+                    className="min-h-11 rounded-md border border-[var(--color-border-strong)] bg-white px-3"
+                  >
+                    {[1, 2, 3, 5, 10].map((n) => (
+                      <option key={n} value={n}>
+                        {n}개까지
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                <span className="text-xs text-[var(--color-text-secondary)]">
+                  선택 재료 없이도 전체 안전 메뉴를 둘러볼 수 있어요.
+                </span>
+                <Button
+                  variant={scope === "EXPLORE" ? "primary" : "outline"}
+                  size="sm"
+                  aria-pressed={scope === "EXPLORE"}
+                  onClick={() => {
+                    const nextScope = scope === "EXPLORE" ? "SHOPPING" : "EXPLORE";
+                    setScope(nextScope);
+                    void runRecommend(selected, assumeBasicPantry, nextScope, maxMissing);
+                  }}
+                >
+                  새 메뉴 찾아보기
+                </Button>
+              </div>
+            </div>
+          </details>
+        </div>
 
         {error && (
           <ErrorState
@@ -712,34 +723,39 @@ export function IngredientSearchClient({
                 </div>
               )}
 
-              <label className="block text-sm">
-                원하는 요리 유형{" "}
-                <select
-                  aria-label="AI 요리 유형"
-                  className="min-h-11 rounded-md border px-3"
-                  value={dishType}
-                  onChange={(e) => setDishType(e.target.value)}
-                >
-                  {[
-                    ["ANY", "자유롭게"],
-                    ["SOUP", "스프류"],
-                    ["ONE_BOWL", "한그릇 음식"],
-                    ["SIDE", "반찬"],
-                  ].map(([v, l]) => (
-                    <option key={v} value={v}>
-                      {l}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="flex min-h-11 items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={fresh}
-                  onChange={(e) => setFresh(e.target.checked)}
-                />
-                같은 조건의 저장 결과 대신 다른 메뉴 생성 (생성 한도 적용)
-              </label>
+              <details className="disclosure">
+                <summary>AI 생성 세부 옵션</summary>
+                <div className="disclosure-body space-y-3 text-sm">
+                  <label className="flex items-center justify-between gap-2">
+                    <span>원하는 요리 유형</span>
+                    <select
+                      aria-label="AI 요리 유형"
+                      className="min-h-11 rounded-md border border-[var(--color-border-strong)] bg-white px-3"
+                      value={dishType}
+                      onChange={(e) => setDishType(e.target.value)}
+                    >
+                      {[
+                        ["ANY", "자유롭게"],
+                        ["SOUP", "스프류"],
+                        ["ONE_BOWL", "한그릇 음식"],
+                        ["SIDE", "반찬"],
+                      ].map(([v, l]) => (
+                        <option key={v} value={v}>
+                          {l}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="flex min-h-11 items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={fresh}
+                      onChange={(e) => setFresh(e.target.checked)}
+                    />
+                    같은 조건의 저장 결과 대신 다른 메뉴 생성 (생성 한도 적용)
+                  </label>
+                </div>
+              </details>
               <Button
                 variant="primary"
                 fullWidth

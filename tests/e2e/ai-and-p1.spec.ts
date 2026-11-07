@@ -172,6 +172,7 @@ test.describe("2-B 즉석 AI 레시피 생성 및 P1 기능 E2E (ING-06/07, AI-0
     await expect(page).toHaveURL(/\/$/);
 
     // 2. 내 냉장고 재료 저장 후 재방문 시 자동 로드 확인 (ING-07)
+    await page.getByRole("link", { name: "레시피" }).first().click();
     await page.getByRole("link", { name: "재료로 찾기" }).click();
     await expect(page).toHaveURL(/\/ingredients$/);
 
@@ -185,6 +186,7 @@ test.describe("2-B 즉석 AI 레시피 생성 및 P1 기능 E2E (ING-06/07, AI-0
     await page.getByRole("link", { name: "홈" }).click();
     await expect(page).toHaveURL(/\/$/);
 
+    await page.getByRole("link", { name: "레시피" }).first().click();
     await page.getByRole("link", { name: "재료로 찾기" }).click();
     await expect(page.getByTestId("pantry-save-notice")).toContainText(
       "내 냉장고에 저장된 재료 2개를 불러왔습니다.",

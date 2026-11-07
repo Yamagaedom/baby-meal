@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import { RecipeCard } from "@/components/RecipeCard";
-import { Badge, Button, EmptyState, ErrorState, RecipeCardSkeleton, Tabs } from "@/components/ui";
+import { Badge, Button, EmptyState, ErrorState, RecipeCardSkeleton } from "@/components/ui";
+import { Icon } from "@/components/ui/Icon";
 import type { BabyProfileView } from "@/features/profile";
 import type { RecipeCardView } from "@/features/recipe";
 import { SALT_LEVEL_LABELS } from "@/features/recipe/constants-client";
@@ -37,9 +38,7 @@ export function HomeRecommendClient({
   initialData,
   recentGoodMenus = [],
 }: HomeRecommendClientProps) {
-  const [showAllSnacks, setShowAllSnacks] = useState(false);
   const [data, setData] = useState<TodayData>(initialData);
-  const [viewTab, setViewTab] = useState<"all" | "meal" | "snack">("all");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -72,185 +71,146 @@ export function HomeRecommendClient({
   const hasAnyMeal = slotEntries.some((s) => s.recipe !== null);
 
   return (
-    <div className="space-y-7">
-      <section className="pt-1">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="space-y-1.5">
-            <h1 className="text-[24px] leading-tight font-semibold tracking-tight text-[var(--color-text)] sm:text-[28px]">
+    <div className="space-y-6">
+      <section className="space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 space-y-1">
+            <h1 className="text-[22px] leading-tight font-semibold tracking-tight text-[var(--color-text)] sm:text-[26px]">
               {baby.displayName}의 오늘 추천 메뉴
             </h1>
-            <p className="text-sm text-[var(--color-text-secondary)]">
+            <p className="text-xs text-[var(--color-text-secondary)] sm:text-sm">
               {baby.currentAgeMonth}개월 · {baby.ageStageLabel} ·{" "}
-              {SALT_LEVEL_LABELS[baby.saltLevel]} · 권장 식감: {baby.textureGuide}
+              {SALT_LEVEL_LABELS[baby.saltLevel]}
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href="/ingredients"
-              className="inline-flex min-h-11 items-center justify-center rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--color-primary-hover)]"
-            >
-              냉장고 재료로 찾기
-            </Link>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefreshRecommendations}
-              disabled={loading}
-            >
-              <span>{loading ? "불러오는 중..." : "다른 메뉴 보기"}</span>
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleRefreshRecommendations}
+            disabled={loading}
+            className="shrink-0 px-2.5 text-xs font-semibold text-[var(--color-primary-text)]"
+          >
+            <Icon name="refresh" width={15} height={15} />
+            <span>{loading ? "변경 중" : "다른 메뉴"}</span>
+          </Button>
         </div>
 
         {baby.allergies.length > 0 && (
           <div
             data-testid="active-allergy-bar"
-            className="mt-5 border-b border-[var(--color-border)] py-3 text-sm font-medium text-[var(--color-text-secondary)]"
+            className="rounded-md bg-[var(--color-surface-muted)] px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)]"
           >
-            제외 중인 알레르기·주의 식재료:{" "}
+            제외 중:{" "}
             {baby.allergies
-              .map((a) => `${a.label}${a.status === "SUSPECTED" ? "(의심)" : "(확정)"}`)
+              .map((a) => `${a.label}${a.status === "SUSPECTED" ? "(의심)" : ""}`)
               .join(", ")}
           </div>
         )}
-
-        <div className="mt-4">
-          <Tabs
-            ariaLabel="추천 메뉴 분류 보기"
-            value={viewTab}
-            onChange={setViewTab}
-            options={[
-              { id: "all", label: "전체 추천" },
-              { id: "meal", label: "식사만" },
-              { id: "snack", label: "간식만" },
-            ]}
-          />
-        </div>
       </section>
 
       {error && <ErrorState message={error} onRetry={handleRefreshRecommendations} />}
 
       {loading ? (
-        <RecipeCardSkeleton count={4} />
+        <RecipeCardSkeleton count={3} />
       ) : (
         <>
-          {(viewTab === "all" || viewTab === "meal") && (
-            <section aria-labelledby="today-meals-heading" className="space-y-3.5">
-              <div className="flex items-center justify-between">
-                <h2
-                  id="today-meals-heading"
-                  className="text-xl font-semibold text-[var(--color-text)]"
-                >
-                  오늘의 식사 추천
-                </h2>
-                <Link
-                  href="/recipes"
-                  className="inline-flex min-h-11 items-center text-sm font-medium text-[var(--color-primary-text)] underline-offset-4 hover:underline"
-                >
-                  전체 레시피 보기 →
-                </Link>
-              </div>
-
-              {!hasAnyMeal ? (
-                <EmptyState
-                  title="현재 조건에 맞는 식사 레시피가 없어요"
-                  description="전체 레시피 탭에서 다른 연령·간 단계도 안전하게 살펴보세요."
-                />
-              ) : (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {slotEntries.map(
-                    (slot) =>
-                      slot.recipe && (
-                        <RecipeCard
-                          key={slot.recipe.id}
-                          babyId={baby.id}
-                          profileSaltLevel={baby.saltLevel}
-                          recipe={slot.recipe}
-                          extraBadge={slot.label}
-                        />
-                      ),
-                  )}
-                </div>
-              )}
-            </section>
-          )}
-
-          {(viewTab === "all" || viewTab === "snack") && (
-            <section aria-labelledby="today-snacks-heading" className="space-y-3.5">
+          <section aria-labelledby="today-meals-heading" className="space-y-3">
+            <div className="flex items-center justify-between gap-2">
               <h2
-                id="today-snacks-heading"
-                className="text-xl font-semibold text-[var(--color-text)]"
+                id="today-meals-heading"
+                className="text-lg font-semibold text-[var(--color-text)]"
               >
-                오늘의 간식 추천
+                오늘의 식사 추천
               </h2>
+              <Link
+                href="/recipes"
+                className="inline-flex min-h-11 items-center px-1 text-xs font-semibold text-[var(--color-primary-text)] hover:underline"
+              >
+                전체 보기
+              </Link>
+            </div>
 
-              {data.snacks.length === 0 ? (
-                <EmptyState
-                  title="현재 조건에 맞는 간식 레시피가 없어요"
-                  description="냉장고 재료를 선택해 맞춤 간식 레시피를 찾아보세요."
-                />
-              ) : (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {data.snacks.slice(0, showAllSnacks ? undefined : 2).map((snack) => (
-                    <RecipeCard
-                      key={snack.id}
-                      babyId={baby.id}
-                      profileSaltLevel={baby.saltLevel}
-                      recipe={snack}
-                    />
-                  ))}
-                </div>
-              )}
-              {data.snacks.length > 2 && (
-                <Button
-                  variant="ghost"
-                  fullWidth
-                  aria-expanded={showAllSnacks}
-                  onClick={() => setShowAllSnacks((value) => !value)}
-                >
-                  {showAllSnacks ? "간식 접기" : `간식 더보기 (${data.snacks.length - 2}개)`}
-                </Button>
-              )}
-            </section>
-          )}
+            {!hasAnyMeal ? (
+              <EmptyState
+                title="현재 조건에 맞는 식사 레시피가 없어요"
+                description="레시피 탭에서 다른 연령·간 단계도 안전하게 살펴보세요."
+              />
+            ) : (
+              <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2 xl:grid-cols-3">
+                {slotEntries.map(
+                  (slot) =>
+                    slot.recipe && (
+                      <RecipeCard
+                        key={slot.recipe.id}
+                        babyId={baby.id}
+                        profileSaltLevel={baby.saltLevel}
+                        recipe={slot.recipe}
+                        extraBadge={slot.label}
+                      />
+                    ),
+                )}
+              </div>
+            )}
+          </section>
+
+          <section aria-labelledby="today-snacks-heading" className="space-y-3">
+            <h2
+              id="today-snacks-heading"
+              className="text-lg font-semibold text-[var(--color-text)]"
+            >
+              오늘의 간식 추천
+            </h2>
+
+            {data.snacks.length === 0 ? (
+              <EmptyState
+                title="현재 조건에 맞는 간식 레시피가 없어요"
+                description="레시피 탭의 재료로 찾기에서 맞춤 간식을 찾아보세요."
+              />
+            ) : (
+              <div className="no-scrollbar -mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-1 md:mx-0 md:grid md:grid-cols-2 md:gap-3.5 md:overflow-visible md:px-0 md:pb-0 xl:grid-cols-3">
+                {data.snacks.map((snack) => (
+                  <div
+                    key={snack.id}
+                    className="w-[min(272px,calc(100vw-3.25rem))] shrink-0 snap-start md:w-auto md:shrink"
+                  >
+                    <RecipeCard babyId={baby.id} profileSaltLevel={baby.saltLevel} recipe={snack} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
         </>
       )}
 
-      {/* PRD 5장 IA: 홈 화면 최근 잘 먹은 메뉴 섹션 */}
+      {/* 최근 잘 먹은 메뉴 섹션 */}
       <section
         aria-labelledby="recent-good-heading"
-        className="border-t border-[var(--color-border)] pt-6"
+        className="border-t border-[var(--color-border)] pt-5"
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <h2 id="recent-good-heading" className="text-xl font-semibold text-[var(--color-text)]">
-              {withParticle(baby.displayName, "이", "가")} 잘 먹은 메뉴
-            </h2>
-            <p className="mt-0.5 text-xs text-[var(--color-text-secondary)]">
-              먹었어요 기록에서 좋은 반응을 남긴 레시피입니다.
-            </p>
-          </div>
+          <h2 id="recent-good-heading" className="text-lg font-semibold text-[var(--color-text)]">
+            {withParticle(baby.displayName, "이", "가")} 잘 먹은 메뉴
+          </h2>
           <Link
             href="/logs"
-            className="inline-flex min-h-11 items-center text-xs font-semibold text-[var(--color-primary-text)] underline underline-offset-4"
+            className="inline-flex min-h-11 items-center px-1 text-xs font-semibold text-[var(--color-primary-text)] hover:underline"
           >
-            전체 기록 보기 →
+            전체 기록
           </Link>
         </div>
 
         {recentGoodMenus.length === 0 ? (
-          <p className="mt-3 rounded-lg bg-[var(--color-surface-muted)] p-4 text-sm text-[var(--color-text-secondary)]">
-            아직 기록된 &ldquo;잘 먹었어요&rdquo; 메뉴가 없어요. 요리 후 레시피 상세 화면에서 아기
-            반응을 남겨보세요!
+          <p className="mt-2.5 rounded-lg bg-[var(--color-surface-muted)] p-3.5 text-xs text-[var(--color-text-secondary)] sm:text-sm">
+            아직 기록된 메뉴가 없어요. 요리 후 상세 화면에서 아기 반응을 남겨보세요.
           </p>
         ) : (
-          <ul className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-2.5 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {recentGoodMenus.slice(0, 3).map((menu) => (
               <li key={menu.recipeId}>
                 <Link
                   href={`/recipes/${menu.recipeId}`}
-                  className="flex min-h-12 items-center justify-between gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-canvas)] px-4 py-2.5 text-sm font-semibold text-[var(--color-text)] hover:border-[var(--color-primary)] hover:bg-[var(--color-primary-soft)]/40"
+                  className="flex min-h-11 items-center justify-between gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-canvas)] px-3.5 py-2 text-sm font-semibold text-[var(--color-text)] hover:border-[var(--color-primary)] hover:bg-[var(--color-primary-soft)]/40"
                 >
                   <span className="truncate">{menu.recipeName}</span>
                   <Badge variant="rating">잘 먹음 {menu.goodCount}회</Badge>
