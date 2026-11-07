@@ -8,7 +8,7 @@ import {
   isRecipeSafeForBaby,
   loadIngredientDictionaryMap,
 } from "@/features/recipe";
-import { currentAgeMonth, getAgeStage, kstDateString } from "@/lib/age";
+import { babyAgeMonthOnDate, getAgeStage, kstDateString } from "@/lib/age";
 import { getPrisma } from "@/lib/db";
 import { AppError } from "@/lib/http/errors";
 import { addDays, aggregateNutrition, cookingDate, generateWeek } from "./engine";
@@ -400,11 +400,7 @@ export async function createPlan(
   if (prefs.startDate < today || prefs.startDate > addDays(today, 90))
     throw new AppError(400, "PLAN_DATE", "시작일은 오늘부터 90일 이내로 선택해 주세요.");
   const catalog = await loadRecipeCatalog(baby, prisma);
-  const endAge = currentAgeMonth(
-    baby.ageMonthAtInput,
-    date(baby.ageInputDate),
-    new Date(`${addDays(prefs.startDate, 6)}T12:00:00Z`),
-  );
+  const endAge = babyAgeMonthOnDate(baby, new Date(`${addDays(prefs.startDate, 6)}T12:00:00Z`));
   // Only auto-place recipes also appropriate at the end of this plan's age window.
   const endRows = await prisma.recipe.findMany({
     where: {
@@ -544,16 +540,8 @@ export async function changePlan(
       };
       const validAtDate = (r: RecipeSnapshot, d: Date) =>
         r.ageStages?.includes(
-          getAgeStage(
-            Math.min(
-              48,
-              currentAgeMonth(
-                baby.ageMonthAtInput,
-                date(baby.ageInputDate),
-                new Date(`${day(d)}T12:00:00Z`),
-              ),
-            ),
-          ) ?? -1,
+          getAgeStage(Math.min(48, babyAgeMonthOnDate(baby, new Date(`${day(d)}T12:00:00Z`)))) ??
+            -1,
         ) ?? false;
       const manualBatches = await tx.foodBatch.findMany({
         where: {

@@ -16,7 +16,7 @@ describeWithDb("DB 스키마 개인정보 미수집 및 회원 탈퇴 연쇄 삭
     await pool.end();
   });
 
-  it("ACC-08: users 테이블에 이메일·전화번호·실명 컬럼이 없고 babies 테이블에 생년월일 컬럼이 없다", async () => {
+  it("ACC-08: users 테이블에 이메일·전화번호·실명 컬럼이 없고 babies 테이블은 선택 생년월일(birth_date)과 월령 컬럼을 갖는다", async () => {
     const userColumns = await prisma.$queryRaw<{ column_name: string }[]>`
       SELECT column_name
       FROM information_schema.columns
@@ -36,10 +36,9 @@ describeWithDb("DB 스키마 개인정보 미수집 및 회원 탈퇴 연쇄 삭
       WHERE table_schema = 'public' AND table_name = 'babies'
     `;
     const babyColNames = babyColumns.map((c) => c.column_name.toLowerCase());
+    expect(babyColNames).toContain("birth_date");
     expect(babyColNames).toContain("age_month_at_input");
     expect(babyColNames).toContain("age_input_date");
-    expect(babyColNames).not.toContain("birth_date");
-    expect(babyColNames).not.toContain("birthday");
   });
 
   it("ACC-07: User 삭제 시 Session, AiUsage, Baby, Allergy, MealLog, PantryItem, Favorite, Report가 연쇄 삭제된다", async () => {

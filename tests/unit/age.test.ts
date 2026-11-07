@@ -3,6 +3,9 @@ import {
   AGE_STAGES,
   MAX_AGE_MONTH,
   MIN_AGE_MONTH,
+  ageMonthsFromBirthDate,
+  babyAgeMonthOnDate,
+  birthDateBoundsForSupportedAge,
   currentAgeMonth,
   defaultSaltLevelForAge,
   fullMonthsBetween,
@@ -12,6 +15,7 @@ import {
   isRecipeAboveAge,
   isValidInputAgeMonth,
   kstDateString,
+  parseKstDate,
   toKstDateParts,
   youngestMonthForStages,
 } from "@/lib/age";
@@ -110,5 +114,43 @@ describe("lib/age — 월령 계산 및 연령 단계 매핑 (PRF-01~03, AGE-02)
     expect(isRecipeAboveAge([1, 2], 14)).toBe(false);
     // 12개월 미만은 항상 경고
     expect(isRecipeAboveAge([1], 10)).toBe(true);
+  });
+
+  it("생년월일(birthDate) 기반 만 월령 자동 계산 및 생일 경과에 따른 단계 전환", () => {
+    const birth = "2025-07-10";
+    // 2026-11-09: 아직 10일 미도달 → 만 15개월 (완료기, stage 1)
+    const beforeBirthday = new Date("2026-11-09T12:00:00+09:00");
+    expect(ageMonthsFromBirthDate(birth, beforeBirthday)).toBe(15);
+    expect(getAgeStage(ageMonthsFromBirthDate(birth, beforeBirthday))).toBe(1);
+
+    // 2026-11-10: 생일 도달 → 만 16개월 (유아식 1단계, stage 2)
+    const onBirthday = new Date("2026-11-10T00:00:00+09:00");
+    expect(ageMonthsFromBirthDate(birth, onBirthday)).toBe(16);
+    expect(getAgeStage(ageMonthsFromBirthDate(birth, onBirthday))).toBe(2);
+
+    // 윤년(2/29) 출생아 경계 검증
+    expect(ageMonthsFromBirthDate("2024-02-29", new Date("2025-02-28T12:00:00+09:00"))).toBe(11);
+    expect(ageMonthsFromBirthDate("2024-02-29", new Date("2025-03-01T00:00:00+09:00"))).toBe(12);
+
+    // babyAgeMonthOnDate: birthDate 우선, 미입력 시 ageMonthAtInput + ageInputDate 폴백
+    expect(
+      babyAgeMonthOnDate(
+        { birthDate: birth, ageMonthAtInput: 12, ageInputDate: "2026-08-01" },
+        onBirthday,
+      ),
+    ).toBe(16);
+    expect(
+      babyAgeMonthOnDate(
+        { birthDate: null, ageMonthAtInput: 12, ageInputDate: "2026-08-10" },
+        onBirthday,
+      ),
+    ).toBe(15);
+
+    // birthDateBoundsForSupportedAge 경계 일치 검증
+    const bounds = birthDateBoundsForSupportedAge(onBirthday);
+    expect(ageMonthsFromBirthDate(bounds.maxBirthDate, onBirthday)).toBe(MIN_AGE_MONTH);
+    expect(ageMonthsFromBirthDate(bounds.minBirthDate, onBirthday)).toBe(MAX_AGE_MONTH);
+    const dayBeforeMin = new Date(parseKstDate(bounds.minBirthDate).getTime() - 86400_000);
+    expect(ageMonthsFromBirthDate(dayBeforeMin, onBirthday)).toBe(MAX_AGE_MONTH + 1);
   });
 });

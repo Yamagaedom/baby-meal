@@ -17,7 +17,7 @@ import {
   type RecipeSnapshot,
 } from "@/features/meal-plan/types";
 import { scaleIngredientAmount } from "@/features/serving";
-import { currentAgeMonth, kstDateString } from "@/lib/age";
+import { babyAgeMonthOnDate, kstDateString } from "@/lib/age";
 import { NUTRITION_REFERENCE_SOURCE, nutritionReference } from "@/features/meal-plan/references";
 
 const field =
@@ -1847,11 +1847,7 @@ function NutritionPanel({
   const unresolved = entries.some((e) => e.kind === "HOME" && !e.recipeId);
   const external = entries.some((e) => e.kind === "EXTERNAL");
   const groups = new Set(included.flatMap((e) => (e.snapshot as RecipeSnapshot).groups));
-  const age = currentAgeMonth(
-    baby.ageMonthAtInput,
-    new Date(`${baby.ageInputDate}T00:00:00Z`),
-    new Date(`${selectedDate}T12:00:00Z`),
-  );
+  const age = babyAgeMonthOnDate(baby, new Date(`${selectedDate}T12:00:00Z`));
   const reference = nutritionReference(age);
   return (
     <section className={panel}>

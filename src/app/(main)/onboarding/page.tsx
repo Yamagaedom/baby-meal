@@ -30,8 +30,9 @@ export default function OnboardingPage() {
         아기 프로필 등록
       </h1>
       <p className="mt-1.5 text-sm leading-relaxed text-[var(--color-text-secondary)]">
-        아기의 현재 월령, 간 단계, 알레르기 정보를 설정하면 안전 기준을 통과한 맞춤 유아식과 간식을
-        바로 추천해 드립니다. 알레르기가 없으면 건너뛰셔도 됩니다.
+        아기의 생년월일(자동 월령 반영) 또는 현재 월령, 간 단계, 알레르기 정보를 설정하면 안전
+        기준을 통과한 맞춤 유아식과 간식을 바로 추천해 드립니다. 알레르기가 없으면 건너뛰셔도
+        됩니다.
       </p>
 
       {warnings.length > 0 ? (

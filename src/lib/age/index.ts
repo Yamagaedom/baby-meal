@@ -1,8 +1,8 @@
 /**
  * 월령 계산 및 연령 단계 매핑 (PRD 3.2 PRF-01~03, 연령 단계 정의)
  *
- * 개인정보 최소화를 위해 생년월일 대신 "입력 시점 월령 + 입력일"만 저장하고,
- * 현재 월령은 입력일로부터 경과한 개월 수를 더해 계산한다 (PRF-02).
+ * 아기 생년월일(birthDate)이 입력된 경우 생년월일로부터 만 개월 수를 실시간 자동 계산하며,
+ * 생년월일 미입력 프로필은 "입력 시점 월령 + 입력일"로부터 경과 개월 수를 더해 계산한다 (PRF-02).
  * 날짜 계산은 한국 시간(KST) 달력 기준이다.
  */
 import type { AgeStage, SaltLevel } from "@/lib/domain/types";
@@ -68,6 +68,15 @@ export function kstDateString(date: Date = new Date()): string {
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
+/** "YYYY-MM-DD" 달력 문자열을 DB @db.Date / KST 비교 호환 Date 객체로 변환 */
+export function parseKstDate(ymd: string): Date {
+  return new Date(`${ymd}T00:00:00.000Z`);
+}
+
+function asCalendarDate(value: Date | string): Date {
+  return typeof value === "string" ? parseKstDate(value) : value;
+}
+
 /**
  * from부터 to까지 "꽉 찬" 개월 수 (KST 달력 기준).
  * 예: 1/31 → 2/28 = 0개월, 1/31 → 3/1 = 1개월, 1/15 → 2/15 = 1개월
@@ -79,6 +88,63 @@ export function fullMonthsBetween(from: Date, to: Date): number {
   let months = (b.year - a.year) * 12 + (b.month - a.month);
   if (b.day < a.day) months -= 1;
   return Math.max(0, months);
+}
+
+/** 생년월일 기준 KST 달력 만 개월 수 자동 계산 */
+export function ageMonthsFromBirthDate(birthDate: Date | string, now: Date = new Date()): number {
+  return fullMonthsBetween(asCalendarDate(birthDate), now);
+}
+
+/**
+ * 아기 프로필의 특정 시점(기본: 현재) 월령 계산.
+ * - 생년월일(birthDate)이 있으면 생년월일 기준으로 정확한 만 개월 수를 자동 산출한다.
+ * - 생년월일이 없으면 입력 시점 월령 + 경과 개월 수로 계산한다.
+ */
+export function babyAgeMonthOnDate(
+  baby: {
+    birthDate?: Date | string | null;
+    ageMonthAtInput: number;
+    ageInputDate: Date | string;
+  },
+  now: Date = new Date(),
+): number {
+  if (baby.birthDate) {
+    return ageMonthsFromBirthDate(baby.birthDate, now);
+  }
+  return currentAgeMonth(baby.ageMonthAtInput, asCalendarDate(baby.ageInputDate), now);
+}
+
+/**
+ * 현재(now) 기준으로 지원 월령(12~48개월)에 해당하는 생년월일 입력 허용 범위(YYYY-MM-DD) 산출
+ */
+export function birthDateBoundsForSupportedAge(now: Date = new Date()): {
+  minBirthDate: string;
+  maxBirthDate: string;
+} {
+  const { year, month, day } = toKstDateParts(now);
+  const daysInMonth = (y: number, m: number) => new Date(Date.UTC(y, m, 0)).getUTCDate();
+
+  const maxY = year - 1;
+  const maxD = Math.min(day, daysInMonth(maxY, month));
+  const maxDt = new Date(Date.UTC(maxY, month - 1, maxD));
+
+  const startMinY = year - 4;
+  const startMinD = Math.min(day, daysInMonth(startMinY, month));
+  let minDt = new Date(Date.UTC(startMinY, month - 1, startMinD));
+  for (let i = 0; i < 35; i += 1) {
+    const prev = new Date(minDt.getTime() - 24 * 60 * 60 * 1000);
+    if (fullMonthsBetween(prev, now) <= MAX_AGE_MONTH) {
+      minDt = prev;
+    } else {
+      break;
+    }
+  }
+
+  const fmt = (dt: Date) => dt.toISOString().slice(0, 10);
+  return {
+    minBirthDate: fmt(minDt),
+    maxBirthDate: fmt(maxDt),
+  };
 }
 
 /** 입력 월령이 서비스 지원 범위(12~48개월 정수)인지 (PRF-01) */

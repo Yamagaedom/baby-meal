@@ -4,12 +4,16 @@
 import { z } from "zod";
 import type { PrismaClient } from "@/generated/prisma/client";
 import {
-  currentAgeMonth,
+  MAX_AGE_MONTH,
+  MIN_AGE_MONTH,
+  ageMonthsFromBirthDate,
+  babyAgeMonthOnDate,
   defaultSaltLevelForAge,
   getAgeStage,
   getAgeStageInfo,
   isOverMaxAge,
   kstDateString,
+  parseKstDate,
 } from "@/lib/age";
 import { getPrisma } from "@/lib/db";
 import {
@@ -24,6 +28,7 @@ import { type BabyAllergyProfile, findIngredientByName } from "@/lib/safety";
 import {
   allergenSchema,
   babyAgeMonthSchema,
+  babyBirthDateSchema,
   babyNicknameSchema,
   isValidUuid,
   saltLevelSchema,
@@ -34,17 +39,24 @@ export const MAX_BABIES_PER_USER = 5;
 export const OVER_MAX_AGE_NOTICE =
   "지원 월령(48개월)이 종료되었습니다. 유아식 3단계 레시피는 계속 이용하실 수 있습니다.";
 
-export const createBabyInputSchema = z.object({
-  nickname: babyNicknameSchema,
-  ageMonth: babyAgeMonthSchema,
-  saltLevel: saltLevelSchema.optional(),
-  allergens: z.array(allergenSchema).optional().default([]),
-  ingredientIds: z.array(z.string().uuid()).optional().default([]),
-  customAllergyTerms: z.array(z.string().trim().min(1).max(30)).optional().default([]),
-});
+export const createBabyInputSchema = z
+  .object({
+    nickname: babyNicknameSchema,
+    birthDate: babyBirthDateSchema.optional(),
+    ageMonth: babyAgeMonthSchema.optional(),
+    saltLevel: saltLevelSchema.optional(),
+    allergens: z.array(allergenSchema).optional().default([]),
+    ingredientIds: z.array(z.string().uuid()).optional().default([]),
+    customAllergyTerms: z.array(z.string().trim().min(1).max(30)).optional().default([]),
+  })
+  .refine((val) => val.birthDate !== undefined || val.ageMonth !== undefined, {
+    message: "생년월일 또는 현재 월령을 입력해 주세요.",
+    path: ["birthDate"],
+  });
 
 export const updateBabyInputSchema = z.object({
   nickname: babyNicknameSchema,
+  birthDate: babyBirthDateSchema.nullable().optional(),
   ageMonth: babyAgeMonthSchema.optional(),
   saltLevel: saltLevelSchema.optional(),
   allergens: z.array(allergenSchema).optional(),
@@ -66,6 +78,7 @@ export interface BabyProfileView {
   id: string;
   nickname: string | null;
   displayName: string;
+  birthDate: string | null;
   ageMonthAtInput: number;
   ageInputDate: string;
   currentAgeMonth: number;
@@ -82,6 +95,7 @@ type BabyWithAllergiesRow = {
   id: string;
   userId: string;
   nickname: string | null;
+  birthDate: Date | null;
   ageMonthAtInput: number;
   ageInputDate: Date;
   saltLevel: SaltLevel;
@@ -106,8 +120,36 @@ const BABY_ALLERGY_INGREDIENT_SELECT = {
   allergens: true,
 } as const;
 
+function validateAndResolveBirthDate(
+  birthDateStr: string,
+  now: Date,
+  options: { allowOverMaxIfUnchanged?: boolean } = {},
+): { parsedBirthDate: Date; computedAgeMonth: number } {
+  const todayStr = kstDateString(now);
+  if (birthDateStr > todayStr) {
+    throw new AppError(400, "INVALID_BIRTH_DATE", "생년월일은 오늘 이전 날짜여야 합니다.");
+  }
+  const parsedBirthDate = parseKstDate(birthDateStr);
+  const computedAgeMonth = ageMonthsFromBirthDate(parsedBirthDate, now);
+  if (computedAgeMonth < MIN_AGE_MONTH) {
+    throw new AppError(
+      400,
+      "AGE_OUT_OF_RANGE",
+      `지원 월령은 ${MIN_AGE_MONTH}개월부터입니다. (입력 생년월일 기준 만 ${computedAgeMonth}개월)`,
+    );
+  }
+  if (!options.allowOverMaxIfUnchanged && computedAgeMonth > MAX_AGE_MONTH) {
+    throw new AppError(
+      400,
+      "AGE_OUT_OF_RANGE",
+      `지원 월령은 ${MAX_AGE_MONTH}개월까지입니다. (입력 생년월일 기준 만 ${computedAgeMonth}개월)`,
+    );
+  }
+  return { parsedBirthDate, computedAgeMonth };
+}
+
 function toBabyProfileView(row: BabyWithAllergiesRow, now: Date): BabyProfileView {
-  const ageMonth = currentAgeMonth(row.ageMonthAtInput, row.ageInputDate, now);
+  const ageMonth = babyAgeMonthOnDate(row, now);
   const stage = getAgeStage(ageMonth) ?? 1;
   const stageInfo = getAgeStageInfo(stage);
   const overMax = isOverMaxAge(ageMonth);
@@ -125,7 +167,8 @@ function toBabyProfileView(row: BabyWithAllergiesRow, now: Date): BabyProfileVie
       ingredientId: a.ingredientId,
       ingredientName: a.ingredient?.name ?? null,
       derivedAllergens,
-      label: a.ingredient?.name ?? (a.allergenType ? ALLERGEN_LABELS[a.allergenType] : "알 수 없음"),
+      label:
+        a.ingredient?.name ?? (a.allergenType ? ALLERGEN_LABELS[a.allergenType] : "알 수 없음"),
     };
   });
 
@@ -133,6 +176,7 @@ function toBabyProfileView(row: BabyWithAllergiesRow, now: Date): BabyProfileVie
     id: row.id,
     nickname: row.nickname,
     displayName: row.nickname?.trim() ? row.nickname.trim() : `${ageMonth}개월 아가`,
+    birthDate: row.birthDate ? kstDateString(row.birthDate) : null,
     ageMonthAtInput: row.ageMonthAtInput,
     ageInputDate: kstDateString(row.ageInputDate),
     currentAgeMonth: ageMonth,
@@ -285,6 +329,16 @@ export async function createBabyProfile(
 ): Promise<{ baby: BabyProfileView; warnings: string[] }> {
   const input = createBabyInputSchema.parse(rawInput);
 
+  let resolvedBirthDate: Date | null = null;
+  let resolvedAgeMonth: number;
+  if (input.birthDate) {
+    const { parsedBirthDate, computedAgeMonth } = validateAndResolveBirthDate(input.birthDate, now);
+    resolvedBirthDate = parsedBirthDate;
+    resolvedAgeMonth = computedAgeMonth;
+  } else {
+    resolvedAgeMonth = input.ageMonth!;
+  }
+
   const count = await prisma.baby.count({ where: { userId } });
   if (count >= MAX_BABIES_PER_USER) {
     throw new AppError(
@@ -311,14 +365,15 @@ export async function createBabyProfile(
     }
   }
 
-  const saltLevel = input.saltLevel ?? defaultSaltLevelForAge(input.ageMonth);
-  const inputDate = new Date(`${kstDateString(now)}T00:00:00.000Z`);
+  const saltLevel = input.saltLevel ?? defaultSaltLevelForAge(resolvedAgeMonth);
+  const inputDate = parseKstDate(kstDateString(now));
 
   const created = await prisma.baby.create({
     data: {
       userId,
       nickname: input.nickname?.trim() || null,
-      ageMonthAtInput: input.ageMonth,
+      birthDate: resolvedBirthDate,
+      ageMonthAtInput: resolvedAgeMonth,
       ageInputDate: inputDate,
       saltLevel,
       allergies: {
@@ -363,8 +418,45 @@ export async function updateBabyProfile(
   prisma: PrismaClient = getPrisma(),
   now: Date = new Date(),
 ): Promise<{ baby: BabyProfileView; warnings: string[] }> {
-  await getOwnedBabyOrThrow(userId, babyId, prisma, now);
+  const existing = await getOwnedBabyOrThrow(userId, babyId, prisma, now);
   const input = updateBabyInputSchema.parse(rawInput);
+
+  const inputDate = parseKstDate(kstDateString(now));
+  let ageUpdatePatch: {
+    birthDate?: Date | null;
+    ageMonthAtInput?: number;
+    ageInputDate?: Date;
+  } = {};
+
+  if (typeof input.birthDate === "string") {
+    const isUnchanged = existing.birthDate === input.birthDate;
+    const { parsedBirthDate, computedAgeMonth } = validateAndResolveBirthDate(
+      input.birthDate,
+      now,
+      {
+        allowOverMaxIfUnchanged: isUnchanged,
+      },
+    );
+    ageUpdatePatch = {
+      birthDate: parsedBirthDate,
+      ageMonthAtInput: Math.min(MAX_AGE_MONTH, Math.max(MIN_AGE_MONTH, computedAgeMonth)),
+      ageInputDate: inputDate,
+    };
+  } else if (input.birthDate === null) {
+    const manualMonth =
+      input.ageMonth ?? Math.min(MAX_AGE_MONTH, Math.max(MIN_AGE_MONTH, existing.currentAgeMonth));
+    ageUpdatePatch = {
+      birthDate: null,
+      ageMonthAtInput: manualMonth,
+      ageInputDate: inputDate,
+    };
+  } else if (input.ageMonth !== undefined) {
+    ageUpdatePatch = {
+      birthDate: null,
+      ageMonthAtInput: input.ageMonth,
+      ageInputDate: inputDate,
+    };
+  }
 
   const warnings: string[] = [];
   let mappedFromCustom: string[] = [];
@@ -398,16 +490,12 @@ export async function updateBabyProfile(
     }
   }
 
-  const inputDate = new Date(`${kstDateString(now)}T00:00:00.000Z`);
-
   await prisma.$transaction(async (tx) => {
     await tx.baby.update({
       where: { id: babyId },
       data: {
         ...(input.nickname !== undefined ? { nickname: input.nickname.trim() || null } : {}),
-        ...(input.ageMonth !== undefined
-          ? { ageMonthAtInput: input.ageMonth, ageInputDate: inputDate }
-          : {}),
+        ...ageUpdatePatch,
         ...(input.saltLevel !== undefined ? { saltLevel: input.saltLevel } : {}),
       },
     });
@@ -482,11 +570,7 @@ export async function deleteBabyProfile(
   await getOwnedBabyOrThrow(userId, babyId, prisma);
   const totalBabies = await prisma.baby.count({ where: { userId } });
   if (totalBabies <= 1) {
-    throw new AppError(
-      400,
-      "MIN_ONE_BABY_REQUIRED",
-      "최소 1명의 아기 프로필은 유지되어야 합니다.",
-    );
+    throw new AppError(400, "MIN_ONE_BABY_REQUIRED", "최소 1명의 아기 프로필은 유지되어야 합니다.");
   }
   await prisma.baby.delete({ where: { id: babyId } });
 }

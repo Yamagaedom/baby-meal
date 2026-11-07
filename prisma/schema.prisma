@@ -1,6 +1,6 @@
 // PRD v0.3 6장 데이터 모델 구현 (PostgreSQL / Prisma 7)
 // 원칙:
-// 1. 개인정보 미수집(ACC-08): User에 이메일·전화번호·실명 컬럼 없음, Baby에 생년월일 컬럼 없음.
+// 1. 계정 개인정보 미수집(ACC-08): User에 이메일·전화번호·실명 컬럼 없음, Baby는 생년월일(선택) 또는 입력 시점 월령으로 자동 계산.
 // 2. 회원 탈퇴 즉시 전체 삭제(ACC-07): User 하위 모든 사용자 데이터는 onDelete: Cascade 적용.
 
 generator client {
@@ -155,11 +155,12 @@ model AiUsage {
   @@map("ai_usages")
 }
 
-/// 아기 프로필 (PRF-01~06: 생년월일 미수집, 입력 시점 월령 + 입력일 저장)
+/// 아기 프로필 (PRF-01~06: 생년월일 선택 저장 시 생일 기준 월령 자동 반영, 미입력 시 입력 시점 월령 + 입력일 기준 계산)
 model Baby {
   id              String    @id @default(uuid()) @db.Uuid
   userId          String    @map("user_id") @db.Uuid
   nickname        String?
+  birthDate       DateTime? @map("birth_date") @db.Date
   ageMonthAtInput Int       @map("age_month_at_input")
   ageInputDate    DateTime  @map("age_input_date") @db.Date
   saltLevel       SaltLevel @default(NONE) @map("salt_level")

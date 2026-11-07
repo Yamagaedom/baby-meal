@@ -223,6 +223,9 @@ export function MyPageClient({ loginId, babies }: MyPageClientProps) {
                       <Badge variant="age">
                         현재 {b.currentAgeMonth}개월 ({b.ageStageLabel})
                       </Badge>
+                      {b.birthDate && (
+                        <Badge variant="neutral">생년월일 {b.birthDate} · 월령 자동 반영</Badge>
+                      )}
                       <Badge variant="salt">{SALT_LEVEL_LABELS[b.saltLevel]}</Badge>
                     </div>
                   </div>
@@ -271,6 +274,7 @@ export function MyPageClient({ loginId, babies }: MyPageClientProps) {
                       initial={{
                         id: b.id,
                         nickname: b.nickname,
+                        birthDate: b.birthDate,
                         ageMonth: Math.min(48, Math.max(12, b.currentAgeMonth)),
                         saltLevel: b.saltLevel,
                         allergens: confirmedAllergens,

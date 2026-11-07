@@ -82,7 +82,12 @@ async function main() {
         where: { slug: recipe.slug },
         select: { nutrition: true },
       });
-      if (existing?.nutrition && typeof existing.nutrition === "object" && !Array.isArray(existing.nutrition) && existing.nutrition.catalogRepairVersion) {
+      if (
+        existing?.nutrition &&
+        typeof existing.nutrition === "object" &&
+        !Array.isArray(existing.nutrition) &&
+        existing.nutrition.catalogRepairVersion
+      ) {
         console.log(`[seed] 출처·재료 보완을 마친 레시피 유지: ${recipe.slug}`);
         continue;
       }
@@ -93,7 +98,9 @@ async function main() {
             `[seed] 레시피(${recipe.slug})의 재료 slug(${ri.ingredientSlug})가 사전에 없습니다.`,
           );
         }
-        const substitute = ri.substituteSlug ? slugToDbIngredient.get(ri.substituteSlug) : undefined;
+        const substitute = ri.substituteSlug
+          ? slugToDbIngredient.get(ri.substituteSlug)
+          : undefined;
         if (ri.substituteSlug && !substitute) {
           throw new Error(
             `[seed] 레시피(${recipe.slug})의 대체 재료 slug(${ri.substituteSlug})가 사전에 없습니다.`,
@@ -141,6 +148,7 @@ async function main() {
           summary: recipe.summary,
           category: recipe.category,
           mealCategories: recipe.mealCategories,
+          mealRole: recipe.mealRole ?? (recipe.category === "SNACK" ? "SNACK" : "MAIN"),
           ageStages: recipe.ageStages,
           saltLevel: recipe.saltLevel,
           cookMinutes: recipe.cookMinutes,
@@ -163,6 +171,7 @@ async function main() {
           summary: recipe.summary,
           category: recipe.category,
           mealCategories: recipe.mealCategories,
+          mealRole: recipe.mealRole ?? (recipe.category === "SNACK" ? "SNACK" : "MAIN"),
           ageStages: recipe.ageStages,
           saltLevel: recipe.saltLevel,
           cookMinutes: recipe.cookMinutes,
@@ -206,6 +215,8 @@ async function main() {
           channelOrSite: src.channelOrSite,
           sourceType: src.sourceType,
           trustScore: src.trustScore,
+          verificationStatus: "VERIFIED",
+          verifiedAt: new Date("2026-11-01T00:00:00+09:00"),
         })),
       });
     }

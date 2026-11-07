@@ -9,8 +9,8 @@ import { Badge, Button, Input } from "@/components/ui";
 
 const INTRO_CARDS = [
   {
-    title: "월령·간 단계 맞춤",
-    desc: "12~48개월 아기 식감과 무염·저염 기준에 맞춰 추천해요.",
+    title: "생년월일·월령 자동 맞춤",
+    desc: "생년월일만 넣으면 12~48개월 월령·식감·염분 단계가 자동 반영돼요.",
   },
   {
     title: "냉장고 재료 + AI 레시피",
@@ -18,7 +18,7 @@ const INTRO_CARDS = [
   },
   {
     title: "개인정보 제로 계정",
-    desc: "실명·연락처·생년월일 없이 ID와 비밀번호만 사용해요.",
+    desc: "실명·연락처·이메일 없이 ID와 비밀번호만 사용해요.",
   },
 ] as const;
 
@@ -88,7 +88,7 @@ export default function SignupPage() {
 
           <h1 className="mt-2.5 text-xl font-semibold text-[var(--color-text)]">회원가입</h1>
           <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-            개인정보(이메일·전화번호·이름·생년월일) 없이 아이디와 비밀번호만으로 바로 이용할 수
+            계정 개인정보(이메일·전화번호·실명) 없이 아이디와 비밀번호만으로 바로 이용할 수
             있습니다.
           </p>
 

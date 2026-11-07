@@ -3,8 +3,18 @@
 import { useEffect, useState } from "react";
 import { Button, Chip, Input, Select } from "@/components/ui";
 import { SALT_LEVEL_LABELS } from "@/features/recipe/constants-client";
-import { defaultSaltLevelForAge, getAgeStage, getAgeStageInfo } from "@/lib/age";
+import {
+  MAX_AGE_MONTH,
+  MIN_AGE_MONTH,
+  ageMonthsFromBirthDate,
+  defaultSaltLevelForAge,
+  getAgeStage,
+  getAgeStageInfo,
+  kstDateString,
+  parseKstDate,
+} from "@/lib/age";
 import { ALLERGENS, ALLERGEN_LABELS, type Allergen, type SaltLevel } from "@/lib/domain/types";
+import { isValidCalendarDateString } from "@/lib/validation";
 
 interface IngredientOption {
   id: string;
@@ -15,6 +25,7 @@ interface IngredientOption {
 export interface BabyProfileFormInitial {
   id?: string;
   nickname?: string | null;
+  birthDate?: string | null;
   ageMonth?: number;
   saltLevel?: SaltLevel;
   allergens?: Allergen[];
@@ -28,10 +39,13 @@ interface BabyProfileFormProps {
 }
 
 export function BabyProfileForm({ initial, submitLabel, onSuccess }: BabyProfileFormProps) {
+  const initialAge = initial?.ageMonth ?? 15;
   const [nickname, setNickname] = useState(initial?.nickname ?? "");
-  const [ageMonth, setAgeMonth] = useState<number>(initial?.ageMonth ?? 15);
+  const [birthDate, setBirthDate] = useState(initial?.birthDate ?? "");
+  const [birthDateError, setBirthDateError] = useState<string | null>(null);
+  const [ageMonth, setAgeMonth] = useState<number>(initialAge);
   const [saltLevel, setSaltLevel] = useState<SaltLevel>(
-    initial?.saltLevel ?? defaultSaltLevelForAge(initial?.ageMonth ?? 15),
+    initial?.saltLevel ?? defaultSaltLevelForAge(initialAge),
   );
   const [saltManuallyChanged, setSaltManuallyChanged] = useState(Boolean(initial?.saltLevel));
   const [selectedAllergens, setSelectedAllergens] = useState<Allergen[]>(initial?.allergens ?? []);
@@ -68,11 +82,57 @@ export function BabyProfileForm({ initial, submitLabel, onSuccess }: BabyProfile
     };
   }, [searchQuery]);
 
-  function handleAgeChange(nextMonth: number) {
+  function applyResolvedAgeMonth(nextMonth: number) {
     setAgeMonth(nextMonth);
     if (!saltManuallyChanged) {
       setSaltLevel(defaultSaltLevelForAge(nextMonth));
     }
+  }
+
+  function handleBirthDateChange(nextValue: string) {
+    setBirthDate(nextValue);
+    setError(null);
+
+    const trimmed = nextValue.trim();
+    if (!trimmed) {
+      setBirthDateError(null);
+      return;
+    }
+
+    if (!isValidCalendarDateString(trimmed)) {
+      setBirthDateError("올바른 생년월일(YYYY-MM-DD)을 입력해 주세요.");
+      return;
+    }
+
+    const todayStr = kstDateString();
+    if (trimmed > todayStr) {
+      setBirthDateError("생년월일은 오늘 이전 날짜여야 합니다.");
+      return;
+    }
+
+    const computedMonths = ageMonthsFromBirthDate(parseKstDate(trimmed));
+    if (computedMonths < MIN_AGE_MONTH) {
+      setBirthDateError(
+        `지원 월령은 ${MIN_AGE_MONTH}개월부터입니다. (입력 생년월일 기준 만 ${computedMonths}개월)`,
+      );
+      return;
+    }
+    if (computedMonths > MAX_AGE_MONTH && trimmed !== initial?.birthDate) {
+      setBirthDateError(
+        `지원 월령은 ${MAX_AGE_MONTH}개월까지입니다. (입력 생년월일 기준 만 ${computedMonths}개월)`,
+      );
+      return;
+    }
+
+    setBirthDateError(null);
+    applyResolvedAgeMonth(Math.min(MAX_AGE_MONTH, Math.max(MIN_AGE_MONTH, computedMonths)));
+  }
+
+  function handleManualAgeChange(nextMonth: number) {
+    setBirthDate("");
+    setBirthDateError(null);
+    setError(null);
+    applyResolvedAgeMonth(nextMonth);
   }
 
   function toggleAllergen(code: Allergen) {
@@ -96,13 +156,24 @@ export function BabyProfileForm({ initial, submitLabel, onSuccess }: BabyProfile
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (birthDateError) {
+      setError(birthDateError);
+      return;
+    }
+
     setSubmitting(true);
 
     try {
       const leftoverCustomTerms = searchQuery.trim() ? [searchQuery.trim()] : [];
+      const trimmedBirthDate = birthDate.trim();
       const payload = {
         nickname: nickname.trim() || undefined,
-        ageMonth,
+        ...(trimmedBirthDate
+          ? { birthDate: trimmedBirthDate, ageMonth }
+          : initial?.id
+            ? { birthDate: null, ageMonth }
+            : { ageMonth }),
         saltLevel,
         allergens: selectedAllergens,
         ingredientIds: selectedIngredients.map((i) => i.id),
@@ -133,6 +204,8 @@ export function BabyProfileForm({ initial, submitLabel, onSuccess }: BabyProfile
     }
   }
 
+  const hasValidBirthDate = Boolean(birthDate.trim()) && !birthDateError;
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
@@ -147,7 +220,7 @@ export function BabyProfileForm({ initial, submitLabel, onSuccess }: BabyProfile
       <Input
         id="baby-nickname"
         label="아기 애칭 / 닉네임 (선택)"
-        hint="개인정보 보호를 위해 실명 대신 애칭 입력을 권장합니다. 생년월일은 수집하지 않습니다."
+        hint="개인정보 보호를 위해 실명 대신 애칭 입력을 권장합니다."
         type="text"
         maxLength={20}
         value={nickname}
@@ -155,27 +228,55 @@ export function BabyProfileForm({ initial, submitLabel, onSuccess }: BabyProfile
         placeholder="예: 튼튼이"
       />
 
-      <div>
-        <Select
-          id="baby-age-month"
-          label="현재 월령 (12~48개월)"
-          value={ageMonth}
-          onChange={(e) => handleAgeChange(Number(e.target.value))}
-        >
-          {Array.from({ length: 37 }, (_, idx) => 12 + idx).map((m) => (
-            <option key={m} value={m}>
-              {m}개월
-            </option>
-          ))}
-        </Select>
+      <div className="space-y-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-muted)]/50 p-4">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Input
+            id="baby-birth-date"
+            label="아기 생년월일 (선택 시 월령 자동 반영)"
+            hint="생년월일을 입력하면 생일마다 월령·단계가 자동 계산됩니다."
+            type="date"
+            value={birthDate}
+            error={birthDateError}
+            onChange={(e) => handleBirthDateChange(e.target.value)}
+          />
+
+          <Select
+            id="baby-age-month"
+            label="현재 월령 (12~48개월)"
+            hint={
+              hasValidBirthDate
+                ? "생년월일 기준으로 자동 반영된 월령입니다. 직접 변경하면 수동 월령으로 전환됩니다."
+                : "생년월일 미입력 시 현재 월령을 직접 선택할 수 있습니다."
+            }
+            value={ageMonth}
+            onChange={(e) => handleManualAgeChange(Number(e.target.value))}
+          >
+            {Array.from({ length: 37 }, (_, idx) => 12 + idx).map((m) => (
+              <option key={m} value={m}>
+                {m}개월
+              </option>
+            ))}
+          </Select>
+        </div>
+
         <div
           role="status"
           aria-live="polite"
           data-testid="auto-stage-preview"
-          className="mt-2 rounded-lg border border-[var(--color-secondary-border)] bg-[var(--color-secondary-soft)] px-3.5 py-2.5 text-xs font-medium text-[var(--color-secondary-text)]"
+          className="rounded-lg border border-[var(--color-secondary-border)] bg-[var(--color-secondary-soft)] px-3.5 py-2.5 text-xs font-medium text-[var(--color-secondary-text)]"
         >
-          자동 지정 단계: <strong>{stageInfo.label}</strong> ({stageInfo.texture}) — 입력일 기준으로
-          매달 자동 갱신됩니다.
+          {hasValidBirthDate ? (
+            <>
+              생년월일(<strong>{birthDate.trim()}</strong>) 기준 현재 만{" "}
+              <strong>{ageMonth}개월</strong> · 자동 지정 단계: <strong>{stageInfo.label}</strong> (
+              {stageInfo.texture}) — 아기 생일마다 월령과 유아식 단계가 자동 반영됩니다.
+            </>
+          ) : (
+            <>
+              자동 지정 단계: <strong>{stageInfo.label}</strong> ({stageInfo.texture}) — 생년월일을
+              함께 입력하면 매달 생일 기준으로 더 정확히 자동 반영됩니다.
+            </>
+          )}
         </div>
       </div>
 

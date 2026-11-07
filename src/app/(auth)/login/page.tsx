@@ -59,14 +59,14 @@ export default function LoginPage() {
           </div>
 
           <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-secondary)]">
-            아기의 월령·무염/저염 단계·알레르기에 맞춘 유아식과 간식 아이디어를 매일 편안하게
-            받아보세요.
+            아기의 생년월일(자동 월령)·무염/저염 단계·알레르기에 맞춘 유아식과 간식 아이디어를 매일
+            편안하게 받아보세요.
           </p>
 
           <div className="mt-3.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-3.5 text-xs leading-relaxed text-[var(--color-text-secondary)]">
             <p>
-              <strong className="text-[var(--color-text)]"> 개인정보 미수집:</strong>{" "}
-              이메일·전화번호·생년월일 없이 아이디와 비밀번호만으로 이용합니다.
+              <strong className="text-[var(--color-text)]"> 계정 개인정보 미수집:</strong>{" "}
+              이메일·전화번호·실명 없이 아이디와 비밀번호만으로 이용합니다.
             </p>
             <p className="mt-1">
               <strong className="text-[var(--color-text)]"> 안전 안내:</strong> AI 생성 레시피는

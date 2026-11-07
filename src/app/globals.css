@@ -182,8 +182,8 @@ label:has(input.sr-only:focus-visible) {
 
 @keyframes fadeInUp {
   from {
-    opacity: 0;
-    transform: translateY(8px);
+    opacity: 1;
+    transform: translateY(6px);
   }
   to {
     opacity: 1;

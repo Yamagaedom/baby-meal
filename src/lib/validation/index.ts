@@ -15,8 +15,7 @@ import { MAX_SERVINGS, MIN_SERVINGS } from "@/lib/safety/constants";
 
 const EMAIL_LIKE_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_LIKE_REGEX = /^01[016789][-.\s]?\d{3,4}[-.\s]?\d{4}$/;
-const UUID_LIKE_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_LIKE_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** PostgreSQL UUID 컬럼 조회 전 형식 검증 헬퍼 */
 export function isValidUuid(value: string): boolean {
@@ -29,11 +28,7 @@ export function isValidCalendarDateString(value: string): boolean {
   const [year, month, day] = value.split("-").map(Number);
   if (month < 1 || month > 12 || day < 1 || day > 31) return false;
   const dt = new Date(Date.UTC(year, month - 1, day));
-  return (
-    dt.getUTCFullYear() === year &&
-    dt.getUTCMonth() === month - 1 &&
-    dt.getUTCDate() === day
-  );
+  return dt.getUTCFullYear() === year && dt.getUTCMonth() === month - 1 && dt.getUTCDate() === day;
 }
 
 /**
@@ -68,6 +63,11 @@ export const babyAgeMonthSchema = z
   .int("월령은 정수여야 합니다.")
   .min(MIN_AGE_MONTH, `지원 월령은 ${MIN_AGE_MONTH}개월부터입니다.`)
   .max(MAX_AGE_MONTH, `지원 월령은 ${MAX_AGE_MONTH}개월까지입니다.`);
+
+/** 아기 생년월일 스키마 (YYYY-MM-DD 실존 달력 날짜) */
+export const babyBirthDateSchema = z.string().trim().refine(isValidCalendarDateString, {
+  message: "올바른 생년월일(YYYY-MM-DD)을 입력해 주세요.",
+});
 
 /** 아기 닉네임 스키마 (PRF-01, ACC-08: 선택 입력, 이메일/전화번호 차단) */
 export const babyNicknameSchema = z

@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { EXPANDED_RECIPES } from "@/data/expanded-recipes";
+import mealProfiles from "@/data/recipe-meal-profiles.json";
 import type { IngredientInfo } from "@/lib/domain/types";
 import { validateRecipeSafety } from "@/lib/safety";
 import { SEED_INGREDIENTS } from "../../prisma/seed/ingredients";
@@ -29,7 +31,22 @@ describe("시드 데이터 무결성 및 안전 검증 (PRD 8장, AI-05)", () =>
   });
 
   it("샘플 레시피가 4개 연령 단계·식사/간식·무염/저염에 고르게 분포하며 모두 lib/safety 검증을 통과한다", () => {
-    expect(SEED_RECIPES.length).toBeGreaterThanOrEqual(30);
+    expect(SEED_RECIPES.length).toBeGreaterThanOrEqual(80);
+    expect(EXPANDED_RECIPES.length).toBeGreaterThanOrEqual(50);
+
+    const recipeSlugs = new Set<string>();
+    const recipeNames = new Set<string>();
+    for (const r of SEED_RECIPES) {
+      expect(recipeSlugs.has(r.slug), `중복 레시피 slug: ${r.slug}`).toBe(false);
+      recipeSlugs.add(r.slug);
+      expect(recipeNames.has(r.name), `중복 레시피명: ${r.name}`).toBe(false);
+      recipeNames.add(r.name);
+    }
+    for (const r of EXPANDED_RECIPES) {
+      expect((mealProfiles as Record<string, string>)[r.slug], `식단 프로필 누락: ${r.slug}`).toBe(
+        r.dishType,
+      );
+    }
 
     const dictBySlug = new Map<string, IngredientInfo>(
       SEED_INGREDIENTS.map((ing) => [
