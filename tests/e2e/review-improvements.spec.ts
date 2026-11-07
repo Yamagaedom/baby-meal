@@ -81,6 +81,9 @@ test("review flow: full ingredient browse, precise match, 3-day meals with sides
       .filter({ has: page.locator(":scope > summary", { hasText: "저녁 · 밥 + 반찬 4" }) })
       .first();
     await expect(meal).toBeVisible();
+    await meal.locator(":scope > summary").click();
+    await expect(meal.getByText("주식", { exact: true })).toBeVisible();
+    await expect(meal.getByText("반찬 1", { exact: true })).toBeVisible();
     await page.screenshot({ path: testInfo.outputPath("review-week-mobile.png"), fullPage: true });
     const a11y = await new AxeBuilder({ page }).analyze();
     expect(a11y.violations.filter((v) => ["serious", "critical"].includes(v.impact ?? ""))).toEqual(
