@@ -48,6 +48,42 @@ export const loginIdSchema = z
   })
   .regex(/^[a-z0-9]+$/, "아이디는 영문 소문자와 숫자만 사용할 수 있습니다.");
 
+/** 이메일 주소 스키마 (이메일 로그인 및 SNS 계정 연동용) */
+export const emailSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(5, "올바른 이메일 주소를 입력해 주세요.")
+  .max(120, "이메일은 120자 이하여야 합니다.")
+  .refine((val) => EMAIL_LIKE_REGEX.test(val), {
+    message: "올바른 이메일 주소를 입력해 주세요.",
+  });
+
+/**
+ * 통합 계정 식별자 스키마:
+ * - 이메일 주소(예: mom@example.com) 또는 기존 아이디(영문 소문자·숫자 4~20자, 휴대폰 번호 차단) 모두 허용
+ */
+export const accountIdentifierSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .refine((val) => !PHONE_LIKE_REGEX.test(val), {
+    message: "휴대폰 번호는 계정 아이디로 사용할 수 없습니다.",
+  })
+  .refine(
+    (val) =>
+      (EMAIL_LIKE_REGEX.test(val) && val.length <= 120) ||
+      (/^[a-z0-9]{4,20}$/.test(val) && !PHONE_LIKE_REGEX.test(val)),
+    {
+      message:
+        "이메일 주소(예: mom@example.com) 또는 영문 소문자·숫자 아이디(4~20자)를 입력해 주세요.",
+    },
+  );
+
+export const SOCIAL_PROVIDERS = ["KAKAO", "GOOGLE", "NAVER"] as const;
+export type SocialProviderType = (typeof SOCIAL_PROVIDERS)[number];
+export const socialProviderSchema = z.enum(SOCIAL_PROVIDERS);
+
 /** 비밀번호 스키마 (ACC-03: 8자 이상, 영문+숫자 조합) */
 export const passwordSchema = z
   .string()

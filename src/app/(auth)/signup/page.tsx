@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { PwaProviderAndOfflineBanner } from "@/components/PwaProviderAndOfflineBanner";
 import { RecoveryCodeCard } from "@/components/RecoveryCodeCard";
+import { SocialAuthButtons } from "@/components/SocialAuthButtons";
 import { Badge, Button, Input } from "@/components/ui";
 
 const INTRO_CARDS = [
@@ -17,8 +18,8 @@ const INTRO_CARDS = [
     desc: "집에 있는 재료로 바로 만들 수 있는 메뉴를 찾아드려요.",
   },
   {
-    title: "개인정보 제로 계정",
-    desc: "실명·연락처·이메일 없이 ID와 비밀번호만 사용해요.",
+    title: "이메일 · SNS 간편 연동",
+    desc: "이메일 가입 후 카카오·구글·네이버 SNS 로그인을 자유롭게 연결해요.",
   },
 ] as const;
 
@@ -45,11 +46,13 @@ export default function SignupPage() {
 
     setSubmitting(true);
     try {
+      const trimmed = loginId.trim();
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          loginId,
+          loginId: trimmed,
+          ...(trimmed.includes("@") ? { email: trimmed } : {}),
           password,
           agreeIrrecoverable,
         }),
@@ -79,16 +82,16 @@ export default function SignupPage() {
         <div className="rounded-lg border border-[var(--color-border)] bg-white p-6 shadow-none sm:p-7">
           <div className="flex items-center justify-between gap-2">
             <Badge variant="primary">
-              {issuedRecoveryCode ? "2 / 3단계 · 복구 코드 보관" : "1 / 3단계 · 간편 가입"}
+              {issuedRecoveryCode ? "2 / 3단계 · 복구 코드 보관" : "1 / 3단계 · 이메일·SNS 가입"}
             </Badge>
             <span className="text-xs font-semibold text-[var(--color-text-secondary)]">
-              무료 · 개인정보 미수집
+              무료 · SNS 연동 지원
             </span>
           </div>
 
           <h1 className="mt-2.5 text-xl font-semibold text-[var(--color-text)]">회원가입</h1>
           <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-            계정 개인정보(이메일·전화번호·실명) 없이 아이디와 비밀번호만으로 바로 이용할 수
+            이메일 주소(권장)나 아이디로 가입하거나, 카카오·구글·네이버 계정으로 바로 시작할 수
             있습니다.
           </p>
 
@@ -124,73 +127,77 @@ export default function SignupPage() {
               />
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-              {error && (
-                <div
-                  id="signup-form-error"
-                  role="alert"
-                  className="rounded-md border border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] p-3.5 text-sm font-semibold text-[var(--color-danger-text)]"
-                >
-                  {error}
-                </div>
-              )}
+            <>
+              <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+                {error && (
+                  <div
+                    id="signup-form-error"
+                    role="alert"
+                    className="rounded-md border border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] p-3.5 text-sm font-semibold text-[var(--color-danger-text)]"
+                  >
+                    {error}
+                  </div>
+                )}
 
-              <Input
-                id="signup-login-id"
-                label="아이디 (영문 소문자·숫자 4~20자)"
-                hint="개인정보 보호를 위해 실명·이메일·전화번호를 아이디로 사용하지 마세요."
-                type="text"
-                autoComplete="username"
-                required
-                value={loginId}
-                onChange={(e) => setLoginId(e.target.value)}
-                placeholder="예: happymom24"
-              />
-
-              <Input
-                id="signup-password"
-                label="비밀번호 (영문 + 숫자 포함 8~64자)"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="영문과 숫자를 함께 입력해 주세요"
-              />
-
-              <Input
-                id="signup-password-confirm"
-                label="비밀번호 확인"
-                type="password"
-                autoComplete="new-password"
-                required
-                error={confirmError}
-                value={passwordConfirm}
-                onChange={(e) => {
-                  setPasswordConfirm(e.target.value);
-                  if (confirmError) setConfirmError(null);
-                }}
-                placeholder="비밀번호를 한 번 더 입력해 주세요"
-              />
-
-              <label className="flex min-h-11 cursor-pointer items-start gap-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-3.5 text-xs leading-relaxed text-[var(--color-text)]">
-                <input
-                  type="checkbox"
-                  checked={agreeIrrecoverable}
-                  onChange={(e) => setAgreeIrrecoverable(e.target.checked)}
-                  className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--color-primary)]"
+                <Input
+                  id="signup-login-id"
+                  label="아이디 (이메일 주소 또는 영문 아이디)"
+                  hint="이메일(예: mom@example.com)로 가입하면 카카오·구글·네이버 SNS 로그인과 동일 이메일로 자동 통합됩니다."
+                  type="text"
+                  autoComplete="username"
+                  required
+                  value={loginId}
+                  onChange={(e) => setLoginId(e.target.value)}
+                  placeholder="예: mom@example.com 또는 happymom24"
                 />
-                <span>
-                  이메일·전화번호를 수집하지 않으므로, 아이디·비밀번호와 복구 코드를 모두 분실하면
-                  계정을 복구할 수 없음에 동의합니다. (필수)
-                </span>
-              </label>
 
-              <Button type="submit" fullWidth disabled={submitting}>
-                {submitting ? "가입 처리 중..." : "회원가입 및 복구 코드 발급"}
-              </Button>
+                <Input
+                  id="signup-password"
+                  label="비밀번호 (영문 + 숫자 포함 8~64자)"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="영문과 숫자를 함께 입력해 주세요"
+                />
 
-              <div className="pt-2 text-center text-sm text-[var(--color-text-secondary)]">
+                <Input
+                  id="signup-password-confirm"
+                  label="비밀번호 확인"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  error={confirmError}
+                  value={passwordConfirm}
+                  onChange={(e) => {
+                    setPasswordConfirm(e.target.value);
+                    if (confirmError) setConfirmError(null);
+                  }}
+                  placeholder="비밀번호를 한 번 더 입력해 주세요"
+                />
+
+                <label className="flex min-h-11 cursor-pointer items-start gap-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-3.5 text-xs leading-relaxed text-[var(--color-text)]">
+                  <input
+                    type="checkbox"
+                    checked={agreeIrrecoverable}
+                    onChange={(e) => setAgreeIrrecoverable(e.target.checked)}
+                    className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--color-primary)]"
+                  />
+                  <span>
+                    비밀번호 분실 시 재설정에 사용할 1회용 복구 코드 발급 안내를 확인했으며, 서비스
+                    이용에 동의합니다. (필수)
+                  </span>
+                </label>
+
+                <Button type="submit" fullWidth disabled={submitting}>
+                  {submitting ? "가입 처리 중..." : "회원가입 및 복구 코드 발급"}
+                </Button>
+              </form>
+
+              <SocialAuthButtons mode="signup" defaultEmail={loginId} />
+
+              <div className="mt-5 pt-2 text-center text-sm text-[var(--color-text-secondary)]">
                 이미 계정이 있으신가요?{" "}
                 <Link
                   href="/login"
@@ -199,7 +206,7 @@ export default function SignupPage() {
                   로그인
                 </Link>
               </div>
-            </form>
+            </>
           )}
         </div>
       </main>

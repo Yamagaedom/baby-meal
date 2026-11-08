@@ -102,28 +102,55 @@ enum IngredientGroup {
   PROCESSED
 }
 
-/// 사용자 계정 (ACC-01~08: ID/PW + 복구 코드 해시만 보관, 개인정보 미수집)
+enum SocialProvider {
+  KAKAO
+  GOOGLE
+  NAVER
+}
+
+/// 사용자 계정 (ACC-01~08: 이메일/아이디 로그인 및 카카오·구글·네이버 SNS 연동 지원)
 model User {
   ingredientRequests IngredientRequest[]
   id                 String              @id @default(uuid()) @db.Uuid
   loginId            String              @unique @map("login_id")
+  email              String?             @unique @map("email")
   passwordHash       String              @map("password_hash")
   recoveryCodeHash   String              @map("recovery_code_hash")
   failedLoginCount   Int                 @default(0) @map("failed_login_count")
   lockedUntil        DateTime?           @map("locked_until")
   createdAt          DateTime            @default(now()) @map("created_at")
 
-  sessions      Session[]
-  aiUsages      AiUsage[]
-  babies        Baby[]
-  pantryItems   PantryItem[]
-  favorites     Favorite[]
-  reports       Report[]
-  mealPlans     MealPlan[]
-  foodBatches   FoodBatch[]
-  recipeReviews RecipeReview[]
+  sessions       Session[]
+  socialAccounts SocialAccount[]
+  aiUsages       AiUsage[]
+  babies         Baby[]
+  pantryItems    PantryItem[]
+  favorites      Favorite[]
+  reports        Report[]
+  mealPlans      MealPlan[]
+  foodBatches    FoodBatch[]
+  recipeReviews  RecipeReview[]
 
   @@map("users")
+}
+
+/// SNS 소셜 로그인 연동 계정 (카카오·구글·네이버, 동일 이메일 자동 통합 및 마이페이지 연결/해제)
+model SocialAccount {
+  id             String         @id @default(uuid()) @db.Uuid
+  userId         String         @map("user_id") @db.Uuid
+  provider       SocialProvider
+  providerUserId String         @map("provider_user_id")
+  email          String?        @map("email")
+  displayName    String?        @map("display_name")
+  connectedAt    DateTime       @default(now()) @map("connected_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+  @@unique([userId, provider])
+  @@index([userId])
+  @@index([email])
+  @@map("social_accounts")
 }
 
 /// 서버 세션 (ACC-06)

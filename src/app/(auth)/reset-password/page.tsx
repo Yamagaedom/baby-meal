@@ -67,8 +67,8 @@ export default function ResetPasswordPage() {
             복구 코드로 비밀번호 재설정
           </h1>
           <p className="mt-1 text-sm leading-relaxed text-[var(--color-text-secondary)]">
-            가입 시 저장해 둔 16자리 복구 코드로 새 비밀번호를 설정합니다. 사용 즉시 기존 코드는
-            폐기되고 새 복구 코드가 발급됩니다.
+            가입한 이메일(또는 아이디)과 16자리 복구 코드로 새 비밀번호를 설정합니다. 사용 즉시 기존
+            코드는 폐기되고 새 복구 코드가 발급됩니다.
           </p>
 
           {newIssuedCode ? (
@@ -96,12 +96,12 @@ export default function ResetPasswordPage() {
 
               <Input
                 id="reset-login-id"
-                label="아이디"
+                label="이메일 또는 아이디"
                 type="text"
                 required
                 value={loginId}
                 onChange={(e) => setLoginId(e.target.value)}
-                placeholder="가입한 아이디 입력"
+                placeholder="가입한 이메일 또는 아이디 입력"
               />
 
               <Input

@@ -7,7 +7,7 @@ import { PrismaClient } from "@/generated/prisma/client";
 const connectionString = process.env.DATABASE_URL;
 const describeWithDb = connectionString ? describe : describe.skip;
 
-describeWithDb("DB 스키마 개인정보 미수집 및 회원 탈퇴 연쇄 삭제 검증 (ACC-07, ACC-08)", () => {
+describeWithDb("DB 스키마 계정·SNS 연동 컬럼 및 회원 탈퇴 연쇄 삭제 검증 (ACC-07, ACC-08)", () => {
   const pool = new Pool({ connectionString, max: 1 });
   const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 
@@ -16,7 +16,7 @@ describeWithDb("DB 스키마 개인정보 미수집 및 회원 탈퇴 연쇄 삭
     await pool.end();
   });
 
-  it("ACC-08: users 테이블에 이메일·전화번호·실명 컬럼이 없고 babies 테이블은 선택 생년월일(birth_date)과 월령 컬럼을 갖는다", async () => {
+  it("ACC-08: users 테이블은 login_id·email 컬럼을 가지며 전화번호·실명 컬럼이 없고, babies 테이블은 선택 생년월일(birth_date)과 월령 컬럼을 갖는다", async () => {
     const userColumns = await prisma.$queryRaw<{ column_name: string }[]>`
       SELECT column_name
       FROM information_schema.columns
@@ -24,7 +24,7 @@ describeWithDb("DB 스키마 개인정보 미수집 및 회원 탈퇴 연쇄 삭
     `;
     const userColNames = userColumns.map((c) => c.column_name.toLowerCase());
     expect(userColNames).toContain("login_id");
-    expect(userColNames).not.toContain("email");
+    expect(userColNames).toContain("email");
     expect(userColNames).not.toContain("phone");
     expect(userColNames).not.toContain("phone_number");
     expect(userColNames).not.toContain("name");
@@ -41,7 +41,7 @@ describeWithDb("DB 스키마 개인정보 미수집 및 회원 탈퇴 연쇄 삭
     expect(babyColNames).toContain("age_input_date");
   });
 
-  it("ACC-07: User 삭제 시 Session, AiUsage, Baby, Allergy, MealLog, PantryItem, Favorite, Report가 연쇄 삭제된다", async () => {
+  it("ACC-07: User 삭제 시 Session, SocialAccount, AiUsage, Baby, Allergy, MealLog, PantryItem, Favorite, Report가 연쇄 삭제된다", async () => {
     const sampleIngredient = await prisma.ingredient.findFirstOrThrow();
     const sampleRecipe = await prisma.recipe.findFirstOrThrow();
 
@@ -49,8 +49,18 @@ describeWithDb("DB 스키마 개인정보 미수집 및 회원 탈퇴 연쇄 삭
     const user = await prisma.user.create({
       data: {
         loginId: tempLoginId,
+        email: `${tempLoginId}@example.com`,
         passwordHash: "hash",
         recoveryCodeHash: "recovery-hash",
+      },
+    });
+
+    await prisma.socialAccount.create({
+      data: {
+        userId: user.id,
+        provider: "KAKAO",
+        providerUserId: `kakao:${tempLoginId}`,
+        email: `${tempLoginId}@example.com`,
       },
     });
 
@@ -135,6 +145,7 @@ describeWithDb("DB 스키마 개인정보 미수집 및 회원 탈퇴 연쇄 삭
 
     const [
       remainingSessions,
+      remainingSocialAccounts,
       remainingUsage,
       remainingBabies,
       remainingAllergies,
@@ -145,6 +156,7 @@ describeWithDb("DB 스키마 개인정보 미수집 및 회원 탈퇴 연쇄 삭
       remainingReviews,
     ] = await Promise.all([
       prisma.session.count({ where: { id: session.id } }),
+      prisma.socialAccount.count({ where: { userId: user.id } }),
       prisma.aiUsage.count({ where: { userId: user.id } }),
       prisma.baby.count({ where: { id: baby.id } }),
       prisma.allergy.count({ where: { babyId: baby.id } }),
@@ -156,6 +168,7 @@ describeWithDb("DB 스키마 개인정보 미수집 및 회원 탈퇴 연쇄 삭
     ]);
 
     expect(remainingSessions).toBe(0);
+    expect(remainingSocialAccounts).toBe(0);
     expect(remainingUsage).toBe(0);
     expect(remainingBabies).toBe(0);
     expect(remainingAllergies).toBe(0);

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { PwaProviderAndOfflineBanner } from "@/components/PwaProviderAndOfflineBanner";
+import { SocialAuthButtons } from "@/components/SocialAuthButtons";
 import { Badge, Button, Input } from "@/components/ui";
 
 export default function LoginPage() {
@@ -65,8 +66,9 @@ export default function LoginPage() {
 
           <div className="mt-3.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-3.5 text-xs leading-relaxed text-[var(--color-text-secondary)]">
             <p>
-              <strong className="text-[var(--color-text)]"> 계정 개인정보 미수집:</strong>{" "}
-              이메일·전화번호·실명 없이 아이디와 비밀번호만으로 이용합니다.
+              <strong className="text-[var(--color-text)]"> 이메일 + SNS 간편 로그인:</strong>{" "}
+              이메일 주소 또는 카카오·구글·네이버 계정으로 간편하게 시작하고 동일 이메일 계정을 자동
+              통합할 수 있습니다. (기존 아이디 로그인도 그대로 호환됩니다.)
             </p>
             <p className="mt-1">
               <strong className="text-[var(--color-text)]"> 안전 안내:</strong> AI 생성 레시피는
@@ -87,14 +89,14 @@ export default function LoginPage() {
 
             <Input
               id="login-id"
-              label="아이디"
+              label="이메일 또는 아이디"
               type="text"
               autoComplete="username"
               required
               aria-describedby={error ? "login-form-error" : undefined}
               value={loginId}
               onChange={(e) => setLoginId(e.target.value)}
-              placeholder="영문 소문자·숫자 아이디"
+              placeholder="예: mom@example.com 또는 기존 아이디"
             />
 
             <Input
@@ -124,12 +126,14 @@ export default function LoginPage() {
             </Button>
           </form>
 
+          <SocialAuthButtons mode="login" defaultEmail={loginId} rememberMe={rememberMe} />
+
           <div className="mt-5 flex flex-wrap items-center justify-between gap-2 border-t border-[var(--color-border)] pt-4 text-sm">
             <Link
               href="/signup"
               className="inline-flex min-h-11 items-center font-semibold text-[var(--color-primary-text)] underline underline-offset-4"
             >
-              회원가입 (개인정보 없음)
+              이메일 / SNS 회원가입
             </Link>
             <Link
               href="/reset-password"

@@ -20,6 +20,7 @@ const PUBLIC_API_PATHS = new Set([
   "/api/auth/login",
   "/api/auth/signup",
   "/api/auth/reset-password",
+  "/api/auth/social",
 ]);
 const STATE_CHANGING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
@@ -84,6 +85,7 @@ export function proxy(request: NextRequest) {
     pathname.startsWith("/icons/") ||
     PUBLIC_PAGE_PATHS.has(pathname) ||
     PUBLIC_API_PATHS.has(pathname) ||
+    pathname.startsWith("/api/auth/oauth/") ||
     (request.method === "GET" && pathname.endsWith("/reviews"))
   ) {
     return NextResponse.next();

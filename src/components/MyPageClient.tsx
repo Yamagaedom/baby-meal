@@ -5,22 +5,46 @@ import { useState } from "react";
 import { BabyProfileForm } from "@/components/BabyProfileForm";
 import { RecoveryCodeCard } from "@/components/RecoveryCodeCard";
 import { Badge, Button, Chip, ConfirmDialog, Input } from "@/components/ui";
+import type { LinkedSocialAccountView } from "@/features/auth";
+import { SOCIAL_PROVIDER_META } from "@/features/auth/oauth";
 import type { BabyProfileView } from "@/features/profile";
 import { SALT_LEVEL_LABELS } from "@/features/recipe/constants-client";
 import type { Allergen } from "@/lib/domain/types";
 import { clearAllOfflineFavorites, removeOfflineFavoritesForBaby } from "@/lib/offline-favorites";
+import type { SocialProviderType } from "@/lib/validation";
 
 interface MyPageClientProps {
   loginId: string;
+  email?: string | null;
+  initialSocialAccounts?: LinkedSocialAccountView[];
   babies: BabyProfileView[];
 }
 
-export function MyPageClient({ loginId, babies }: MyPageClientProps) {
+const ALL_SOCIAL_PROVIDERS: readonly SocialProviderType[] = ["KAKAO", "GOOGLE", "NAVER"] as const;
+
+export function MyPageClient({
+  loginId,
+  email: initialEmail = null,
+  initialSocialAccounts = [],
+  babies,
+}: MyPageClientProps) {
   const router = useRouter();
   const [editingBabyId, setEditingBabyId] = useState<string | null>(null);
   const [addingBaby, setAddingBaby] = useState(false);
   const [profileNotice, setProfileNotice] = useState<string | null>(null);
   const [deletingBabyTarget, setDeletingBabyTarget] = useState<BabyProfileView | null>(null);
+
+  // 이메일 및 SNS 연동 상태
+  const [userEmail, setUserEmail] = useState<string | null>(
+    initialEmail ?? (loginId.includes("@") ? loginId : null),
+  );
+  const [socialAccounts, setSocialAccounts] =
+    useState<LinkedSocialAccountView[]>(initialSocialAccounts);
+  const [linkingProvider, setLinkingProvider] = useState<SocialProviderType | null>(null);
+  const [linkingEmail, setLinkingEmail] = useState("");
+  const [socialMessage, setSocialMessage] = useState<string | null>(null);
+  const [socialError, setSocialError] = useState<string | null>(null);
+  const [socialBusy, setSocialBusy] = useState(false);
 
   // 비밀번호 변경
   const [currentPassword, setCurrentPassword] = useState("");
@@ -68,6 +92,78 @@ export function MyPageClient({ loginId, babies }: MyPageClientProps) {
     }
   }
 
+  function handleStartLinkProvider(provider: SocialProviderType) {
+    setSocialError(null);
+    setSocialMessage(null);
+    if (linkingProvider === provider) {
+      setLinkingProvider(null);
+      return;
+    }
+    setLinkingProvider(provider);
+    setLinkingEmail(
+      userEmail || (loginId.includes("@") ? loginId : SOCIAL_PROVIDER_META[provider].sampleEmail),
+    );
+  }
+
+  async function handleConfirmLinkProvider() {
+    if (!linkingProvider) return;
+    setSocialBusy(true);
+    setSocialError(null);
+    setSocialMessage(null);
+    try {
+      const normalized = linkingEmail.trim().toLowerCase();
+      const res = await fetch("/api/auth/social/link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: linkingProvider,
+          email: normalized,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setSocialError(data?.error?.message ?? "SNS 계정 연동에 실패했습니다.");
+        return;
+      }
+      setSocialAccounts(data.socialAccounts ?? []);
+      if (!userEmail) {
+        setUserEmail(normalized);
+      }
+      setSocialMessage(
+        `${SOCIAL_PROVIDER_META[linkingProvider].label} 계정이 성공적으로 연동되었습니다.`,
+      );
+      setLinkingProvider(null);
+      router.refresh();
+    } catch {
+      setSocialError("네트워크 오류가 발생했습니다.");
+    } finally {
+      setSocialBusy(false);
+    }
+  }
+
+  async function handleUnlinkProvider(provider: SocialProviderType) {
+    setSocialBusy(true);
+    setSocialError(null);
+    setSocialMessage(null);
+    try {
+      const res = await fetch(`/api/auth/social/link?provider=${provider}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setSocialError(data?.error?.message ?? "SNS 연동 해제에 실패했습니다.");
+        return;
+      }
+      setSocialAccounts(data.socialAccounts ?? []);
+      setSocialMessage(`${SOCIAL_PROVIDER_META[provider].label} 계정 연동이 해제되었습니다.`);
+      router.refresh();
+    } catch {
+      setSocialError("네트워크 오류가 발생했습니다.");
+    } finally {
+      setSocialBusy(false);
+    }
+  }
+
   async function handleChangePassword(e: React.FormEvent) {
     e.preventDefault();
     setPwError(null);
@@ -107,7 +203,7 @@ export function MyPageClient({ loginId, babies }: MyPageClientProps) {
   function handleOpenDeleteConfirm(e: React.FormEvent) {
     e.preventDefault();
     setDeleteError(null);
-    if (!deletePassword.trim()) {
+    if (!deletePassword.trim() && socialAccounts.length === 0) {
       setDeleteError("현재 비밀번호를 입력해 주세요.");
       return;
     }
@@ -121,7 +217,10 @@ export function MyPageClient({ loginId, babies }: MyPageClientProps) {
       const res = await fetch("/api/auth/account", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ currentPassword: deletePassword }),
+        body: JSON.stringify({
+          ...(deletePassword.trim() ? { currentPassword: deletePassword } : {}),
+          ...(socialAccounts.length > 0 ? { confirmSocialDelete: true } : {}),
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -302,15 +401,140 @@ export function MyPageClient({ loginId, babies }: MyPageClientProps) {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
             <h2 className="text-lg font-semibold break-all text-[var(--color-text)]">
-              계정 관리 ({loginId})
+              계정 관리 ({userEmail ?? loginId})
             </h2>
             <p className="text-sm text-[var(--color-text-secondary)]">
-              개인정보 미수집 안심 계정입니다.
+              {userEmail && userEmail !== loginId
+                ? `아이디(${loginId}) · 연동 이메일(${userEmail})`
+                : "이메일 로그인 및 카카오·구글·네이버 SNS 연동 계정입니다."}
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={() => void handleLogout()}>
             로그아웃
           </Button>
+        </div>
+
+        {/* SNS 로그인 연동 관리 */}
+        <div
+          data-testid="my-social-accounts-section"
+          className="space-y-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-canvas)] p-4 sm:p-5"
+        >
+          <div>
+            <h3 className="text-base font-semibold text-[var(--color-text)]">
+              SNS 간편 로그인 연동 관리
+            </h3>
+            <p className="mt-0.5 text-xs text-[var(--color-text-secondary)]">
+              카카오·구글·네이버 계정을 연결하면 비밀번호 입력 없이 간편하게 로그인할 수 있습니다.
+            </p>
+          </div>
+
+          {socialMessage && (
+            <div
+              role="status"
+              className="rounded-md border border-[var(--color-success-border)] bg-[var(--color-success-soft)] p-3 text-xs font-semibold text-[var(--color-secondary-text)]"
+            >
+              ✓ {socialMessage}
+            </div>
+          )}
+          {socialError && (
+            <div
+              role="alert"
+              className="rounded-md border border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] p-3 text-xs font-semibold text-[var(--color-danger-text)]"
+            >
+              {socialError}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+            {ALL_SOCIAL_PROVIDERS.map((provider) => {
+              const meta = SOCIAL_PROVIDER_META[provider];
+              const linked = socialAccounts.find((item) => item.provider === provider);
+              const isOpeningLink = linkingProvider === provider;
+
+              return (
+                <div
+                  key={provider}
+                  data-testid={`my-social-card-${provider.toLowerCase()}`}
+                  className="flex flex-col justify-between gap-3 rounded-lg border border-[var(--color-border)] bg-white p-3.5"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-semibold text-[var(--color-text)]">
+                        {meta.label}
+                      </span>
+                      <Badge variant={linked ? "primary" : "neutral"}>
+                        {linked ? "연동됨" : "미연동"}
+                      </Badge>
+                    </div>
+                    <p className="truncate text-xs text-[var(--color-text-secondary)]">
+                      {linked?.email ?? "연결된 계정 없음"}
+                    </p>
+                  </div>
+
+                  {linked ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={socialBusy}
+                      data-testid={`social-unlink-${provider.toLowerCase()}`}
+                      onClick={() => void handleUnlinkProvider(provider)}
+                    >
+                      연동 해제
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant={isOpeningLink ? "primary" : "outline"}
+                      size="sm"
+                      disabled={socialBusy}
+                      data-testid={`social-link-${provider.toLowerCase()}`}
+                      onClick={() => handleStartLinkProvider(provider)}
+                    >
+                      {isOpeningLink ? "입력 중" : `${meta.label} 연동하기`}
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {linkingProvider && (
+            <div
+              data-testid="my-social-link-panel"
+              className="mt-3 rounded-lg border border-[var(--color-border-strong)] bg-white p-4"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-semibold text-[var(--color-text)]">
+                  {SOCIAL_PROVIDER_META[linkingProvider].label} 계정 연결
+                </p>
+                <Button variant="ghost" size="sm" onClick={() => setLinkingProvider(null)}>
+                  취소
+                </Button>
+              </div>
+              <div className="mt-3 flex flex-wrap items-end gap-3">
+                <div className="min-w-0 flex-1 basis-56">
+                  <Input
+                    id="my-social-link-email"
+                    label={`연결할 ${SOCIAL_PROVIDER_META[linkingProvider].label} 이메일`}
+                    type="email"
+                    value={linkingEmail}
+                    onChange={(e) => setLinkingEmail(e.target.value)}
+                    placeholder={SOCIAL_PROVIDER_META[linkingProvider].sampleEmail}
+                  />
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  data-testid="social-link-confirm-btn"
+                  disabled={socialBusy || !linkingEmail.trim()}
+                  onClick={() => void handleConfirmLinkProvider()}
+                >
+                  {socialBusy ? "연동 중..." : "연동 완료"}
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         <details className="disclosure">
@@ -373,7 +597,7 @@ export function MyPageClient({ loginId, babies }: MyPageClientProps) {
               </p>
               {reissuedCode ? (
                 <RecoveryCodeCard
-                  loginId={loginId}
+                  loginId={userEmail ?? loginId}
                   recoveryCode={reissuedCode}
                   confirmLabel="확인 완료"
                   onConfirm={() => setReissuedCode(null)}
@@ -416,17 +640,21 @@ export function MyPageClient({ loginId, babies }: MyPageClientProps) {
                   회원 탈퇴 (즉시 영구 삭제 · 2단계 확인)
                 </h3>
                 <p className="mt-1 text-xs leading-relaxed text-[var(--color-danger-text)]">
-                  탈퇴 즉시 계정, 아기 프로필, 먹은 기록, 즐겨찾기, 내 냉장고 데이터가 복구
-                  불가능하게 영구 삭제됩니다.
+                  탈퇴 즉시 계정, SNS 연동 정보, 아기 프로필, 먹은 기록, 즐겨찾기, 내 냉장고
+                  데이터가 복구 불가능하게 영구 삭제됩니다.
                 </p>
               </div>
 
               <Input
                 type="password"
-                required
+                required={socialAccounts.length === 0}
                 label="회원 탈퇴 확인용 현재 비밀번호"
                 error={deleteError}
-                placeholder="현재 비밀번호 입력"
+                placeholder={
+                  socialAccounts.length > 0
+                    ? "비밀번호 설정 시 입력 (SNS 전용 가입은 생략 가능)"
+                    : "현재 비밀번호 입력"
+                }
                 value={deletePassword}
                 onChange={(e) => setDeletePassword(e.target.value)}
               />
@@ -467,7 +695,7 @@ export function MyPageClient({ loginId, babies }: MyPageClientProps) {
       <ConfirmDialog
         open={deleteModalOpen}
         title="정말 계정을 영구 탈퇴하시겠어요? (최종 확인)"
-        description={`'${loginId}' 계정의 모든 아기 프로필, 알레르기 설정, 식단 기록, 즐겨찾기가 즉시 파기되며 절대 복구할 수 없습니다.`}
+        description={`'${userEmail ?? loginId}' 계정의 모든 아기 프로필, 알레르기 설정, 식단 기록, 즐겨찾기가 즉시 파기되며 절대 복구할 수 없습니다.`}
         confirmLabel="영구 탈퇴 실행"
         loading={deleteSubmitting}
         onConfirm={() => void executeAccountDeletion()}
